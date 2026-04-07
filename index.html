@@ -1145,10 +1145,286 @@ body {
   color: var(--text-muted);
 }
 .grammar-active-selection strong { color: var(--text); }
+
+/* Mobile menu button and overlay — hidden on desktop */
+#mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--white);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 999;
+}
+#sidebar-overlay.visible { display: block; }
+
+/* ========== RESPONSIVE: screens up to 768px ========== */
+@media (max-width: 768px) {
+  #mobile-menu-btn { display: block; }
+
+  /* Sidebar becomes a slide-over drawer */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 280px;
+    min-width: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+
+  /* Main fills full width */
+  #main { width: 100%; }
+
+  /* Toolbar: add left padding for hamburger */
+  #toolbar {
+    padding: 10px 12px 10px 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #toolbar-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+  #exercise-title {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  #toolbar-right {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .toggle-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+
+  /* Content area: reduce padding */
+  #content-area {
+    padding: 16px 14px;
+    max-width: 100%;
+  }
+  #grammar-content {
+    padding: 16px 14px;
+    max-width: 100%;
+  }
+
+  /* German text display */
+  #german-display {
+    line-height: 2.4;
+    margin-bottom: 20px;
+  }
+  .word-wrapper .tooltip {
+    font-size: 11px;
+    max-width: 200px;
+    white-space: normal;
+  }
+
+  /* POS legend: stack items */
+  #pos-legend.visible {
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  /* Translation input */
+  #translation-input {
+    min-height: 100px;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  /* Action buttons: wrap and enlarge tap targets */
+  #action-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .action-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 44px;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  #next-btn {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  /* Evaluation result */
+  #evaluation-result {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  #evaluation-result .score { font-size: 20px; }
+
+  /* Reference display */
+  #reference-display {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  /* Vocab mode: cards and inputs */
+  .vocab-exercise { padding: 14px; }
+  .vocab-card {
+    padding: 20px;
+    min-height: 160px;
+  }
+  .vocab-card-german { font-size: 24px; }
+  .vocab-card-english { font-size: 20px; }
+  .vocab-action-row { flex-wrap: wrap; }
+  .vocab-action-btn {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .vocab-mc-option {
+    padding: 14px;
+    font-size: 15px;
+    min-height: 44px;
+  }
+  .vocab-typed-input {
+    padding: 12px;
+    font-size: 15px;
+  }
+  .vocab-back-btn {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Grammar mode */
+  .grammar-passage {
+    padding: 14px 16px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .grammar-phase-selector {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .grammar-phase-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 36px;
+    flex: 1;
+    text-align: center;
+  }
+  .grammar-option-btn {
+    padding: 12px 14px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .grammar-production-input {
+    font-size: 15px;
+    padding: 12px;
+  }
+  .grammar-action-row {
+    flex-wrap: wrap;
+  }
+  .grammar-action-row .action-btn {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  /* Paradigm table: allow horizontal scroll */
+  .grammar-paradigm-panel {
+    padding: 12px;
+    overflow-x: auto;
+  }
+  .paradigm-table th, .paradigm-table td {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+
+  /* Grammar stats table scroll */
+  .grammar-stats-panel {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  /* Modals: tighter on mobile */
+  .modal {
+    width: 100%;
+    max-width: 95vw;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  .modal-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* Source note */
+  .source-note { font-size: 9px; }
+
+  /* Sidebar footer buttons: enlarge for touch */
+  .sidebar-btn {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  /* Mode buttons: enlarge for touch */
+  .mode-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+    min-height: 40px;
+  }
+}
+
+/* ========== RESPONSIVE: very small screens (iPhone SE, etc.) ========== */
+@media (max-width: 380px) {
+  #toolbar {
+    padding: 8px 8px 8px 52px;
+  }
+  #content-area {
+    padding: 12px 10px;
+  }
+  #grammar-content {
+    padding: 12px 10px;
+  }
+  .vocab-card-german { font-size: 20px; }
+  .grammar-passage { font-size: 14px; padding: 12px; }
+  .toggle-btn { padding: 5px 8px; font-size: 10px; }
+}
 </style>
 </head>
 <body>
 
+<button id="mobile-menu-btn" aria-label="Toggle menu">&#9776;</button>
+<div id="sidebar-overlay"></div>
 <div id="sidebar">
   <div id="mode-switcher" class="mode-switcher">
     <button class="mode-btn active" data-mode="translation">Translation</button>
@@ -11263,9 +11539,24 @@ class App {
     document.getElementById("import-cancel").addEventListener("click", () => this.closeImport());
     document.getElementById("import-go").addEventListener("click", () => this.doImport());
 
+    // Mobile menu
+    const mobileBtn = document.getElementById("mobile-menu-btn");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+    const closeSidebar = () => { sidebar.classList.remove("open"); overlay.classList.remove("visible"); };
+    mobileBtn.addEventListener("click", () => {
+      const isOpen = sidebar.classList.toggle("open");
+      overlay.classList.toggle("visible", isOpen);
+    });
+    overlay.addEventListener("click", closeSidebar);
+    // Close sidebar when selecting an exercise on mobile
+    document.getElementById("exercise-list").addEventListener("click", (e) => {
+      if (e.target.closest(".exercise-item") && window.innerWidth <= 768) closeSidebar();
+    });
+
     // Mode switcher
     document.querySelectorAll(".mode-btn").forEach(btn => {
-      btn.addEventListener("click", () => this.switchMode(btn.dataset.mode));
+      btn.addEventListener("click", () => { this.switchMode(btn.dataset.mode); if (window.innerWidth <= 768) closeSidebar(); });
     });
 
     // Vocabulary mode event delegation
@@ -12509,7 +12800,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   handleFlashcardResponse(knew) {
     const item = this.vocabItems[this.vocabCurrentIdx];
     const key = `${item.section}_${item.num}`;
-    this.vocabProgress[key] = knew;
+    if (knew) {
+      this.vocabProgress[key] = true;
+    }
     this.save("uw_vocabProgress", this.vocabProgress);
     this.vocabCurrentIdx++;
     this.vocabFlipped = false;
@@ -12559,7 +12852,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     let isCorrect = userAnswer === correctAnswer;
     if (!isCorrect && userWords.length > 0 && correctWords.length > 0) {
-      const matches = userWords.filter(w => correctWords.some(cw => cw.includes(w) || w.includes(cw))).length;
+      const matches = userWords.filter(w => correctWords.some(cw => cw === w)).length;
       isCorrect = matches >= Math.ceil(correctWords.length * 0.6);
     }
 
