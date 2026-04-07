@@ -11711,13 +11711,11 @@ class App {
           wrapper.appendChild(wordSpan);
 
           if (entry) {
-            // Hover tooltip always present (unless glosses hidden)
-            if (!this.glossHideActive) {
-              const tooltip = document.createElement("span");
-              tooltip.className = "tooltip";
-              tooltip.textContent = entry.gloss;
-              wrapper.appendChild(tooltip);
-            }
+            // Hover tooltip always present
+            const tooltip = document.createElement("span");
+            tooltip.className = "tooltip";
+            tooltip.textContent = entry.gloss;
+            wrapper.appendChild(tooltip);
 
             // Inline gloss on first occurrence or when "All Glosses" is active
             if (!this.glossHideActive) {
