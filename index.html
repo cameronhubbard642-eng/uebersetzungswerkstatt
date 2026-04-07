@@ -3220,13 +3220,14 @@ body.sidebar-open {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
     <div id="german-display"></div>
+    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;">&#9654; Listen</button></div>
     <div id="translation-section">
       <label>Your Translation</label>
       <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
     </div>
     <div id="action-row">
+      <button class="action-btn" id="get-hints-btn">Get Hints</button>
       <button class="action-btn" id="evaluate-btn">Evaluate</button>
-      <button class="action-btn" id="german-tts-btn" style="background:var(--white);color:var(--text);border:1px solid var(--border);">&#9654; Listen</button>
       <button class="action-btn" id="show-reference-btn">Show Reference</button>
       <button class="action-btn" id="next-btn">Next &#8594;</button>
     </div>
@@ -17218,7 +17219,7 @@ class App {
     this.allTexts = { ...TEXTS, ...this.customTexts };
     this.vocabSelectedCategories = [];
     this.vocabExpandedGroups = {};
-    this.vocabExerciseType = "flashcard";
+    this.vocabExerciseType = "typed";
     this.vocabItems = [];
     this.vocabCurrentIdx = 0;
     this.vocabProgress = {};
@@ -17255,6 +17256,7 @@ class App {
     document.getElementById("gloss-toggle").addEventListener("click", () => this.toggleGlossAll());
     document.getElementById("gloss-hide-toggle").addEventListener("click", () => this.toggleGlossHide());
     // Action buttons
+    document.getElementById("get-hints-btn").addEventListener("click", () => this.getHints());
     document.getElementById("evaluate-btn").addEventListener("click", () => this.evaluate());
     document.getElementById("show-reference-btn").addEventListener("click", () => this.showReference());
     document.getElementById("next-btn").addEventListener("click", () => this.nextExercise());
@@ -17268,6 +17270,9 @@ class App {
     // Grammar TTS (button rendered dynamically in lesson content)
     document.addEventListener("click", (e) => {
       if (e.target.id === "grammar-tts-btn") this.toggleLessonTTS(e.target);
+      if (e.target.classList.contains("grammar-speak-btn") && e.target.dataset.text) {
+        this.speakWord(e.target.dataset.text);
+      }
     });
     // Sync Progress
     document.getElementById("sync-btn").addEventListener("click", () => this.openSync());
@@ -17834,26 +17839,15 @@ class App {
 
     try {
       if (this.apiKey) {
-        if (this._revisionMode) {
-          await this.evaluateWithAPI(input);
-          this._revisionMode = false;
-          const key = this.currentText.id + ":" + this.currentExercise.id;
-          this.completed[key] = true;
-          this.save("completed", this.completed);
-          this.renderExerciseList();
-          this.renderProgress();
-        } else {
-          await this.evaluateGuidedRevision(input);
-          // Do NOT mark complete yet — user may revise
-        }
+        await this.evaluateWithAPI(input);
       } else {
         this.evaluateHeuristic(input);
-        const key = this.currentText.id + ":" + this.currentExercise.id;
-        this.completed[key] = true;
-        this.save("completed", this.completed);
-        this.renderExerciseList();
-        this.renderProgress();
       }
+      const key = this.currentText.id + ":" + this.currentExercise.id;
+      this.completed[key] = true;
+      this.save("completed", this.completed);
+      this.renderExerciseList();
+      this.renderProgress();
     } catch (e) {
       console.error("API evaluation failed:", e);
       this.evaluateHeuristic(input);
@@ -17867,6 +17861,29 @@ class App {
     } finally {
       btn.disabled = false;
       btn.textContent = "Evaluate";
+    }
+  }
+
+  async getHints() {
+    const input = document.getElementById("translation-input").value.trim();
+    if (!input) return;
+    if (!this.apiKey) {
+      const el = document.getElementById("evaluation-result");
+      el.style.display = "block";
+      el.className = "visible";
+      document.getElementById("eval-score").textContent = "";
+      document.getElementById("eval-feedback").innerHTML = `<p style="color:var(--text-muted);font-size:13px;">Set an API key in Settings to get hints.</p>`;
+      return;
+    }
+    const btn = document.getElementById("get-hints-btn");
+    btn.disabled = true; btn.textContent = "Loading hints...";
+    try {
+      await this.evaluateGuidedRevision(input);
+    } catch (e) {
+      const el = document.getElementById("eval-feedback");
+      if (el) el.innerHTML += `<br><small style="color:var(--text-muted)">(Hint request failed: ${e.message})</small>`;
+    } finally {
+      btn.disabled = false; btn.textContent = "Get Hints";
     }
   }
 
@@ -17967,31 +17984,31 @@ Format your response as JSON: {"problems": ["problem 1 description", "problem 2 
     const el = document.getElementById("evaluation-result");
     el.style.display = "block";
     el.className = "visible fair";
-    el.innerHTML = `
-      <h4>Guided Revision</h4>
-      <ul style="margin:8px 0 8px 18px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.7;">
-        ${(result.problems || []).map(p => `<li>${p}</li>`).join("")}
-      </ul>
-      <p style="font-style:italic;font-size:12px;color:var(--text-muted);margin-top:8px;">${result.encouragement || ""}</p>
-      <div style="display:flex;gap:10px;margin-top:14px;">
-        <button class="action-btn" id="revise-btn" style="background:var(--accent);color:white;">Revise &amp; Resubmit</button>
-        <button class="action-btn" id="skip-to-full-btn" style="background:var(--white);color:var(--text);border:1px solid var(--border);">Skip to Full Evaluation</button>
-      </div>`;
+    document.getElementById("eval-score").textContent = "";
+    let guidedHtml = `<h4 style="margin:0 0 8px;font-size:14px;color:var(--accent);">Review Your Translation</h4>`;
+    guidedHtml += `<ul style="margin:0 0 10px;padding-left:18px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.7;">`;
+    guidedHtml += (result.problems || []).map(p => `<li>${p}</li>`).join("");
+    guidedHtml += `</ul>`;
+    if (result.encouragement) {
+      guidedHtml += `<p style="font-style:italic;font-size:12px;color:var(--text-muted);margin:0 0 10px;">${result.encouragement}</p>`;
+    }
+    guidedHtml += `<div style="display:flex;gap:10px;margin-top:14px;">`;
+    guidedHtml += `<button class="action-btn" id="revise-btn" style="background:var(--accent);color:white;">Revise &amp; Resubmit</button>`;
+    guidedHtml += `<button class="action-btn" id="skip-to-full-btn" style="background:var(--white);color:var(--text);border:1px solid var(--border);">Skip to Full Evaluation</button>`;
+    guidedHtml += `</div>`;
+    document.getElementById("eval-feedback").innerHTML = guidedHtml;
 
     document.getElementById("revise-btn").addEventListener("click", () => {
-      this._revisionMode = true;
       el.style.display = "none";
       el.className = "";
       document.getElementById("translation-input").focus();
     });
     document.getElementById("skip-to-full-btn").addEventListener("click", async () => {
-      this._revisionMode = true;
       const input = document.getElementById("translation-input").value.trim();
       const btn = document.getElementById("evaluate-btn");
       btn.disabled = true; btn.textContent = "Evaluating...";
       try {
         await this.evaluateWithAPI(input);
-        this._revisionMode = false;
         const key = this.currentText.id + ":" + this.currentExercise.id;
         this.completed[key] = true;
         this.save("completed", this.completed);
@@ -18707,13 +18724,25 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const authorSections = ["Nietzsche","Wittgenstein","Freud"];
     const groupLabels = { "Noun": "Nouns", "Verb": "Verbs", "Adjective/Adverb": "Adjectives & Adverbs", "Preposition": "Prepositions", "Idiom": "Idioms", "Conjunction/Pronoun/Particle": "Conjunctions, Pronouns & Particles", "Nietzsche": "Nietzsche", "Wittgenstein": "Wittgenstein", "Freud": "Freud" };
 
+    // Determine which group and section contain the active batch
+    let activeGroup = null;
+    let activeSection = null;
+    if (this.vocabActiveBatch !== undefined && this.vocabActiveBatch !== null) {
+      const activeBatch = batches[this.vocabActiveBatch];
+      if (activeBatch) {
+        activeGroup = activeBatch.id.split("_")[0];
+        activeSection = activeBatch.isAuthor ? "_author" : "_general";
+      }
+    }
+
     // Helper to render a group of batches
     const renderGroup = (grp) => {
       const groupBatches = batches.filter(b => b.id.split("_")[0] === grp);
       if (groupBatches.length === 0) return "";
       const groupTotal = groupBatches.reduce((s, b) => s + b.items.length, 0);
       const groupDone = groupBatches.reduce((s, b) => s + b.items.filter(v => vocabProgress[`${v.section}_${v.num}`]).length, 0);
-      const isExpanded = this.vocabExpandedGroups[grp] !== false;
+      // Default collapsed unless user explicitly expanded OR this is the active group
+      const isExpanded = this.vocabExpandedGroups[grp] === true || (this.vocabExpandedGroups[grp] === undefined && grp === activeGroup);
       const collapsed = isExpanded ? "" : " collapsed";
       let h = `<div class="vocab-group-header${collapsed}" data-group="${grp}">
         <span class="vocab-group-arrow">&#9660;</span>
@@ -18742,7 +18771,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const genBatches = batches.filter(b => !b.isAuthor);
     const genTotal = genBatches.reduce((s, b) => s + b.items.length, 0);
     const genDone = genBatches.reduce((s, b) => s + b.items.filter(v => vocabProgress[`${v.section}_${v.num}`]).length, 0);
-    const genExpanded = this.vocabExpandedGroups["_general"] !== false;
+    const genExpanded = this.vocabExpandedGroups["_general"] === true || (this.vocabExpandedGroups["_general"] === undefined && activeSection === "_general");
     const genCollapsed = genExpanded ? "" : " collapsed";
     html += `<div class="vocab-section-header${genCollapsed}" data-section="_general">
       <span class="vocab-group-arrow">&#9660;</span>
@@ -18758,7 +18787,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (authBatches.length > 0) {
       const authTotal = authBatches.reduce((s, b) => s + b.items.length, 0);
       const authDone = authBatches.reduce((s, b) => s + b.items.filter(v => vocabProgress[`${v.section}_${v.num}`]).length, 0);
-      const authExpanded = this.vocabExpandedGroups["_author"] !== false;
+      const authExpanded = this.vocabExpandedGroups["_author"] === true || (this.vocabExpandedGroups["_author"] === undefined && activeSection === "_author");
       const authCollapsed = authExpanded ? "" : " collapsed";
       html += `<div class="vocab-section-header${authCollapsed}" data-section="_author">
         <span class="vocab-group-arrow">&#9660;</span>
@@ -18814,6 +18843,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
     this.vocabProgress = this.load("uw_vocabProgress") || {};
+
+    // Auto-expand the selected batch's group and section
+    const grp = batch.id.split("_")[0];
+    const sec = batch.isAuthor ? "_author" : "_general";
+    this.vocabExpandedGroups[grp] = true;
+    this.vocabExpandedGroups[sec] = true;
 
     // Highlight selected batch in sidebar
     document.querySelectorAll("#exercise-list .exercise-item[data-batch]").forEach(div => {
@@ -18935,10 +18970,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const article = parts[0];
       const word = parts.slice(1).join(" ");
       html += `<div style="font-size:14px;color:var(--accent);font-weight:600;margin-bottom:4px;">${article}</div>`;
-      html += `<div style="font-size:28px;font-weight:600;margin-bottom:12px;">${word}</div>`;
+      html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${word}</div>`;
     } else {
-      html += `<div style="font-size:28px;font-weight:600;margin-bottom:12px;">${item.german}</div>`;
+      html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${item.german}</div>`;
     }
+    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:12px;">&#9654; Pronounce</button>`;
 
     html += `</div>`;
     html += `<div class="vocab-mc-options">`;
@@ -18960,10 +18996,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const article = parts[0];
       const word = parts.slice(1).join(" ");
       html += `<div style="font-size:14px;color:var(--accent);font-weight:600;margin-bottom:4px;">${article}</div>`;
-      html += `<div style="font-size:28px;font-weight:600;margin-bottom:12px;">${word}</div>`;
+      html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${word}</div>`;
     } else {
-      html += `<div style="font-size:28px;font-weight:600;margin-bottom:12px;">${item.german}</div>`;
+      html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${item.german}</div>`;
     }
+    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:10px;">&#9654; Pronounce</button>`;
 
     html += `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-family:'Helvetica Neue',sans-serif;">Type the English meaning</div>`;
     html += `</div>`;
@@ -19438,6 +19475,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     // Navigation
     html += `<div class="grammar-action-row">`;
+    html += `<button id="grammar-tts-btn" class="action-btn">&#9654; Listen</button>`;
     html += `<button class="action-btn" id="grammar-next-btn" style="margin-left:auto;">Next &#8594;</button>`;
     html += `</div>`;
 
@@ -20249,8 +20287,11 @@ Lesson: ${ex.profile.description}`;
   // Breadcrumb
   html += `<div class="lesson-breadcrumb">Unit ${unit.chapter}: ${unit.title} > Lesson ${lessonIdx + 1}: ${lesson.title}</div>`;
 
-  // Progress indicator
-  html += `<div class="lesson-progress">Lesson ${lessonIdx + 1} of ${unit.lessons.length}</div>`;
+  // Progress indicator + TTS
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">`;
+  html += `<div class="lesson-progress" style="margin-bottom:0;">Lesson ${lessonIdx + 1} of ${unit.lessons.length}</div>`;
+  html += `<button id="grammar-tts-btn" class="action-btn" style="padding:4px 12px;font-size:0.82em;">&#9654; Listen to Lesson</button>`;
+  html += `</div>`;
 
   // Content blocks
   if (lesson.content && Array.isArray(lesson.content)) {
@@ -20260,8 +20301,9 @@ Lesson: ${ex.profile.description}`;
       } else if (block.type === "rule") {
         html += `<div class="lesson-block rule"><strong>Rule:</strong> ${block.value || block.content || ""}</div>`;
       } else if (block.type === "example") {
+        const speakAttr = block.german.replace(/"/g, "&quot;");
         html += `<div class="lesson-block example">`;
-        html += `<div class="example-german">${block.german}</div>`;
+        html += `<div class="example-german">${block.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></div>`;
         html += `<div class="example-english">— ${block.english}</div>`;
         html += `</div>`;
       } else if (block.type === "table") {
@@ -20413,8 +20455,9 @@ Lesson: ${ex.profile.description}`;
 
   // Render current item based on type
   if (currentItem.type === "translate") {
+    const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="exercise-item translate-item">`;
-    html += `<p class="exercise-question">${currentItem.german}</p>`;
+    html += `<p class="exercise-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<input type="text" class="exercise-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -20427,9 +20470,10 @@ Lesson: ${ex.profile.description}`;
     }
     html += `</div>`;
   } else if (currentItem.type === "identify") {
+    const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item identify-item">`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
-    html += `<p class="exercise-sentence">${currentItem.sentence}</p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<div class="exercise-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -20508,8 +20552,9 @@ Lesson: ${ex.profile.description}`;
     }
     html += `</div>`;
   } else if (currentItem.type === "parse") {
+    const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item parse-item">`;
-    html += `<p class="exercise-sentence">${currentItem.sentence}</p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
     html += `<input type="text" class="exercise-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -20620,8 +20665,9 @@ Lesson: ${ex.profile.description}`;
 
   // Render current review item (similar to exercise items)
   if (currentItem.type === "translate") {
+    const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="review-item translate-item">`;
-    html += `<p class="review-question">${currentItem.german}</p>`;
+    html += `<p class="review-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<input type="text" class="review-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -20634,9 +20680,10 @@ Lesson: ${ex.profile.description}`;
     }
     html += `</div>`;
   } else if (currentItem.type === "identify") {
+    const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item identify-item">`;
     html += `<p class="review-question">${currentItem.question}</p>`;
-    html += `<p class="review-sentence">${currentItem.sentence}</p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<div class="review-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -20714,8 +20761,9 @@ Lesson: ${ex.profile.description}`;
     }
     html += `</div>`;
   } else if (currentItem.type === "parse") {
+    const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item parse-item">`;
-    html += `<p class="review-sentence">${currentItem.sentence}</p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
     html += `<p class="review-question">${currentItem.question}</p>`;
     html += `<input type="text" class="review-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -21228,6 +21276,7 @@ Lesson: ${ex.profile.description}`;
         const overlay = document.getElementById("sidebar-overlay");
         if (sidebar) sidebar.classList.remove("open");
         if (overlay) overlay.classList.remove("visible");
+        document.body.classList.remove("sidebar-open");
       }
 
       // Update tree to reflect active item
