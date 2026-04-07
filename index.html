@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Übersetzungswerkstatt">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#faf8f5">
+<meta name="description" content="An interactive German-to-English translation workshop for philosophical texts by Wittgenstein, Freud, and Nietzsche, with AI-powered evaluation, vocabulary drills, grammar lessons, and conversation practice.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
@@ -16,7 +17,7 @@
   --bg: #faf8f5;
   --sidebar-bg: #f0ece6;
   --text: #1a1a1a;
-  --text-muted: #6b6b6b;
+  --text-muted: #595959;
   --border: #d4cfc7;
   --accent: #8b4513;
   --accent-light: #a0522d;
@@ -395,6 +396,10 @@ body.sidebar-open {
   outline: none;
   border-color: var(--accent);
 }
+#translation-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 #action-row {
   display: flex;
   gap: 10px;
@@ -537,6 +542,7 @@ body.sidebar-open {
   font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 .modal input:focus { outline: none; border-color: var(--accent); }
+.modal input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .modal-actions {
   margin-top: 22px;
   display: flex;
@@ -853,6 +859,10 @@ body.sidebar-open {
   outline: none;
   border-color: var(--accent);
 }
+.vocab-typed-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .vocab-typed-feedback {
   padding: 12px;
   border-radius: 4px;
@@ -1062,6 +1072,7 @@ body.sidebar-open {
   margin-bottom: 12px;
 }
 .grammar-production-input:focus { outline: none; border-color: var(--accent); }
+.grammar-production-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .grammar-production-input:disabled { background: var(--bg); }
 .grammar-action-row {
   display: flex;
@@ -2348,6 +2359,10 @@ body.sidebar-open {
   outline: none;
   border-color: var(--accent);
 }
+.exercise-translate .translation-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 
 /* Identification exercise: highlighted target, multiple choice */
 .exercise-identify {
@@ -2540,6 +2555,10 @@ body.sidebar-open {
 .exercise-parse .parse-answer:focus {
   outline: none;
   border-color: var(--accent);
+}
+.exercise-parse .parse-answer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* Feedback area for all exercise types */
@@ -3404,6 +3423,10 @@ body.sidebar-open {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(139,69,19,0.15);
 }
+.conv-input-area textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .conv-send-btn {
   background: var(--accent);
   border: none;
@@ -3533,6 +3556,17 @@ body.sidebar-open {
     max-height: calc(100dvh - 48px - 52px - env(safe-area-inset-bottom, 0px));
   }
 }
+/* Global focus-visible for all interactive elements */
+button:focus-visible, .action-btn:focus-visible, .toggle-btn:focus-visible,
+.mode-btn:focus-visible, .text-tab:focus-visible, .sidebar-btn:focus-visible,
+.exercise-item:focus-visible, .vocab-mc-option:focus-visible,
+.exercise-option-btn:focus-visible, .modal-btn:focus-visible,
+.grammar-tab:focus-visible, .conv-send-btn:focus-visible,
+.conv-hint-btn:focus-visible, .conv-end-btn:focus-visible,
+select:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 </style>
 </head>
 <body>
@@ -3541,21 +3575,21 @@ body.sidebar-open {
 <div id="sidebar-overlay"></div>
 <div id="sidebar">
   <div id="mode-switcher" class="mode-switcher">
-    <button class="mode-btn active" data-mode="translation">Translation</button>
-    <button class="mode-btn" data-mode="vocabulary">Vocabulary</button>
-    <button class="mode-btn" data-mode="grammar">Grammar</button>
-    <button class="mode-btn" data-mode="conversation">Conversation</button>
+    <button class="mode-btn active" data-mode="translation" aria-label="Switch to translation mode">Translation</button>
+    <button class="mode-btn" data-mode="vocabulary" aria-label="Switch to vocabulary mode">Vocabulary</button>
+    <button class="mode-btn" data-mode="grammar" aria-label="Switch to grammar mode">Grammar</button>
+    <button class="mode-btn" data-mode="conversation" aria-label="Switch to conversation mode">Conversation</button>
   </div>
   <div id="sidebar-header">
     <h1>Übersetzungswerkstatt</h1>
     <p>Philosophical German Translation</p>
   </div>
   <div class="text-tabs">
-    <button class="text-tab active" data-text="tractatus">TLP</button>
-    <button class="text-tab" data-text="pu">PU</button>
-    <button class="text-tab" data-text="unheimliche">Freud</button>
-    <button class="text-tab" data-text="nietzsche">Nietzsche</button>
-    <button class="text-tab" data-text="genealogie">Genealogie</button>
+    <button class="text-tab active" data-text="tractatus" aria-label="Tractatus Logico-Philosophicus">TLP</button>
+    <button class="text-tab" data-text="pu" aria-label="Philosophische Untersuchungen">PU</button>
+    <button class="text-tab" data-text="unheimliche" aria-label="Freud — Das Unheimliche">Freud</button>
+    <button class="text-tab" data-text="nietzsche" aria-label="Nietzsche selections">Nietzsche</button>
+    <button class="text-tab" data-text="genealogie" aria-label="Zur Genealogie der Moral">Genealogie</button>
   </div>
   <div id="exercise-list"></div>
   <div id="grammar-sidebar" style="display:none;"></div>
@@ -3564,9 +3598,9 @@ body.sidebar-open {
     <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
   </div>
   <div id="sidebar-footer">
-    <button class="sidebar-btn" id="sync-btn">&#8645; Sync Progress</button>
-    <button class="sidebar-btn" id="import-btn">&#8599; Import Text File</button>
-    <button class="sidebar-btn" id="settings-btn">&#9881; Settings</button>
+    <button class="sidebar-btn" id="sync-btn" aria-label="Sync progress">&#8645; Sync Progress</button>
+    <button class="sidebar-btn" id="import-btn" aria-label="Import custom text file">&#8599; Import Text File</button>
+    <button class="sidebar-btn" id="settings-btn" aria-label="Open settings">&#9881; Settings</button>
   </div>
 </div>
 
@@ -3577,9 +3611,9 @@ body.sidebar-open {
       <span id="exercise-meta"></span>
     </div>
     <div id="toolbar-right">
-      <button class="toggle-btn" id="pos-toggle">POS Colors</button>
-      <button class="toggle-btn" id="gloss-toggle" title="Toggle all glosses visible">All Glosses</button>
-      <button class="toggle-btn" id="gloss-hide-toggle" title="Hide all glosses and tooltips">Hide Glosses</button>
+      <button class="toggle-btn" id="pos-toggle" aria-label="Toggle part-of-speech colors">POS Colors</button>
+      <button class="toggle-btn" id="gloss-toggle" title="Toggle all glosses visible" aria-label="Toggle all glosses visible">All Glosses</button>
+      <button class="toggle-btn" id="gloss-hide-toggle" title="Hide all glosses and tooltips" aria-label="Hide all glosses and tooltips">Hide Glosses</button>
     </div>
   </div>
   <div id="content-area">
@@ -3607,18 +3641,18 @@ body.sidebar-open {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
     <div id="german-display"></div>
-    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;">&#9654; Listen</button></div>
+    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">&#9654; Listen</button></div>
     <div id="translation-section">
       <label>Your Translation</label>
       <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
     </div>
     <div id="action-row">
-      <button class="action-btn" id="get-hints-btn">Get Hints</button>
-      <button class="action-btn" id="evaluate-btn">Evaluate</button>
-      <button class="action-btn" id="show-reference-btn">Show Reference</button>
-      <button class="action-btn" id="next-btn">Next &#8594;</button>
+      <button class="action-btn" id="get-hints-btn" aria-label="Get translation hints">Get Hints</button>
+      <button class="action-btn" id="evaluate-btn" aria-label="Evaluate your translation">Evaluate</button>
+      <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
+      <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
     </div>
-    <div id="evaluation-result">
+    <div id="evaluation-result" aria-live="polite">
       <h4>Evaluation</h4>
       <div class="score" id="eval-score"></div>
       <div class="feedback" id="eval-feedback"></div>
@@ -3634,9 +3668,9 @@ body.sidebar-open {
     </div>
     </div><!-- /translation-body -->
     </div>
-    <div id="vocab-content" style="display:none;"></div>
-    <div id="grammar-content" style="display:none;"></div>
-    <div id="conversation-content" style="display:none;"></div>
+    <div id="vocab-content" style="display:none;" aria-live="polite"></div>
+    <div id="grammar-content" style="display:none;" aria-live="polite"></div>
+    <div id="conversation-content" style="display:none;" aria-live="polite"></div>
   </div>
 </div>
 
@@ -3673,10 +3707,10 @@ body.sidebar-open {
     <p class="modal-note" style="margin-top:6px;">For better German TTS quality, download enhanced voices in System Preferences → Accessibility → Spoken Content (macOS) or Settings → Text-to-speech (Windows).</p>
     <label style="margin-top:14px;">Reset Progress</label>
     <p class="modal-note">This clears all vocabulary tracking and exercise completion data.</p>
-    <button class="modal-btn" id="reset-progress-btn" style="margin-top:8px;color:var(--error);border-color:var(--error);">Reset All Progress</button>
+    <button class="modal-btn" id="reset-progress-btn" style="margin-top:8px;color:var(--error);border-color:var(--error);" aria-label="Reset all progress">Reset All Progress</button>
     <div class="modal-actions">
-      <button class="modal-btn" id="settings-cancel">Cancel</button>
-      <button class="modal-btn primary" id="settings-save">Save</button>
+      <button class="modal-btn" id="settings-cancel" aria-label="Cancel settings">Cancel</button>
+      <button class="modal-btn primary" id="settings-save" aria-label="Save settings">Save</button>
     </div>
   </div>
 </div>
@@ -3705,8 +3739,8 @@ body.sidebar-open {
     <input type="file" id="file-input" accept=".json" style="margin-top:14px;font-size:12px;">
     <div id="import-status" style="font-size:12px;margin-top:8px;"></div>
     <div class="modal-actions">
-      <button class="modal-btn" id="import-cancel">Close</button>
-      <button class="modal-btn primary" id="import-go">Import</button>
+      <button class="modal-btn" id="import-cancel" aria-label="Close import dialog">Close</button>
+      <button class="modal-btn primary" id="import-go" aria-label="Import text file">Import</button>
     </div>
   </div>
 </div>
@@ -3719,12 +3753,12 @@ body.sidebar-open {
 
     <label style="margin-top:16px">Export</label>
     <p class="modal-note">Download a JSON file containing your completion data, API key, and any imported custom texts. Transfer this file to another device and import it there.</p>
-    <button class="modal-btn primary" id="sync-export-btn" style="margin-top:8px;">&#8615; Export Progress File</button>
+    <button class="modal-btn primary" id="sync-export-btn" style="margin-top:8px;" aria-label="Export progress file">&#8615; Export Progress File</button>
 
     <label style="margin-top:20px">Import</label>
     <p class="modal-note">Load a previously exported progress file. This will <strong>merge</strong> with your existing progress&mdash;exercises already marked complete on this device stay complete.</p>
     <input type="file" id="sync-file-input" accept=".json" style="margin-top:8px;font-size:12px;">
-    <button class="modal-btn primary" id="sync-import-btn" style="margin-top:8px;">&#8613; Import Progress File</button>
+    <button class="modal-btn primary" id="sync-import-btn" style="margin-top:8px;" aria-label="Import progress file">&#8613; Import Progress File</button>
     <div id="sync-status" style="font-size:12px;margin-top:10px;"></div>
 
     <label style="margin-top:20px">Instructions</label>
@@ -3736,7 +3770,7 @@ body.sidebar-open {
     </ol>
 
     <div class="modal-actions">
-      <button class="modal-btn" id="sync-close-btn">Close</button>
+      <button class="modal-btn" id="sync-close-btn" aria-label="Close sync dialog">Close</button>
     </div>
   </div>
 </div>
@@ -17598,7 +17632,6 @@ class App {
     this.ttsApiKey = this.load("ttsApiKey") || "";
     this.voiceDeName = this.load("voiceDeName") || "";
     this.voiceEnName = this.load("voiceEnName") || "";
-    this._revisionMode = false;
     this._germanTtsActive = false;
     this._ttsActive = false;
     this._ttsAudio = null;
@@ -17668,13 +17701,6 @@ class App {
     document.getElementById("reset-progress-btn").addEventListener("click", () => this.resetProgress());
     // TTS button for translation tab
     document.getElementById("german-tts-btn").addEventListener("click", () => this.toggleGermanTTS());
-    // Grammar TTS (button rendered dynamically in lesson content)
-    document.addEventListener("click", (e) => {
-      if (e.target.id === "grammar-tts-btn") this.toggleLessonTTS(e.target);
-      if (e.target.classList.contains("grammar-speak-btn") && e.target.dataset.text) {
-        this.speakWord(e.target.dataset.text);
-      }
-    });
     // Sync Progress
     document.getElementById("sync-btn").addEventListener("click", () => this.openSync());
     document.getElementById("sync-close-btn").addEventListener("click", () => this.closeSync());
@@ -17721,8 +17747,35 @@ class App {
       btn.addEventListener("click", () => { this.switchMode(btn.dataset.mode); if (window.innerWidth <= 768) closeSidebar(); });
     });
 
-    // Vocabulary mode event delegation
+    // Set initial POS toggle state
+    document.getElementById("pos-toggle").classList.toggle("active", this.posActive);
+    document.getElementById("pos-legend").className = this.posActive ? "visible" : "";
+
+    // Voice preloading (browsers may return empty array until voiceschanged fires)
+    if (typeof speechSynthesis !== "undefined") {
+      speechSynthesis.getVoices();
+      speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices());
+    }
+
+    // Touch-friendly tooltips: tap to show/hide on touch devices
+    document.getElementById("german-display").addEventListener("click", (e) => {
+      const wrapper = e.target.closest(".word-wrapper");
+      if (!wrapper) return;
+      // Clear any other active tooltip
+      document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => {
+        if (el !== wrapper) el.classList.remove("tooltip-active");
+      });
+      wrapper.classList.toggle("tooltip-active");
+    });
+
+    // Consolidated global click handler for delegated events
     document.addEventListener("click", (e) => {
+      // Grammar TTS (button rendered dynamically in lesson content)
+      if (e.target.id === "grammar-tts-btn") this.toggleLessonTTS(e.target);
+      if (e.target.classList.contains("grammar-speak-btn") && e.target.dataset.text) {
+        this.speakWord(e.target.dataset.text);
+      }
+      // Vocabulary mode event delegation
       if (this.currentMode === "vocabulary" && e.target.closest("#vocab-content")) {
         if (e.target.id === "vocab-card" || e.target.closest("#vocab-card")) {
           this.vocabFlipped = !this.vocabFlipped;
@@ -17740,30 +17793,7 @@ class App {
           this.handleTypedResponse();
         }
       }
-    });
-
-    // Set initial POS toggle state
-    document.getElementById("pos-toggle").classList.toggle("active", this.posActive);
-    document.getElementById("pos-legend").className = this.posActive ? "visible" : "";
-
-    // Voice preloading (browsers may return empty array until voiceschanged fires)
-    if (typeof speechSynthesis !== "undefined") {
-      speechSynthesis.getVoices();
-      speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
-    }
-
-    // Touch-friendly tooltips: tap to show/hide on touch devices
-    document.getElementById("german-display").addEventListener("click", (e) => {
-      const wrapper = e.target.closest(".word-wrapper");
-      if (!wrapper) return;
-      // Clear any other active tooltip
-      document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => {
-        if (el !== wrapper) el.classList.remove("tooltip-active");
-      });
-      wrapper.classList.toggle("tooltip-active");
-    });
-    // Dismiss tooltip when tapping elsewhere
-    document.addEventListener("click", (e) => {
+      // Dismiss tooltip when tapping outside
       if (!e.target.closest(".word-wrapper") && !e.target.closest("#german-display")) {
         document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => el.classList.remove("tooltip-active"));
       }
@@ -17813,17 +17843,20 @@ class App {
     document.querySelectorAll(".text-tab").forEach(tab => {
       tab.classList.toggle("active", tab.dataset.text === this.currentTextId);
     });
-    // Add custom text tabs if needed
+    // Add custom text tabs if needed (only create if not already present)
     const tabContainer = document.querySelector(".text-tabs");
-    tabContainer.querySelectorAll(".text-tab.custom").forEach(t => t.remove());
     for (const id of Object.keys(this.customTexts || {})) {
-      if (document.querySelector(`.text-tab[data-text="${id}"]`)) continue;
-      const btn = document.createElement("button");
-      btn.className = "text-tab custom" + (id === this.currentTextId ? " active" : "");
-      btn.dataset.text = id;
-      btn.textContent = this.customTexts[id].author || id;
-      btn.addEventListener("click", () => this.switchText(id));
-      tabContainer.appendChild(btn);
+      let existing = tabContainer.querySelector(`.text-tab[data-text="${id}"]`);
+      if (!existing) {
+        const btn = document.createElement("button");
+        btn.className = "text-tab custom";
+        btn.dataset.text = id;
+        btn.textContent = this.customTexts[id].author || id;
+        btn.addEventListener("click", () => this.switchText(id));
+        tabContainer.appendChild(btn);
+        existing = btn;
+      }
+      existing.classList.toggle("active", id === this.currentTextId);
     }
   }
 
@@ -18348,20 +18381,31 @@ class App {
   }
 
   async _callAnthropic(prompt, maxTokens, model) {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": this.apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: model || "claude-sonnet-4-20250514",
-        max_tokens: maxTokens,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    let response;
+    try {
+      response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": this.apiKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: model || "claude-sonnet-4-20250514",
+          max_tokens: maxTokens,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      throw e;
+    }
+    clearTimeout(timeoutId);
     if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`);
     const data = await response.json();
     if (!data.content?.[0]?.text) throw new Error("Unexpected Anthropic response format");
@@ -18369,18 +18413,29 @@ class App {
   }
 
   async _callOpenAI(prompt, maxTokens, model) {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + this.apiKey
-      },
-      body: JSON.stringify({
-        model: model || "gpt-4o-mini",
-        max_tokens: maxTokens,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    let response;
+    try {
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + this.apiKey
+        },
+        body: JSON.stringify({
+          model: model || "gpt-4o-mini",
+          max_tokens: maxTokens,
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      throw e;
+    }
+    clearTimeout(timeoutId);
     if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`);
     const data = await response.json();
     if (!data.choices?.[0]?.message?.content) throw new Error("Unexpected OpenAI response format");
@@ -18389,17 +18444,28 @@ class App {
 
   async _callGemini(prompt, maxTokens, model) {
     const modelName = model || "gemini-2.0-flash";
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: maxTokens }
-        })
-      }
-    );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    let response;
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`,
+        {
+          method: "POST",
+          signal: controller.signal,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: maxTokens }
+          })
+        }
+      );
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      throw e;
+    }
+    clearTimeout(timeoutId);
     if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
     const data = await response.json();
     if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error("Unexpected Gemini response format");
@@ -18426,7 +18492,12 @@ Format your response as JSON: {"problems": ["problem 1 description", "problem 2 
       const jsonMatch = text.match(/\{[\s\S]*"problems"[\s\S]*\}/);
       result = JSON.parse(jsonMatch ? jsonMatch[0] : text);
     } catch (e) {
-      // JSON parse failure: go straight to full eval
+      // JSON parse failure: notify user and fall back to full eval
+      const el = document.getElementById("evaluation-result");
+      el.style.display = "block";
+      el.className = "visible fair";
+      document.getElementById("eval-score").textContent = "";
+      document.getElementById("eval-feedback").innerHTML = `<p style="color:var(--text-muted);font-size:13px;">Couldn't parse hints, running full evaluation…</p>`;
       await this.evaluateWithAPI(userTranslation);
       return;
     }
@@ -18586,11 +18657,22 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   async _openaiTTS(text, voice, onEnd) {
     try {
-      const response = await fetch("https://api.openai.com/v1/audio/speech", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + (this.ttsApiKey || this.apiKey), "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "tts-1", input: text, voice: voice || "nova", speed: 0.95 })
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      let response;
+      try {
+        response = await fetch("https://api.openai.com/v1/audio/speech", {
+          method: "POST",
+          signal: controller.signal,
+          headers: { "Authorization": "Bearer " + (this.ttsApiKey || this.apiKey), "Content-Type": "application/json" },
+          body: JSON.stringify({ model: "tts-1", input: text, voice: voice || "nova", speed: 0.95 })
+        });
+      } catch (e) {
+        clearTimeout(timeoutId);
+        if (e.name === "AbortError") throw new Error("TTS request timed out after 30 seconds.");
+        throw e;
+      }
+      clearTimeout(timeoutId);
       if (!response.ok) throw new Error("OpenAI TTS error: " + response.status);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -18913,7 +18995,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       _version: 1,
       exportedAt: new Date().toISOString(),
       completed: this.completed,
-      apiKey: this.apiKey,
       customTexts: this.customTexts,
       grammarProgress: this.grammarProgress,
       grammarUnitProgress: this.grammarUnitProgress,
@@ -19119,15 +19200,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderGrammarSidebar_new();
       grammarContent.style.display = "";
       if (!this.grammarActiveItem) {
-        grammarContent.innerHTML = `<div class="lesson-view" style="padding:30px;">
-          <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
-          <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
-          <p style="margin-bottom:10px;">Each unit contains:</p>
-          <p style="margin-bottom:5px;"><strong>📖 Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
-          <p style="margin-bottom:5px;"><strong>📝 Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
-          <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
-          <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
-        </div>`;
+        this._renderGrammarWelcome();
       }
     } else {
       // Translation mode — restore sidebar
@@ -19339,7 +19412,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     this.vocabActiveBatch = batchIdx;
     this.vocabExerciseType = document.getElementById("vocab-exercise-select").value;
-    this.vocabItems = [...batch.items].sort(() => Math.random() - 0.5);
+    this.vocabItems = this._shuffleArray([...batch.items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
     this.vocabProgress = this.load("vocabProgress") || {};
@@ -19459,8 +19532,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   renderMultipleChoice(item) {
     const category = item.section;
     const categoryItems = VOCAB.filter(v => v.section === category && v !== item);
-    const distractors = categoryItems.sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [item, ...distractors].sort(() => Math.random() - 0.5);
+    const distractors = this._shuffleArray(categoryItems).slice(0, 3);
+    const options = this._shuffleArray([item, ...distractors]);
 
     let html = `<div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:14px;color:var(--text-muted);margin-bottom:8px;font-family:'Helvetica Neue',sans-serif;">What does this mean?</div>`;
@@ -19965,7 +20038,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
 
     // Feedback area (populated dynamically)
-    html += `<div id="grammar-feedback" class="grammar-feedback"></div>`;
+    html += `<div id="grammar-feedback" class="grammar-feedback" aria-live="polite"></div>`;
 
     // Paradigm toggle + panel
     html += `<button class="grammar-paradigm-toggle" id="grammar-paradigm-toggle">Show Paradigm Table</button>`;
@@ -21027,6 +21100,8 @@ Lesson: ${ex.profile.description}`;
     html += `</div>`;
     html += `<div class="match-column right">`;
 
+    // Ensure matchState is initialized
+    if (!state.matchState) state.matchState = {};
     // Shuffle right items if not already done
     if (!state.matchState.rightOrder) {
       state.matchState.rightOrder = currentItem.right.map((item, idx) => idx);
@@ -21248,6 +21323,8 @@ Lesson: ${ex.profile.description}`;
     html += `</div>`;
     html += `<div class="match-column right">`;
 
+    // Ensure matchState is initialized
+    if (!state.matchState) state.matchState = {};
     if (!state.matchState.rightOrder) {
       state.matchState.rightOrder = currentItem.right.map((item, idx) => idx);
       for (let i = state.matchState.rightOrder.length - 1; i > 0; i--) {
@@ -21587,15 +21664,43 @@ Lesson: ${ex.profile.description}`;
         const expectedAnswer = currentItem.expectedEnglish || currentItem.answer || "";
         const isCorrect = userAnswer === expectedAnswer.toLowerCase();
 
-        this.grammarExerciseState.results[state.currentIdx].correct = isCorrect;
-        this.grammarExerciseState.results[state.currentIdx].feedback =
-          isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
-        this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-
-        if (isReview) {
-          this.renderGrammarReview(state.unitId);
+        if (isCorrect) {
+          this.grammarExerciseState.results[state.currentIdx].correct = true;
+          this.grammarExerciseState.results[state.currentIdx].feedback = "Correct! Well done.";
+          this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+          if (isReview) { this.renderGrammarReview(state.unitId); }
+          else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
+        } else if (this.apiKey && userAnswer.length > 0) {
+          // LLM fuzzy match fallback
+          e.target.disabled = true;
+          e.target.textContent = "Checking…";
+          const prompt = `A student translated the German sentence: "${currentItem.german}"
+Their answer: "${input.value.trim()}"
+Expected answer: "${expectedAnswer}"
+Is the student's answer an acceptable translation? It doesn't need to be word-for-word identical, but must convey the same meaning accurately. Reply with ONLY "ACCEPT" or "REJECT".`;
+          this.llmComplete(prompt, { maxTokens: 10 }).then(result => {
+            const accepted = result.trim().toUpperCase().includes("ACCEPT");
+            this.grammarExerciseState.results[state.currentIdx].correct = accepted;
+            this.grammarExerciseState.results[state.currentIdx].feedback =
+              accepted ? "Correct! Your translation is acceptable." : "Incorrect. Try again.";
+            this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+            if (isReview) { this.renderGrammarReview(state.unitId); }
+            else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
+          }).catch(() => {
+            // On API failure, fall back to exact match (already failed)
+            this.grammarExerciseState.results[state.currentIdx].correct = false;
+            this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
+            this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+            if (isReview) { this.renderGrammarReview(state.unitId); }
+            else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
+          });
+          return; // Don't re-render synchronously
         } else {
-          this.renderGrammarExercise(state.unitId, state.exerciseId);
+          this.grammarExerciseState.results[state.currentIdx].correct = false;
+          this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
+          this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+          if (isReview) { this.renderGrammarReview(state.unitId); }
+          else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
         }
       } else if (itemType === "parse") {
         const input = e.target.closest(".parse-item").querySelector(".parse-input");
@@ -21673,7 +21778,11 @@ Lesson: ${ex.profile.description}`;
     btn.addEventListener("click", (e) => {
       const unitId = e.target.getAttribute("data-unit-id");
       this.grammarExerciseState = null;
+      this.grammarActiveItem = null;
+      // Expand the target unit so user sees its items
+      if (unitId) this.grammarExpandedUnits[unitId] = true;
       this.renderGrammarSidebar_new();
+      this._renderGrammarWelcome();
     });
   });
 
@@ -21684,6 +21793,7 @@ Lesson: ${ex.profile.description}`;
       this.grammarExerciseState = null;
       this.grammarActiveItem = null;
       this.renderGrammarSidebar_new();
+      this._renderGrammarWelcome();
     });
   });
 
@@ -21700,7 +21810,11 @@ Lesson: ${ex.profile.description}`;
     btn.addEventListener("click", (e) => {
       const nextUnitId = e.target.getAttribute("data-unit-id");
       this.grammarExerciseState = null;
-      this.renderGrammarUnitTree();
+      this.grammarActiveItem = null;
+      // Expand the next unit so user sees its items
+      if (nextUnitId) this.grammarExpandedUnits[nextUnitId] = true;
+      this.renderGrammarSidebar_new();
+      this._renderGrammarWelcome();
     });
   });
 
@@ -21708,6 +21822,7 @@ Lesson: ${ex.profile.description}`;
   container.querySelectorAll(".match-item-box").forEach(box => {
     box.addEventListener("click", (e) => {
       const state = this.grammarExerciseState;
+      if (!state.matchState) state.matchState = {};
       if (!state.matchState.pairs) state.matchState.pairs = {};
       if (!state.matchState.selectedLeft) state.matchState.selectedLeft = null;
 
@@ -21803,10 +21918,32 @@ Lesson: ${ex.profile.description}`;
 
   // ── Conversation Practice ────────────────────────────────────
 
+  _shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   _escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  _renderGrammarWelcome() {
+    const el = document.getElementById("grammar-content");
+    if (!el) return;
+    el.innerHTML = `<div class="lesson-view" style="padding:30px;">
+      <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
+      <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
+      <p style="margin-bottom:10px;">Each unit contains:</p>
+      <p style="margin-bottom:5px;"><strong>📖 Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
+      <p style="margin-bottom:5px;"><strong>📝 Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
+      <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
+      <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
+    </div>`;
   }
 
   _sidebarHeaderHTML(title, subtitle) {
@@ -22065,7 +22202,8 @@ Lesson: ${ex.profile.description}`;
       for (const msg of this._convMessages) {
         if (msg.role === "system") continue;
         const cls = msg.role === "user" ? "user" : msg.role === "notice" ? "system" : "assistant";
-        msgsHtml += `<div class="conv-msg ${cls}">${this._escapeHtml(msg.content)}</div>`;
+        const ttsBtn = msg.role === "assistant" ? ` <button class="conv-tts-btn" data-text="${this._escapeHtml(msg.content).replace(/"/g, '&quot;')}" aria-label="Listen to this message" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;margin-left:4px;">&#9654;</button>` : "";
+        msgsHtml += `<div class="conv-msg ${cls}">${this._escapeHtml(msg.content)}${ttsBtn}</div>`;
       }
     }
     if (this._convLoading) {
@@ -22081,14 +22219,14 @@ Lesson: ${ex.profile.description}`;
             <p>${scenario.setup}</p>
             <span class="conv-model-badge">⚡ ${modelLabel}</span>
           </div>
-          <button class="conv-end-btn" id="conv-end-btn">End</button>
+          <button class="conv-end-btn" id="conv-end-btn" aria-label="End conversation">End</button>
         </div>
       </div>
       <div class="conv-messages" id="conv-messages">${msgsHtml}</div>
       <div class="conv-input-area">
-        <button class="conv-hint-btn" id="conv-hint-btn" title="Get a suggestion">💡</button>
-        <textarea id="conv-input" placeholder="Schreib auf Deutsch…" rows="1"${this._convLoading ? " disabled" : ""}></textarea>
-        <button class="conv-send-btn" id="conv-send-btn"${this._convLoading ? " disabled" : ""}>➤</button>
+        <button class="conv-hint-btn" id="conv-hint-btn" title="Get a suggestion" aria-label="Get a conversation hint">💡</button>
+        <textarea id="conv-input" placeholder="Schreib auf Deutsch…" rows="1"${this._convLoading ? " disabled" : ""} aria-label="Type your German message"></textarea>
+        <button class="conv-send-btn" id="conv-send-btn"${this._convLoading ? " disabled" : ""} aria-label="Send message">➤</button>
       </div>
     </div>`;
 
@@ -22117,6 +22255,15 @@ Lesson: ${ex.profile.description}`;
 
     hintBtn.addEventListener("click", () => this._convGetHint());
     document.getElementById("conv-end-btn").addEventListener("click", () => this._convEndConversation());
+
+    // TTS buttons on assistant messages
+    el.querySelectorAll(".conv-tts-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const text = btn.getAttribute("data-text");
+        if (text) this._speakGerman(text);
+      });
+    });
   }
 
   async startConversation() {
@@ -22193,15 +22340,17 @@ Continue the conversation as your character. Respond naturally in German (1-3 se
     this.renderConversationChat();
 
     try {
+      const WINDOW = 8;
+      const dialogue = this._convMessages.filter(m => m.role !== "notice");
+      const recent = dialogue.length > WINDOW ? dialogue.slice(-WINDOW) : dialogue;
       let historyStr = "";
-      for (const msg of this._convMessages) {
-        if (msg.role === "notice") continue;
+      for (const msg of recent) {
         const label = msg.role === "user" ? "Student" : "Partner";
         historyStr += `${label}: ${msg.content}\n`;
       }
       const prompt = `A German language student is practicing conversation. Here is the scenario: ${scenario.setup}
 
-Conversation so far:
+Recent conversation:
 ${historyStr}
 The student is unsure what to say next. Suggest 2-3 short example phrases they could use to continue the conversation, appropriate for ${scenario.level} level German. Format as a numbered list. Give only the German phrases with brief English hints in parentheses. Do not continue the conversation yourself.`;
 
