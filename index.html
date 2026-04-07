@@ -597,15 +597,15 @@ body.sidebar-open {
 
 /* Mode Switcher */
 .mode-switcher {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 2px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   background: var(--white);
 }
 .mode-btn {
-  flex: 1;
-  padding: 6px 10px;
+  padding: 6px 4px;
   font-size: 10px;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   font-weight: 500;
@@ -690,7 +690,7 @@ body.sidebar-open {
 }
 .vocab-start-btn {
   display: block;
-  width: 100%;
+  width: calc(100% - 24px);
   margin: 12px;
   padding: 10px;
   font-size: 13px;
@@ -9068,7 +9068,7 @@ const TEXTS = {
       {id: "u-ii-8.3", label: "Teil II, §8.3", german: "In der Kindergeschichte stellen der Vater und Coppelius die durch Ambivalenz in zwei Gegensätze zerlegte Vater-Imago dar; der eine droht mit der Blendung (Kastration), der andere, der gute Vater, bittet die Augen des Kindes frei. Das von der Verdrängung am stärksten betroffene Stück des Komplexes, der Todeswunsch gegen den bösen Vater, findet seine Darstellung in dem Tod des guten Vaters, der dem Coppelius zur Last gelegt wird. Diesem Väterpaar entsprechen in der späteren Lebensgeschichte des Studenten der Professor Spalanzani und der Optiker Coppola, der Professor an sich eine Figur der Vaterreihe, Coppola als identisch mit dem Advokaten Coppelius erkannt.", reference: "In the story from Nathaniel’s childhood, the figures of his father and Coppelius represent the two opposites into which the father-imago is split by the ambivalence of the child’s feeling; whereas the one threatens to blind him, that is, to castrate him, the other, the loving father, intercedes for his sight. That part of the complex which is most strongly repressed, the death-wish against the father, finds expression in the death of the good father, and Coppelius is made answerable for it. Later, in his student days, Professor Spalanzani and Coppola the optician reproduce this double representation of the fatherimago, the Professor as a member of the father-series, Coppola openly identified with the lawyer Coppelius."},
       {id: "u-ii-9.1", label: "Teil II, §9.1", german: "Wie sie damals zusammen am geheimnisvollen Herd arbeiteten, so haben sie nun gemeinsam die Puppe Olimpia verfertigt; der Professor heißt auch der Vater Olimpias. Durch diese zweimalige Gemeinsamkeit verraten sie sich als Spaltungen der Vater-Imago, d. h. sowohl der Mechaniker als auch der Optiker sind der Vater der Olimpia wie des Nathaniel. In der Schreckensszene der Kinderzeit hatte Coppelius, nachdem er auf die Blendung des Kleinen verzichtet, ihm probeweise Arme und Beine abgeschraubt, also wie ein Mechaniker an einer Puppe an ihm gearbeitet.", reference: "Just as before they used to work together over the fire, so now they have jointly created the doll Olympia; the Professor is even called the father of Olympia."},
       {id: "u-ii-9.2", label: "Teil II, §9.2", german: "Dieser sonderbare Zug, der ganz aus dem Rahmen der Sandmannvorstellung heraustritt, bringt ein neues Äquivalent der Kastration ins Spiel; er weist aber auch auf die innere Identität des Coppelius mit seinem späteren Widerpart, dem Mechaniker Spalanzani, hin und bereitet uns für die Deutung der Olimpia vor. Diese automatische Puppe kann nichts anderes sein als die Materialisation von Nathaniels femininer Einstellung zu seinem Vater in früher Kindheit. Ihre Väter — Spalanzani und Coppola — sind ja nur neue Auflagen, Reinkarnationen von Nathaniels Väterpaar; die sonst unverständliche Angabe des Spalanzani, daß der Optiker dem Nathaniel die Augen gestohlen (s. o.), um sie der Puppe einzusetzen, gewinnt so als Beweis für die Identität von Olimpia und Nathaniel ihre Bedeutung.", reference: "This second occurrence of work in common shows that the optician and the mechani-"},
-      {id: "u-ii-9.3", label: "Teil II, §9.3", german: "Olimpia ist sozusagen ein von Nathaniel losgelöster Komplex, der ihm als Person entgegentritt; die Beherrschung durch diesen Komplex findet in der unsinnig zwanghaften Liebe zur Olimpia ihren Ausdruck. Wir haben das Recht, diese Liebe eine narzißtische zu heißen, und verstehen, daß der ihr Verfallene sich dem realen Liebesobjekt entfremdet. Wie psychologisch richtig es aber ist, daß der durch den Kastrationskomplex an den Vater fixierte Jüngling der Liebe zum Weibe unfähig wird, zeigen zahlreiche Krankenanalysen, deren Inhalt zwar weniger phantastisch, aber kaum minder traurig ist als die Geschichte des Studenten Nathaniel.", reference: ""},
+      {id: "u-ii-9.3", label: "Teil II, §9.3", german: "Olimpia ist sozusagen ein von Nathaniel losgelöster Komplex, der ihm als Person entgegentritt; die Beherrschung durch diesen Komplex findet in der unsinnig zwanghaften Liebe zur Olimpia ihren Ausdruck. Wir haben das Recht, diese Liebe eine narzißtische zu heißen, und verstehen, daß der ihr Verfallene sich dem realen Liebesobjekt entfremdet. Wie psychologisch richtig es aber ist, daß der durch den Kastrationskomplex an den Vater fixierte Jüngling der Liebe zum Weibe unfähig wird, zeigen zahlreiche Krankenanalysen, deren Inhalt zwar weniger phantastisch, aber kaum minder traurig ist als die Geschichte des Studenten Nathaniel.", reference: "Olympia is, as it were, a dissociated complex of Nathaniel's which confronts him as a person, and Nathaniel's enslavement to this complex is expressed in his senseless obsessive love for Olympia. We may with justice call such love narcissistic, and can understand why he who has fallen victim to it should relinquish his real, external object of love. The psychological truth of the situation in which the young man, fixated upon his father by his castration-complex, is incapable of loving a woman, is amply proved by numerous analyses of patients whose story, though less fantastic, is hardly less tragic than that of the student Nathaniel."},
       {id: "u-ii-10.1", label: "Teil II, §10.1", german: "E. T. A. Hoffmann war das Kind einer unglücklichen Ehe. Als er drei Jahre war, trennte sich der Vater von seiner kleinen Familie und lebte nie wieder mit ihr vereint.", reference: "Hoffmann was the child of an unhappy marriage. When he was three years old, his father left his small family, never to be united to them again. According to Grisebach, in his biographical introduction to Hoffmann’s works, the writer’s relation to his father was always a most sensitive subject with him. 9 animate object becomes too much like an animate one. Now, dolls happen to be rather closely connected with infantile life. We remember that in their early games children do not distinguish at all sharply between living and lifeless objects, and that they are especially fond of treating their dolls like live people. In fact I have occasionally heard a woman patient declare that even at the age of eight she had still been convinced that her dolls would be certain to come to life if she were to look at them in a particular way, with as concentrated a gaze as possible. So that here, too, it is not difficult to discover a factor from childhood; but curiously enough, while the Sand-Man story deals with the excitation of an early childhood fear, the idea of a “living doll” excites no fear at all; the child had no fear of its doll coming to life, it may even have desired it. The source of the feeling of an uncanny thing would not, therefore, be an infantile fear in this case, but rather an infantile wish or even only an infantile belief. There seems to be a contradiction here; but perhaps it is only a complication, which may be helpful to us later on."},
       {id: "u-ii-10.2", label: "Teil II, §10.2", german: "Nach den Belegen, die E. Grisebach in der biographischen Einleitung zu Hoffmanns Werken beibringt, war die Beziehung zum Vater immer eine der wundesten Stellen in des Dichters Gefühlsleben.", reference: "Hoffmann is in literature the unrivalled master of conjuring up the uncanny. His Elixire des Teufels [The Devil’s Elixir] contains a mass of themes to which one is tempted to ascribe the uncanny effect of the narrative; but it is too obscure and intricate a story to venture to summarize. Towards the end of the book the reader is told the facts, //// has hitherto concealed from him, from which the action springs; with the result, not that he is at last enlightened, but that he falls into a state of complete bewilderment The author has piled up too much of a kind; one’s comprehension of the whole suffers as a result, though not the impression it makes. We must content ourselves with selecting those themes of uncanniness which are most prominent, and seeing whether we can fairly trace then also back to infantile sources. These themes are all concerned with the idea of a “double” in every shape and degree, with persons, therefore, who are to be considered identical by reason of looking alike; Hoffmann accentuates this relation by transferring mental processes from the one person to the other—what we should call telepathy—so that the one possesses knowledge, feeling and experience in common with the other, identifies himself with another person, so that his self becomes confounded, or the foreign self is substituted for his own—in other words, by doubling, dividing and interchanging the self. And finally there is the constant recurrence of similar situations, a same face, or character-trait, or twist of fortune, or a same crime, or even a same name recurring throughout several consecutive generations."},
       {id: "u-ii-11.1", label: "Teil II, §11.1", german: "Wir würden es also wagen, das Unheimliche des Sandmannes auf die Angst des kindlichen Kastrationskomplexes zurückzuführen. Sowie aber die Idee auftaucht, ein solches infantiles Moment für die Entstehung des unheimlichen Gefühls in Anspruch zu nehmen, werden wir auch zum Versuch getrieben, dieselbe Ableitung für andere Beispiele des Unheimlichen in Betracht zu ziehen. Im Sandmann findet sich noch das Motiv der belebt scheinenden Puppe, das Jentsch hervorgehoben hat.", reference: "We shall venture, therefore, to refer the uncanny effect of the Sand-Man to the child’s dread in relation to its castration-complex. But having gained the idea that we can take this infantile factor to account for feelings of uncanniness, we are drawn to examine whether we can apply it to other instances of uncanny things."},
@@ -9081,14 +9081,14 @@ const TEXTS = {
       {id: "u-ii-12.2", label: "Teil II, §12.2", german: "Denn der Doppelgänger war ursprünglich eine Versicherung gegen den Untergang des Ichs, eine “energische Dementierung der Macht des Todes” (O. Rank) und wahrscheinlich war die “unsterbliche” Seele der erste Doppelgänger des Leibes. Die Schöpfung einer solchen Verdopplung zur Abwehr gegen die Vernichtung hat ihr Gegenstück in einer Darstellung der Traumsprache, welche die Kastration durch Verdopplung oder Vervielfältigung des Genitalsymbols auszudrücken liebt; sie wird in der Kultur der alten Ägypter ein Antrieb für die Kunst, das Bild des Verstorbenen in dauerhaftem Stoff zu formen.", reference: "This invention of doubling as a preservation against extinction has its counterpart in the language of dreams, which is fond of representing castration by a doubling or multiplication of the genital symbol; the same desire spurred on the ancient Egyptians to the art of making images of the dead in some lasting material. Such ideas, however, have sprung from the soil of unbounded self-love, from the primary narcissism which holds sway in the mind of the child as in that of primitive man; and when this stage has been left behind the double takes on a different aspect."},
       {id: "u-ii-12.3", label: "Teil II, §12.3", german: "Aber diese Vorstellungen sind auf dem Boden der uneingeschränkten Selbstliebe entstanden, des primären Narzißmus, welcher das Seelenleben des Kindes wie des Primitiven beherrscht, und mit der Überwindung dieser Phase ändert sich das Vorzeichen des Doppelgängers, aus einer Versicherung des Fortlebens wird er zum unheimlichen Vorboten des Todes. Die Vorstellung des Doppelgängers braucht nicht mit diesem uranfänglichen Narzißmus unterzugehen; denn sie kann aus den späteren Entwicklungsstufen des Ichs neuen Inhalt gewinnen. Im Ich bildet sich langsam eine besondere Instanz heraus, welche sich dem übrigen Ich entgegenstellen kann, die der Selbstbeobachtung und Selbstkritik dient, die Arbeit der psychischen Zensur leistet und unserem Bewußtsein als “Gewissen” bekannt wird.", reference: "From having been an assurance of immortality, he becomes the ghastly harbinger of death. 9 “Der Doppelgänger.” 10 The idea of the “double” does not necessarily disappear with the passing of the primary narcissism, for it can receive fresh meaning from the later stages of development of the ego. A special faculty is slowly formed there, able to oppose the rest of the ego, with the function of observing and criticizing the self and exercising a censorship within the mind, and this we become aware of as our “conscience.” In the pathological case of delusions of being watched this mental institution becomes isolated, dissociated from the ego, and discernible to a physician’s eye."},
       {id: "u-ii-12.4", label: "Teil II, §12.4", german: "Im pathologischen Falle des Beachtungswahnes wird sie isoliert, vom Ich abgespalten, dem Arzte bemerkbar. Die Tatsache, daß eine solche Instanz vorhanden ist, welche das übrige Ich wie ein 1 O. Rank, Der Doppelgänger.", reference: "The fact that a faculty of this kind exists, which is able to treat the rest of the ego like an object—the fact, that is, that man is capable of self-observation—renders it possible to invest the old idea of a “double” with a new meaning and to ascribe many things to it, above all, those things which seem to the new faculty of self-criticism to belong to the old surmounted narcissism of the earliest period of all."},
-      {id: "u-ii-12.5", label: "Teil II, §12.5", german: "Imago III, 1914. Objekt behandeln kann, also daß der Mensch der Selbstbeobachtung fähig ist, macht es möglich, die alte Doppelgängervorstellung mit neuem Inhalt zu erfüllen und ihr mancherlei zuzuweisen, vor allem all das, was der Selbstkritik als zugehörig zum alten überwundenen Narzißmus der Urzeit erscheint.1", reference: ""},
+      {id: "u-ii-12.5", label: "Teil II, §12.5", german: "Imago III, 1914. Objekt behandeln kann, also daß der Mensch der Selbstbeobachtung fähig ist, macht es möglich, die alte Doppelgängervorstellung mit neuem Inhalt zu erfüllen und ihr mancherlei zuzuweisen, vor allem all das, was der Selbstkritik als zugehörig zum alten überwundenen Narzißmus der Urzeit erscheint.1", reference: "The fact that an agency of this kind exists, which is able to treat the rest of the ego like an object—the fact, that is, that man is capable of self-observation—renders it possible to invest the old idea of a 'double' with a new meaning and to ascribe many things to it, above all, those things which seem to the new faculty of self-criticism to belong to the old surmounted narcissism of the earliest period of all."},
       {id: "u-ii-13", label: "Teil II, §13", german: "Aber nicht nur dieser der Ich-Kritik anstößige Inhalt kann dem Doppelgänger einverleibt werden, sondern ebenso alle unterbliebenen Möglichkeiten der Geschicksgestaltung, an denen die Phantasie noch festhalten will, und alle IchStrebungen, die sich infolge äußerer Ungunst nicht durchsetzen konnten, sowie alle die unterdrückten Willensentscheidungen, die die Illusion des freien Willens ergeben haben.2", reference: "But it is not only this narcissism, offensive to the egocriticizing faculty, which may be incorporated in the idea of a double. There are also all those unfulfilled but possible futures to which we still like to cling in phantasy, all those strivings of the ego which adverse external circumstances have crushed, and all our suppressed acts of volition which nourish in us the illusion of Free Will.11 10 I cannot help thinking that when poets complain that two souls dwell within the human breast, and when popular psychologists talk of the splitting of the ego in an individual, they have some notion of this division (which relates to the sphere of ego-psychology) between the critical faculty and the rest of the ego, and not of the antithesis discovered by psychoanalysis between the ego and what is unconscious and repressed. It is true that the distinction is to some extent effaced by the circumstance that derivatives of what is repressed are foremost among the things reprehended by the ego-criticizing faculty. 11 In Ewers’ Der Student von Prag, which furnishes the starting-point of Rank’s study on the “double,” the hero has promised his beloved not to kill his antagonist in a duel. But on his way to the duelling-ground he meets his “double,” who has already killed his rival."},
       {id: "u-ii-14.1", label: "Teil II, §14.1", german: "Nachdem wir aber so die manifeste Motivierung der Doppelgängergestalt betrachtet haben, müssen wir uns sagen: Nichts von alledem macht uns den außerordentlich hohen Grad von Unheimlichkeit, der ihr anhaftet, verständlich, und aus unserer Kenntnis der pathologischen Seelenvorgänge dürfen wir hinzusetzen, nichts von diesem Inhalt könnte das Abwehrbestreben erklären, das ihn als etwas Fremdes aus dem Ich hinausprojiziert. Der Charakter des Unheimlichen kann doch nur daher rühren, daß der Doppelgänger eine den überwundenen seelischen Urzeiten angehörige Bildung ist, die damals allerdings einen freundlicheren Sinn hatte. Der Doppelgänger ist zum Schreckbild geworden, wie die Götter nach dem Sturz ihrer Religion zu Dämonen werden (Heine, Die Götter im Exil). 1 Ich glaube, wenn die Dichter klagen, daß zwei Seelen in des Menschen Brust wohnen, und wenn die Populärpsychologen von der Spaltung des Ichs im Menschen reden, so schwebt ihnen diese Entzweiung, der Ich-Psychologie angehörig, zwischen der kritischen Instanz und dem Ich-Rest vor und nicht die von der Psychoanalyse aufgedeckte Gegensätzlichkeit zwischen dem Ich und dem unbewußten Verdrängten.", reference: "But, after having thus considered the manifest motivation of the figure of a “double,” we have to admit that none of it helps us to understand the extraordinarily strong feeling of something uncanny that pervades the conception; and our knowledge of pathological mental processes enables us to add that nothing in the content arrived at could account for that impulse towards self-protection which has caused the ego to project such a content outward as something foreign to itself. The quality of uncanniness can only come from the circumstance of the “double” being a creation dating back to a very early mental stage, long since left behind, and one, no doubt, in which it wore a more friendly aspect."},
       {id: "u-ii-14.2", label: "Teil II, §14.2", german: "Der Unterschied wird allerdings dadurch verwischt, daß sich unter dem von der Ich-Kritik Verworfenen zunächst die Abkömmlinge des Verdrängten befinden. 2 In der H. H. Ewersschen Dichtung “Der Student von Prag”, von welcher die Ranksche Studie über den Doppelgänger ausgegangen ist, hat der Held der Geliebten versprochen, seinen Duellgegner nicht zu töten. Auf dem Wege zum Duellplatz begegnet ihm aber der Doppelgänger, welcher den Nebenbuhler bereits erledigt hat.", reference: "The “double” has become a vision of terror, just as after the fall of their religion the gods took on daemonic shapes.12 It is not difficult to judge, on the same lines as his theme of the “double,”"},
       {id: "u-ii-15.1", label: "Teil II, §15.1", german: "Die anderen bei Hoffmann verwendeten Ich-Störungen sind nach dem Muster des Doppelgängermotivs leicht zu beurteilen. Es handelt sich bei ihnen um ein Rückgreifen auf einzelne Phasen in der Entwicklungsgeschichte des Ich-Gefühls, um eine Regression in Zeiten, da das Ich sich noch nicht scharf von der Außenwelt und vom Anderem abgegrenzt hatte. Ich glaube, daß diese Motive den Eindruck des Unheimlichen mitverschulden, wenngleich es nicht leicht ist, ihren Anteil an diesem Eindruck isoliert herauszugreifen.", reference: "the other forms of disturbance in the ego made use of by Hoffmann. They are a harking-back to particular phases in the evolution of the self-regarding feeling, a regression to a time when the ego was not yet sharply differentiated from the external world and from other persons. I believe that these factors are partly responsible for the impression of the uncanny, although it is not easy to isolate and determine exactly their share of it. That factor which consists in a recurrence of the same situations, things and events, will perhaps not appeal to everyone as a source of uncanny feeling."},
       {id: "u-ii-15.2", label: "Teil II, §15.2", german: "Das Moment der Wiederholung des Gleichartigen wird als Quelle des unheimlichen Gefühls vielleicht nicht bei jedermann Anerkennung finden. Nach meinen Beobachtungen ruft es unter gewissen Bedingungen und in Kombination mit bestimmten Umständen unzweifelhaft ein solches Gefühl hervor, das überdies an die Hilflosigkeit mancher Traumzustände mahnt. Als ich einst an einem heißen Sommernachmittag die mir unbekannten, menschenleeren Straßen einer italienischen Kleinstadt durchstreifte, geriet ich in eine Gegend, über deren Charakter ich nicht lange in Zweifel bleiben konnte.", reference: "From what I have observed, this phenomenon does undoubtedly, subject to certain conditions and combined with certain circumstances, awaken an uncanny feeling, which recalls that sense of helplessness sometimes experienced in dreams. Once, as I was walking through the deserted streets of a provincial town in Italy which was strange to me, on a hot summer afternoon, I found myself in a quarter the charac12 Heine, Die Götter im Exil. 11 ter of which could not long remain in doubt. Nothing but painted women were to be seen at the windows of the small houses, and I hastened to leave the narrow street at the next turning. But after having wandered about for a while without being directed, I suddenly found myself back in the same street, where my presence was now beginning to excite attention."},
       {id: "u-ii-15.3", label: "Teil II, §15.3", german: "Es waren nur geschminkte Frauen an den Fenstern der kleinen Häuser zu sehen, und ich beeilte mich, die enge Straße durch die nächste Einbiegung zu verlassen. Aber nachdem ich eine Weile führerlos herumgewandert war, fand ich mich plötzlich in derselben Straße wieder, in der ich nun Aufsehen zu erregen begann, und meine eilige Entfernung hatte nur die Folge, daß ich auf einem neuen Umwege zum drittenmal dahingeriet. Dann aber erfaßte mich ein Gefühl, das ich nur als unheimlich bezeichnen kann, und ich war froh, als ich unter Verzicht auf weitere Entdeckungsreisen auf die kürzlich von mir verlassene Piazza zurückfand.", reference: "I hurried away once more, but only to arrive yet a third time by devious paths in the same place. Now, however, a feeling overcame me which I can only describe as uncanny, and I was glad enough to abandon my exploratory walk and get straight back to the piazza I had left a short while before. Other situations having in common with my adventure an involuntary return to the same situation, but which differ radically from it in other respects, also result in the same feeling of helplessness and of something uncanny. As,"},
-      {id: "u-ii-15.4", label: "Teil II, §15.4", german: "Andere Situationen, die die unbeabsichtigte Wiederkehr mit der eben beschriebenen gemein haben und sich in den anderen Punkten gründlich von ihr unterscheiden, haben doch dasselbe Gefühl von Hilflosigkeit und Unheimlichkeit zur Folge.", reference: ""},
+      {id: "u-ii-15.4", label: "Teil II, §15.4", german: "Andere Situationen, die die unbeabsichtigte Wiederkehr mit der eben beschriebenen gemein haben und sich in den anderen Punkten gründlich von ihr unterscheiden, haben doch dasselbe Gefühl von Hilflosigkeit und Unheimlichkeit zur Folge.", reference: "Other situations which have in common with the one just described the element of unintentional recurrence, but which differ from it in other respects, also result in the same feeling of helplessness and of something uncanny."},
       {id: "u-ii-16.1", label: "Teil II, §16.1", german: "Zum Beispiel, wenn man sich im Hochwald, etwa vom Nebel überrascht, verirrt hat und nun trotz aller Bemühungen, einen markierten oder bekannten Weg zu finden, wiederholt zu der einen, durch eine bestimmte Formation gekennzeichneten Stelle zurückkommt. Oder wenn man im unbekannten, dunkeln Zimmer wandert, um die Tür oder den Lichtschalter aufzusuchen und dabei zum xtenmal mit demselben Möbelstück zusammenstößt, eine Situation, die Mark Twain allerdings durch groteske Übertreibung in eine unwiderstehlich komische umgewandelt hat. An einer anderen Reihe von Erfahrungen erkennen wir auch mühelos, daß es nur das Moment der unbeabsichtigten Wiederholung ist, welches das sonst Harmlose unheimlich macht und uns die Idee des Verhängnisvollen, Unentrinnbaren aufdrängt, wo wir sonst nur von “Zufall” gesprochen hätten. So ist es z.", reference: "for instance, when one is lost in a forest in high altitudes, caught, we will suppose, by the mountain mist, and when every endeavor to find the marked or familiar path ends again and again in a return to one and the same spot, recognizable by some particular landmark. Or when one wanders about in a dark, strange room, looking for the door or the electric switch, and collides for the hundredth time with the same piece of furniture—a situation which, indeed, has been made irresistibly comic by Mark Twain, through the wild extravagance of his narration. Taking another class of things, it is easy to see that here, too, it is only this factor of involuntary repetition which surrounds with an uncanny atmosphere what would otherwise be innocent enough, and forces upon us the idea of something fateful and unescapable where otherwise we should have spoken of “chance” only."},
       {id: "u-ii-16.2", label: "Teil II, §16.2", german: "B. gewiß ein gleichgültiges Erlebnis, wenn man für seine in einer Garderobe abgegebenen Kleider einen Schein mit einer gewissen Zahl — sagen wir: 62 — erhält oder wenn man findet, daß die zugewiesene Schiffskabine diese Nummer trägt. Aber dieser Eindruck ändert sich, wenn beide an sich indifferenten Begebenheiten nahe aneinanderrücken, so daß einem die Zahl 62 mehrmals an demselben Tage entgegentritt, und wenn man dann etwa gar die Beobachtung machen sollte, daß alles, was eine Zahlenbezeichnung trägt, Adressen, Hotelzimmer, Eisenbahnwagen u. dgl. immer wieder die nämliche Zahl, wenigstens als Bestandteil, wiederbringt. Man findet das “unheimlich”, und wer nicht stichund hiebfest gegen die Versuchungen des Aberglaubens ist, wird sich geneigt finden, dieser hartnäckigen Wiederkehr der einen Zahl eine geheime Bedeutung zuzuschreiben, etwa einen Hinweis auf das ihm bestimmte Lebensalter darin zu sehen.", reference: "For instance, we of course attach no importance to the event when we give up a coat and get a cloakroom ticket with the number, say, 62; or when we find that our cabin on board ship is numbered 62. But the impression is altered if two such events, each in itself indifferent, happen close together, if we come across the number 62 several times in a single day, or if we begin to notice that everything which has a number— addresses, hotel-rooms, compartments in railway-trains— always has the same one, or one which at least contains the same figures. We do feel this to be “uncanny,” and unless a man is utterly hardened and proof against the lure of superstition he will be tempted to ascribe a secret meaning to this obstinate recurrence of a number, taking it, perhaps, as an indication of the span of life allotted to him."},
       {id: "u-ii-16.3", label: "Teil II, §16.3", german: "Oder wenn man eben mit dem Studium der Schriften des großen Physiologen H.", reference: "Or take the case that one is"},
@@ -9136,10 +9136,10 @@ const TEXTS = {
       {id: "u-iii-3.2", label: "Teil III, §3.2", german: "Fast alle Beispiele, die unseren Erwartungen widersprechen, sind dem Bereich der Fiktion, der Dichtung, entnommen. Wir erhalten so einen Wink, einen Unterschied zu machen zwischen dem Unheimlichen, das man erlebt, und dem Unheimlichen, das man sich bloß vorstellt, oder von dem man liest. Das Unheimliche des Erlebens hat weit einfachere Bedingungen, umfaßt aber weniger zahlreiche Fälle.", reference: "One thing we may observe which may help us to resolve these uncertainties: nearly all the instances which contradict our hypothesis are taken from the realm of fiction and literary productions. This may suggest a possible differentiation between the uncanny that is actually experienced, and the uncanny as we merely picture it or read about it."},
       {id: "u-iii-3.3", label: "Teil III, §3.3", german: "Ich glaube, es fügt sich ausnahmslos unserem Lösungsversuch, läßt jedesmal die Zurückführung auf altvertrautes Verdrängtes zu. Doch ist auch hier eine wichtige und psychologisch bedeutsame Scheidung des Materials vorzunehmen, die wir am besten an geeigneten Beispielen erkennen werden. Greifen wir das Unheimliche der Allmacht der Gedanken, der prompten Wunscherfüllung, der geheimen schädigenden Kräfte, der Wiederkehr der Toten heraus.", reference: "Something uncanny in real experience is conditioned much more simply, but is limited to much fewer occasions. We shall find, I think, that it fits in perfectly with our attempt at solution, and can be traced back without exception to something familiar that has been repressed."},
       {id: "u-iii-3.4", label: "Teil III, §3.4", german: "Die Bedingung, unter der hier das Gefühl des Unheimlichen entsteht, ist nicht zu verkennen. Wir — oder unsere primitiven Urahnen — haben dereinst diese Möglichkeiten für Wirklichkeit gehalten, waren von der Realität dieser Vorgänge überzeugt. Heute glauben wir nicht mehr daran, wir haben diese Denkweisen überwunden, aber wir fühlen uns dieser neuen Überzeugungen nicht ganz sicher, die alten leben noch in uns fort und lauern auf Bestätigung.", reference: "But here, too, we must make a certain important and psycho17 logically significant differentiation in our material, best illustrated by turning to suitable examples."},
-      {id: "u-iii-3.5", label: "Teil III, §3.5", german: "Sowie sich nun etwas in unserem Leben ereignet, was diesen alten abgelegten Überzeugungen eine Bestätigung zuzuführen scheint, haben wir das Gefühl des Unheimlichen, zu dem man das Urteil ergänzen kann: Also ist es doch wahr, daß man einen anderen durch den bloßen Wunsch töten kann, daß die Toten weiterleben und an der Stätte ihrer früheren Tätigkeit sichtbar werden u. dgl.!", reference: ""},
+      {id: "u-iii-3.5", label: "Teil III, §3.5", german: "Sowie sich nun etwas in unserem Leben ereignet, was diesen alten abgelegten Überzeugungen eine Bestätigung zuzuführen scheint, haben wir das Gefühl des Unheimlichen, zu dem man das Urteil ergänzen kann: Also ist es doch wahr, daß man einen anderen durch den bloßen Wunsch töten kann, daß die Toten weiterleben und an der Stätte ihrer früheren Tätigkeit sichtbar werden u. dgl.!", reference: "As soon as something actually happens in our lives which seems to support the old, discarded beliefs, we get a feeling of the uncanny; and it is as though we were making a judgment something like this: 'So, after all, it is true that one can kill a person by merely desiring his death!' or 'Then the dead do continue to live and appear before our eyes on the scene of their former activities!' and so on."},
       {id: "u-iii-4.1", label: "Teil III, §4.1", german: "Wer im Gegenteil diese animistischen Überzeugungen bei sich gründlich und endgültig erledigt hat, für den entfällt das Unheimliche dieser Art. Das merkwürdigste Zusammentreffen von Wunsch und Erfüllung, die rätselhafteste Wiederholung ähnlicher Erlebnisse an demselben Ort oder zum gleichen Datum, die täuschendsten Gesichtswahrnehmungen und verdächtigsten Geräusche werden ihn nicht irre machen, keine Angst in ihm erwecken, die man als Angst vor dem “Unheimlichen” bezeichnen kann. Es handelt sich hier also rein um eine Angelegenheit der Realitätsprüfung, um eine Frage der materiellen Realität.1 1 Da auch das Unheimliche des Doppelgängers von dieser Gattung ist, wird es interessant, die Wirkung zu erfahren, wenn uns einmal das Bild der eigenen Persönlichkeit ungerufen und unvermutet entgegentritt. E.", reference: "And conversely, he who has completely and finally dispelled animistic beliefs in himself, will be insensible to this type of the uncanny. The most remarkable coincidences of desire and fulfillment, the most mysterious recurrence of similar experiences in a particular place or on a particular date, the most deceptive sights and suspicious noises—none of these things will take him in or raise that kind of fear which can be described as “a fear of something uncanny.” For the whole matter is one of “testing reality,” pure and simple, a question of the material reality of the phenomena.23 23 Since the uncanny effect of a “double” also belongs to this class, it is interesting to observe what the effect is of suddenly and unexpectedly meeting one’s own image. E."},
       {id: "u-iii-4.2", label: "Teil III, §4.2", german: "Mach berichtet zwei solcher Beobachtungen in der “Analyse der Empfindungen”, 1900, Seite 3. Er erschrak das eine Mal nicht wenig, als er erkannte, daß das gesehene Gesicht das eigene sei, das andere Mal fällte er ein sehr ungünstiges Urteil über den anscheinend Fremden, der in seinen Omnibus einstieg, “Was steigt doch da für ein herabgekommener Schulmeister ein.” — Ich kann ein ähnliches Abenteuer erzählen: Ich saß allein im Abteil des Schlafwagens, als bei einem heftigeren Ruck der Fahrtbewegung die zur anstoßenden Toilette führende Tür aufging und ein älterer Herr im Schlafrock, die Reisemütze auf dem Kopfe, bei mir eintrat. Ich nahm an, daß er sich beim Verlassen des zwischen zwei Abteilen befindlichen Kabinetts in der Richtung geirrt hatte und fälschlich in mein Abteil gekommen war, sprang auf, um ihn aufzuklären, erkannteaber bald verdutzt, daß der Eindringling mein eigenes, vom Spiegel in der Verbindungstür entworfenes Bild war.", reference: "Mach has related two such observations in his Analyse der Em findungen (1900, p. 3). On the first occasion he started violently as soon as he realized that the face before him was his own. The second time he formed a very unfavorable opinion about the supposed stranger who got into the omnibus, and thought “What a"},
-      {id: "u-iii-4.3", label: "Teil III, §4.3", german: "Ich weiß noch, daß mir die Erscheinung gründlich mißfallen hatte.", reference: ""},
+      {id: "u-iii-4.3", label: "Teil III, §4.3", german: "Ich weiß noch, daß mir die Erscheinung gründlich mißfallen hatte.", reference: "I can still recall that I thoroughly disliked the apparition."},
       {id: "u-iii-5", label: "Teil III, §5", german: "Anstatt also über den Doppelgänger zu erschrecken, hatten beide — Mach wie ich — ihn einfach nicht agnosziert. Ob aber das Mißfallen dabei nicht doch ein Rest jener archaischen Reaktion war, die den Doppelgänger als unheimlich empfindet?", reference: "Instead, therefore, of being terrified by our doubles, both Mach and I simply failed to recognize them as such. Is it not possible, though, that our dislike of them was a vestigial trace of that older reaction which feels the double to be something uncanny? 18 nally, we must not let our predilection for smooth solution and lucid exposition blind us to the fact that these two classes of uncanny experience are not always sharply distinguishable. When we consider that primitive beliefs are most intimately connected with infantile complexes, and are, in fact, based upon them, we shall not be greatly astonished to find the distinction often rather a hazy one."},
       {id: "u-iii-6.1", label: "Teil III, §6.1", german: "Anders verhält es sich mit dem Unheimlichen, das von verdrängten infantilen Komplexen ausgeht, vom Kastrationskomplex, der Mutterleibsphantasie usw., nur daß reale Erlebnisse, welche diese Art von Unheimlichem erwecken, nicht sehr häufig sein können. Das Unheimliche des Erlebens gehört zumeist der früheren Gruppe an, für die Theorie ist aber die Unterscheidung der beiden sehr bedeutsam. Beim Unheimlichen aus infantilen Komplexen kommt die Frage der materiellen Realität gar nicht in Betracht, die psychische Realität tritt an deren Stelle.", reference: "The state of affairs is somewhat different when the uncanny proceeds from repressed infantile complexes, from the castration-complex, womb-phantasies, etc.; but experiences which arouse this kind of uncanny feeling are not of very frequent occurrence in real life. Actual occurrences of the uncanny belong for the most part to the first group; nevertheless the distinction between the two is theoretically very important. Where the uncanny comes from infantile complexes the question of external reality is quite irrelevant; its place is taken by psychical reality. What is concerned is an actual repression of some definite material and a return of this repressed material, not a removal of the belief in its objective reality."},
       {id: "u-iii-6.2", label: "Teil III, §6.2", german: "Es handelt sich um wirkliche Verdrängung eines Inhalts und um die Wiederkehr des Verdrängten, nicht um die Aufhebung des Glaubens an die Realität dieses Inhalts. Man könnte sagen, in dem einen Falle sei ein gewisser Vorstellungsinhalt, im anderen der Glaube an seine (materielle) Realität verdrängt. Aber die letztere Ausdrucksweise dehnt wahrscheinlich den Gebrauch des Terminus “Verdrängung” über seine rechtmäßigen Grenzen aus.", reference: "We might say that in the one case what had been repressed was a particular ideational content and in the other the belief in its physical existence. But this last way of putting it no doubt strains the term “repression” beyond its legitimate meaning. It would be more correct to respect a perceptible psychological difference here, and to say that the animistic beliefs of civilized people have been surmounted—more or less. Our conclusion could then be stated thus: An uncanny experience occurs either when repressed infantile complexes have been revived by some impression, or when the primitive beliefs we have surmounted seem once more to be confirmed."},
@@ -9161,7 +9161,7 @@ const TEXTS = {
       {id: "u-iii-10.2", label: "Teil III, §10.2", german: "Wir fragten vorhin, warum die abgehauene Hand im Schatz des Rhampsenit nicht unheimlich wirke wie etwa in der Hauffschen “Geschichte von der abgehauenen Hand”. Die Frage erscheint uns jetzt bedeutsamer, da wir die größere Resistenz des Unheimlichen aus der Quelle verdrängter Komplexe erkannt haben. Die Antwort ist leicht zu geben.", reference: "In the Herodotus story our thoughts are concentrated much more on the superior cunning of the master-thief than on the feelings of the princess. The princess may well have had an uncanny feeling, indeed she very probably fell into a swoon; but we have no such sensations, for we put ourselves in the thief’s place, not in hers. In Nestroy’s farce, Der Zerrissene, another means is used to avoid any impression of the uncanny in the scene in which the fleeing man, convinced that he is a murderer, lifts up one trapdoor after another and each time sees what he takes to be the ghost of his victim rising up out of it."},
       {id: "u-iii-10.3", label: "Teil III, §10.3", german: "Sie lautet, daß wir in dieser Erzählung nicht auf die Gefühle der Prinzessin, sondern auf die überlegene Schlauheit des “Meisterdiebes” eingestellt werden. Der Prinzessin mag das unheimliche Gefühl dabei nicht erspart worden sein, wir wollen es selbst für glaubhaft halten, daß sie in Ohnmacht gefallen ist, aber wir verspüren nichts Unheimliches, denn wir versetzen uns nicht in sie, sondern in den anderen. Durch eine andere Konstellation wird uns der Eindruck des Unheimlichen in der Nestroyschen Posse “Der Zerrissene” erspart, wenn der Geflüchtete, der sich für einen Mörder hält, aus jeder Falltür, deren Deckel er aufhebt, das vermeintliche Gespenst des Ermordeten aufsteigen sieht und verzweifelt ausruft: Ich hab' doch nur einen umgebracht.", reference: "He calls out in despair, “But I’ve only killed one man. Why this horrid multiplication?” We know the truth and do not share the error of the Zerrissener, so what must be uncanny to him has an irresistibly comic effect on us. Even a “real” ghost, as in Oscar Wilde’s Canterville Ghost, loses all power of arousing at any rate an uncanny horror in us as soon as the author begins to amuse himself at its expense and allows liberties to be taken with it."},
       {id: "u-iii-10.4", label: "Teil III, §10.4", german: "Zu was diese gräßliche Multiplikation? Wir kennen die Vorbedingungen dieser Szene, teilen den Irrtum des “Zerrissenen” nicht, und darum wirkt, was für ihn unheimlich sein muß, auf uns mit unwiderstehlicher Komik. Sogar ein “wirkliches” Gespenst wie das in O.", reference: "Thus we see how independent emotional effects can be of the actual subject matter in the world of fiction. In fairy-stories feelings of fear— 20 including uncanny sensations—are ruled out altogether. We understand this, and that is why we ignore the opportunities we find for any development of a feeling of this kind."},
-      {id: "u-iii-10.5", label: "Teil III, §10.5", german: "Wildes Erzählung “Der Geist von Canterville” muß all seiner Ansprüche, wenigstens Grauen zu erregen, verlustig werden, wenn der Dichter sich den Scherz macht, es zu ironisieren und hänseln zu lassen.", reference: ""},
+      {id: "u-iii-10.5", label: "Teil III, §10.5", german: "Wildes Erzählung “Der Geist von Canterville” muß all seiner Ansprüche, wenigstens Grauen zu erregen, verlustig werden, wenn der Dichter sich den Scherz macht, es zu ironisieren und hänseln zu lassen.", reference: "Wilde's story 'The Canterville Ghost' must forfeit all claim to arouse at least a shudder in us, when the author allows himself the joke of making the ghost appear ridiculous and letting it be teased."},
       {id: "u-iii-11.1", label: "Teil III, §11.1", german: "So unabhängig kann in der Welt der Fiktion die Gefühlswirkung von der Stoffwahl sein. In der Welt der Märchen sollen Angstgefühle, also auch unheimliche Gefühle überhaupt nicht erweckt werden. Wir verstehen das und sehen darum auch über die Anlässe hinweg, bei denen etwas Derartiges möglich wäre.", reference: "Concerning the factors of silence, solitude and darkness, we can only say that they are actually elements in the production of that infantile morbid anxiety from which the majority of human beings have never become quite free."},
       {id: "u-iii-11.2", label: "Teil III, §11.2", german: "Von der Einsamkeit, Stille und Dunkelheit können wir nichts anderes sagen, als daß dies wirklich die Momente sind, an welche die bei den meisten Menschen nie ganz erlöschende Kinderangst geknüpft ist. Die psychoanalytische Forschung hat sich mit dem Problem derselben an anderer Stelle auseinandergesetzt.", reference: "This problem has been discussed from a psychoanalytical point of view in another place. i"}
     ]
@@ -12820,7 +12820,7 @@ const VOCAB = [
   {"section": "Freud", "num": 317, "german": "die religiöse Illusion", "english": "religious illusion", "extra": "Religionskritik"},
   {"section": "Freud", "num": 318, "german": "die Gottesneurose", "english": "God neurosis", "extra": "Religionsanalyse"},
   {"section": "Freud", "num": 319, "german": "die moralische Angst", "english": "moral anxiety", "extra": "Ethik und Psyche"},
-  {"section": "Freud", "num": 320, "german": "die Schuldneuro", "english": "guilt neurosis", "extra": "Neurosenlehre"}
+  {"section": "Freud", "num": 320, "german": "die Schuldneurose", "english": "guilt neurosis", "extra": "Neurosenlehre"}
 ];
 // ============================================================
 // MORPHOLOGICAL PROFILES
@@ -13890,7 +13890,7 @@ const GRAMMAR_UNITS = [
           {sentence: "Mann", target: "short a", question: "Is this vowel short or long?", answer: "short", options: ["short", "long"]},
           {sentence: "Beet", target: "long e", question: "Is this vowel short or long?", answer: "long", options: ["short", "long"]},
           {sentence: "Bitte", target: "short i", question: "Is this vowel short or long?", answer: "short", options: ["short", "long"]},
-          {sentence: "Mut", target: "short u", question: "Is this vowel short or long?", answer: "short", options: ["short", "long"]}
+          {sentence: "Mut", target: "long u", question: "Is this vowel short or long?", answer: "long", options: ["short", "long"]}
         ]
       },
       {
@@ -17616,6 +17616,14 @@ class App {
     this.vocabItems = [];
     this.vocabCurrentIdx = 0;
     this.vocabProgress = {};
+    // Migrate vocab progress from old double-prefixed key (uw_uw_vocabProgress → uw_vocabProgress)
+    try {
+      const oldKey = localStorage.getItem("uw_uw_vocabProgress");
+      if (oldKey && !localStorage.getItem("uw_vocabProgress")) {
+        localStorage.setItem("uw_vocabProgress", oldKey);
+        localStorage.removeItem("uw_uw_vocabProgress");
+      }
+    } catch(e) {}
     this.vocabFlipped = false;
     // Grammar mode state
     this.grammarPhase = "repetition"; // repetition | cloze | production
@@ -18356,6 +18364,7 @@ class App {
     });
     if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`);
     const data = await response.json();
+    if (!data.content?.[0]?.text) throw new Error("Unexpected Anthropic response format");
     return data.content[0].text;
   }
 
@@ -18374,6 +18383,7 @@ class App {
     });
     if (!response.ok) throw new Error(`OpenAI API error: ${response.status}`);
     const data = await response.json();
+    if (!data.choices?.[0]?.message?.content) throw new Error("Unexpected OpenAI response format");
     return data.choices[0].message.content;
   }
 
@@ -18392,6 +18402,7 @@ class App {
     );
     if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
     const data = await response.json();
+    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error("Unexpected Gemini response format");
     return data.candidates[0].content.parts[0].text;
   }
 
@@ -18426,10 +18437,10 @@ Format your response as JSON: {"problems": ["problem 1 description", "problem 2 
     document.getElementById("eval-score").textContent = "";
     let guidedHtml = `<h4 style="margin:0 0 8px;font-size:14px;color:var(--accent);">Review Your Translation</h4>`;
     guidedHtml += `<ul style="margin:0 0 10px;padding-left:18px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.7;">`;
-    guidedHtml += (result.problems || []).map(p => `<li>${p}</li>`).join("");
+    guidedHtml += (result.problems || []).map(p => `<li>${this._escapeHtml(p)}</li>`).join("");
     guidedHtml += `</ul>`;
     if (result.encouragement) {
-      guidedHtml += `<p style="font-style:italic;font-size:12px;color:var(--text-muted);margin:0 0 10px;">${result.encouragement}</p>`;
+      guidedHtml += `<p style="font-style:italic;font-size:12px;color:var(--text-muted);margin:0 0 10px;">${this._escapeHtml(result.encouragement)}</p>`;
     }
     guidedHtml += `<div style="display:flex;gap:10px;margin-top:14px;">`;
     guidedHtml += `<button class="action-btn" id="revise-btn" style="background:var(--accent);color:white;">Revise &amp; Resubmit</button>`;
@@ -18546,7 +18557,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     el.style.display = "block";
     el.className = "visible " + (score >= 70 ? "good" : score >= 40 ? "fair" : "poor");
     document.getElementById("eval-score").textContent = score + "/100";
-    document.getElementById("eval-feedback").innerHTML = feedback + (method === "heuristic" ? "" : "");
+    document.getElementById("eval-feedback").innerHTML = this._escapeHtml(feedback);
   }
 
   // ── Vocabulary example sentences ─────────────────────────────
@@ -18559,7 +18570,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const prompt = `Generate exactly 3 short example sentences using the German word "${item.german}" (${item.english}). Each sentence should be 6-12 words, use natural German, and suit an intermediate learner. After each German sentence, provide the English translation in parentheses. Format as a numbered list. Do not include any other text.`;
     try {
       const text = await this.llmComplete(prompt, { maxTokens: 512 });
-      area.innerHTML = `<div style="text-align:left;font-size:12px;line-height:1.7;margin-top:8px;padding:8px 12px;background:var(--bg);border-radius:6px;border:1px solid var(--border);">${text.replace(/\n/g, "<br>")}</div>`;
+      area.innerHTML = `<div style="text-align:left;font-size:12px;line-height:1.7;margin-top:8px;padding:8px 12px;background:var(--bg);border-radius:6px;border:1px solid var(--border);">${this._escapeHtml(text).replace(/\n/g, "<br>")}</div>`;
     } catch (e) {
       area.innerHTML = `<div style="color:var(--error);font-size:12px;margin-top:8px;">Could not load examples: ${e.message}</div>`;
     } finally {
@@ -18876,8 +18887,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.completed = {};
       this.save("completed", this.completed);
       this.grammarProgress = {};
-    this.grammarUnitProgress = {};
+      this.grammarUnitProgress = {};
+      this.vocabProgress = {};
       this.save("grammarProgress", this.grammarProgress);
+      this.save("grammarUnitProgress", this.grammarUnitProgress);
+      this.save("vocabProgress", this.vocabProgress);
       this.render();
       this.closeSettings();
     }
@@ -18901,7 +18915,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       completed: this.completed,
       apiKey: this.apiKey,
       customTexts: this.customTexts,
-      grammarProgress: this.grammarProgress
+      grammarProgress: this.grammarProgress,
+      grammarUnitProgress: this.grammarUnitProgress,
+      vocabProgress: this.vocabProgress
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -18973,7 +18989,29 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (grammarMerged > 0) this.save("grammarProgress", this.grammarProgress);
         }
-        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged ? `, ${grammarMerged} grammar records` : "") + ".";
+        // Merge grammar unit progress
+        let unitsMerged = 0;
+        if (data.grammarUnitProgress && typeof data.grammarUnitProgress === "object") {
+          for (const [key, val] of Object.entries(data.grammarUnitProgress)) {
+            if (!this.grammarUnitProgress[key]) {
+              this.grammarUnitProgress[key] = val;
+              unitsMerged++;
+            }
+          }
+          if (unitsMerged > 0) this.save("grammarUnitProgress", this.grammarUnitProgress);
+        }
+        // Merge vocab progress
+        let vocabMerged = 0;
+        if (data.vocabProgress && typeof data.vocabProgress === "object") {
+          for (const [key, val] of Object.entries(data.vocabProgress)) {
+            if (!this.vocabProgress[key]) {
+              this.vocabProgress[key] = val;
+              vocabMerged++;
+            }
+          }
+          if (vocabMerged > 0) this.save("vocabProgress", this.vocabProgress);
+        }
+        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + ".";
         status.style.color = "var(--success)";
         this.render();
       } catch (err) {
@@ -19160,7 +19198,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     header.innerHTML = `<h1>Vocabulary Practice</h1><p>Build your German vocabulary</p>`;
 
     const batches = this.buildVocabBatches();
-    const vocabProgress = this.load("uw_vocabProgress") || {};
+    const vocabProgress = this.load("vocabProgress") || {};
 
     // Exercise type selector at top
     let html = `<div class="vocab-exercise-type" style="padding:6px 0 8px;">
@@ -19304,7 +19342,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.vocabItems = [...batch.items].sort(() => Math.random() - 0.5);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
-    this.vocabProgress = this.load("uw_vocabProgress") || {};
+    this.vocabProgress = this.load("vocabProgress") || {};
 
     // Auto-expand the selected batch's group and section
     const grp = batch.id.split("_")[0];
@@ -19507,7 +19545,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (knew) {
       this.vocabProgress[key] = true;
     }
-    this.save("uw_vocabProgress", this.vocabProgress);
+    this.save("vocabProgress", this.vocabProgress);
     this.vocabCurrentIdx++;
     this.vocabFlipped = false;
     this.renderVocabExercise();
@@ -19532,7 +19570,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     if (isCorrect) {
       this.vocabProgress[key] = true;
-      this.save("uw_vocabProgress", this.vocabProgress);
+      this.save("vocabProgress", this.vocabProgress);
     }
 
     setTimeout(() => {
@@ -19566,7 +19604,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       feedback.textContent = `Correct! The answer is: ${item.english}`;
       const key = `${item.section}_${item.num}`;
       this.vocabProgress[key] = true;
-      this.save("uw_vocabProgress", this.vocabProgress);
+      this.save("vocabProgress", this.vocabProgress);
     } else {
       feedback.className = "vocab-typed-feedback incorrect";
       feedback.textContent = `Not quite. The correct answer is: ${item.english}`;
@@ -20686,9 +20724,11 @@ Lesson: ${ex.profile.description}`;
   const lessonsComplete = (progress.lessons && Object.values(progress.lessons).filter(Boolean).length) || 0;
 
   const exercisesTotal = unit.exercises ? unit.exercises.length : 0;
+  let exercisesComplete = 0;
   let exercisesCorrect = 0;
   if (progress.exercises) {
     Object.values(progress.exercises).forEach(ex => {
+      if (ex && ex.completed) exercisesComplete++;
       if (ex && ex.correct) exercisesCorrect += ex.correct;
     });
   }
@@ -20703,7 +20743,7 @@ Lesson: ${ex.profile.description}`;
   let percentComplete = 0;
   const componentsToCount = [];
   if (lessonsTotal > 0) componentsToCount.push((lessonsComplete / lessonsTotal) * 100);
-  if (exercisesTotal > 0) componentsToCount.push((exercisesCorrect / exercisesTotal) * 100);
+  if (exercisesTotal > 0) componentsToCount.push((exercisesComplete / exercisesTotal) * 100);
   if (unit.review) componentsToCount.push(reviewComplete ? 100 : 0);
 
   if (componentsToCount.length > 0) {
@@ -20713,6 +20753,7 @@ Lesson: ${ex.profile.description}`;
   return {
     lessonsComplete,
     lessonsTotal,
+    exercisesComplete,
     exercisesCorrect,
     exercisesTotal,
     reviewComplete,
@@ -21034,13 +21075,24 @@ Lesson: ${ex.profile.description}`;
   // Navigation
   html += `<div class="exercise-navigation">`;
 
+  const currentAnswered = state.results[state.currentIdx].correct !== null;
   const allAnswered = state.results.every(r => r.correct !== null);
 
   if (state.currentIdx < exercise.items.length - 1) {
-    html += `<button class="btn-next-item" ${!allAnswered ? 'disabled' : ''}>Next →</button>`;
+    html += `<button class="btn-next-item" ${!currentAnswered ? 'disabled' : ''}>Next →</button>`;
   } else if (allAnswered) {
-    // Show summary
+    // Show summary and persist exercise score
     const correctCount = state.results.filter(r => r.correct === true).length;
+    if (!this.grammarUnitProgress[unitId]) this.grammarUnitProgress[unitId] = {};
+    if (!this.grammarUnitProgress[unitId].exercises) this.grammarUnitProgress[unitId].exercises = {};
+    this.grammarUnitProgress[unitId].exercises[exerciseId] = {
+      completed: true,
+      correct: correctCount,
+      total: exercise.items.length,
+      timestamp: new Date().toISOString()
+    };
+    this.saveGrammarUnitProgress();
+
     html += `<div class="exercise-summary">`;
     html += `<p>You got <strong>${correctCount}/${exercise.items.length}</strong> correct!</p>`;
     html += `<button class="btn-back-to-unit" data-unit-id="${unitId}">Back to Unit</button>`;
@@ -21150,12 +21202,12 @@ Lesson: ${ex.profile.description}`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
         let btnClass = "review-option-btn";
+        const isCorrect = idx === currentItem.answerIndex || option === currentItem.answer;
         if (state.results[state.currentIdx].answered) {
-          const isCorrect = idx === currentItem.answerIndex;
           if (isCorrect) btnClass += " correct";
           else if (state.results[state.currentIdx].selectedIdx === idx) btnClass += " incorrect";
         }
-        html += `<button class="${btnClass}" data-option-idx="${idx}" data-correct="${idx === currentItem.answerIndex}">${option}</button>`;
+        html += `<button class="${btnClass}" data-option-idx="${idx}" data-correct="${isCorrect}">${option}</button>`;
       });
     }
     html += `</div>`;
@@ -21243,10 +21295,11 @@ Lesson: ${ex.profile.description}`;
   // Navigation
   html += `<div class="review-navigation">`;
 
+  const currentAnswered = state.results[state.currentIdx].correct !== null;
   const allAnswered = state.results.every(r => r.correct !== null);
 
   if (state.currentIdx < unit.review.items.length - 1) {
-    html += `<button class="btn-next-item" ${!allAnswered ? 'disabled' : ''}>Next →</button>`;
+    html += `<button class="btn-next-item" ${!currentAnswered ? 'disabled' : ''}>Next →</button>`;
   } else if (allAnswered) {
     const correctCount = state.results.filter(r => r.correct === true).length;
     const totalScore = correctCount;
@@ -21971,9 +22024,11 @@ Lesson: ${ex.profile.description}`;
         this._convMessages = [];
         this._convLoading = false;
         if (window.innerWidth <= 767) {
-          sidebar.classList.remove('sidebar-open');
+          sidebar.classList.remove('open');
           const overlay = document.getElementById('sidebar-overlay');
           if (overlay) overlay.classList.remove('visible');
+          document.documentElement.classList.remove("sidebar-open");
+          document.body.classList.remove("sidebar-open");
         }
         this.renderConversationSidebar();
         this.renderConversationChat();
@@ -22164,12 +22219,14 @@ The student is unsure what to say next. Suggest 2-3 short example phrases they c
     const scenario = this._getConversationScenarios().find(s => s.id === this._convActiveScenario);
     if (!scenario) return;
     if (this._convLoading) return;
+    this._convLoading = true;
 
     const el = document.getElementById("conversation-content");
     el.innerHTML = `<div class="conv-summary-area"><div class="conv-summary-block" style="color:var(--text-muted);text-align:center;">Generating summary…</div></div>`;
 
     const dialogue = (this._convMessages || []).filter(m => m.role === "user" || m.role === "assistant");
     if (dialogue.length === 0) {
+      this._convLoading = false;
       this.renderConversationSummary("No conversation to review yet.", scenario);
       return;
     }
@@ -22191,19 +22248,31 @@ Please provide a concise end-of-conversation summary in English with these three
 
 Be encouraging but honest. Keep the whole summary under 250 words.`;
 
-      const text = await this.llmComplete(prompt, { maxTokens: 500 });
+      const text = await this._convLlmComplete(prompt, { maxTokens: 500 });
       this.renderConversationSummary(text, scenario);
     } catch (e) {
       console.warn("Summary failed:", e);
       this.renderConversationSummary("Could not generate summary. Check your API connection.", scenario);
+    } finally {
+      this._convLoading = false;
     }
+  }
+
+  _renderSimpleMarkdown(text) {
+    // Minimal markdown: **bold**, *italic*, numbered lists, line breaks — safe because source is LLM, not user
+    let s = this._escapeHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
+    s = s.replace(/^\d+\.\s+/gm, (m) => `<br>${m}`);
+    s = s.replace(/\n/g, "<br>");
+    return s;
   }
 
   renderConversationSummary(text, scenario) {
     const el = document.getElementById("conversation-content");
     el.innerHTML = `<div class="conv-summary-area">
       <h3>Conversation Summary — ${scenario.icon} ${scenario.label}</h3>
-      <div class="conv-summary-block">${this._escapeHtml(text)}</div>
+      <div class="conv-summary-block">${this._renderSimpleMarkdown(text)}</div>
       <button class="conv-summary-restart-btn" id="conv-restart-btn">Start a New Scenario</button>
     </div>`;
     document.getElementById("conv-restart-btn").addEventListener("click", () => {
