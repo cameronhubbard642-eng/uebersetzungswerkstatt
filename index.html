@@ -413,7 +413,30 @@ body.sidebar-open {
   border: none;
   border-radius: 5px;
   transition: all 0.15s;
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
+/* Inline speaker buttons in grammar lesson examples/exercises */
+.grammar-speak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 7px;
+  cursor: pointer;
+  font-size: 0.78em;
+  color: var(--text-muted);
+  vertical-align: middle;
+  touch-action: manipulation;
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  transition: background 0.1s, color 0.1s;
+}
+.grammar-speak-btn:hover { background: var(--bg); color: var(--accent); }
 #evaluate-btn {
   background: var(--accent);
   color: white;
@@ -1378,6 +1401,14 @@ body.sidebar-open {
     min-height: 44px;
     padding: 10px 16px !important;
     font-size: 14px !important;
+    will-change: transform;
+  }
+  /* Grammar inline speaker buttons — larger touch target on mobile */
+  .grammar-speak-btn {
+    min-width: 44px;
+    min-height: 32px;
+    padding: 4px 10px;
+    font-size: 0.85em;
   }
 
   /* Evaluation result */
@@ -3567,6 +3598,232 @@ select:focus-visible, a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ── Statistics & Assessment Modal ─────────────────────────── */
+.stats-modal {
+  width: 600px;
+  max-width: 95vw;
+  max-height: 85vh;
+  max-height: 85dvh;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.stats-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.stats-modal-header h2 {
+  margin: 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cefr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  flex-shrink: 0;
+}
+.cefr-A1, .cefr-A2 { background: #16a34a; }
+.cefr-B1, .cefr-B2 { background: #2563eb; }
+.cefr-C1, .cefr-C2 { background: #7c3aed; }
+.cefr-unknown { background: var(--text-muted); }
+.stats-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.stats-close-btn:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+.stats-modal-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 20px 24px 24px;
+  flex: 1;
+}
+.stats-section {
+  margin-bottom: 22px;
+}
+.stats-section-title {
+  font-size: 12px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-bottom: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+.stats-section-title .section-arrow {
+  font-size: 8px;
+  transition: transform 0.15s;
+}
+.stats-section-title.collapsed .section-arrow { transform: rotate(-90deg); }
+.stats-section-content { overflow: hidden; }
+.stats-section-content.collapsed { display: none; }
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.stat-card-label {
+  font-size: 10px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.stat-card-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text);
+}
+.stat-card-sub {
+  font-size: 11px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.stats-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 36px;
+  margin-top: 10px;
+}
+.stats-sparkline-bar {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  opacity: 0.7;
+  position: relative;
+}
+.stats-sparkline-bar:last-child { opacity: 1; }
+.stats-sparkline-labels {
+  display: flex;
+  gap: 3px;
+  margin-top: 3px;
+}
+.stats-sparkline-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 8px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-muted);
+}
+.stats-metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+}
+.stats-metric-row:last-child { border-bottom: none; }
+.stats-metric-label { color: var(--text); }
+.stats-metric-value { font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 4px; }
+.trend-up { color: var(--success); font-size: 11px; }
+.trend-down { color: var(--error); font-size: 11px; }
+.trend-flat { color: var(--text-muted); font-size: 11px; }
+.stats-assess-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  transition: opacity 0.15s;
+  margin-bottom: 12px;
+}
+.stats-assess-btn:hover { opacity: 0.9; }
+.stats-assess-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.stats-assessment-result {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+.stats-assessment-result h4 {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+.stats-assessment-result ul {
+  margin: 6px 0;
+  padding-left: 18px;
+}
+.stats-assessment-result li {
+  margin-bottom: 4px;
+}
+.stats-assessment-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.stats-assessment-meta button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 10px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .stats-modal {
+    width: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stats-section-content.mobile-collapsed { display: none; }
+}
 </style>
 </head>
 <body>
@@ -3600,6 +3857,7 @@ select:focus-visible, a:focus-visible {
   <div id="sidebar-footer">
     <button class="sidebar-btn" id="sync-btn" aria-label="Sync progress">&#8645; Sync Progress</button>
     <button class="sidebar-btn" id="import-btn" aria-label="Import custom text file">&#8599; Import Text File</button>
+    <button class="sidebar-btn" id="stats-btn" aria-label="Open statistics">&#9776; Statistik &amp; Bewertung</button>
     <button class="sidebar-btn" id="settings-btn" aria-label="Open settings">&#9881; Settings</button>
   </div>
 </div>
@@ -3620,6 +3878,7 @@ select:focus-visible, a:focus-visible {
     <div id="translation-content">
     <div id="translation-welcome" class="progression-info" style="margin-top:40px;">
       <h4>About Translation Practice</h4>
+      <p>This app focuses on translating complete philosophical texts and passages in their entirety. The individual exercises break longer works — the <em>Tractatus Logico-Philosophicus</em>, <em>Philosophische Untersuchungen</em>, <em>Das Unheimliche</em>, and <em>Zur Genealogie der Moral</em> — into manageable segments for systematic translation practice.</p>
       <p>Select an author from the tabs at the top of the sidebar, then choose a passage from the list to begin. Each passage displays the original German text — click any word to see its gloss and part of speech.</p>
       <p>Type your English translation in the input area, then click <strong>Evaluate</strong> for AI-powered feedback on accuracy and style. Use <strong>Get Hints</strong> to reveal contextual clues, or <strong>Show Reference</strong> to compare with a published translation.</p>
       <p>Your progress is tracked in the bar at the top of the sidebar. A passage is marked complete once evaluated. To add custom texts or reset progress, use the Settings menu.</p>
@@ -3741,6 +4000,72 @@ select:focus-visible, a:focus-visible {
     <div class="modal-actions">
       <button class="modal-btn" id="import-cancel" aria-label="Close import dialog">Close</button>
       <button class="modal-btn primary" id="import-go" aria-label="Import text file">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics & Assessment Modal -->
+<div class="modal-overlay" id="stats-modal">
+  <div class="modal stats-modal">
+    <div class="stats-modal-header">
+      <h2><span class="cefr-badge cefr-unknown" id="stats-cefr-badge">—</span> Statistik &amp; Bewertung</h2>
+      <button class="stats-close-btn" id="stats-close-btn" aria-label="Close statistics">&times;</button>
+    </div>
+    <div class="stats-modal-body">
+
+      <!-- Active Time -->
+      <div class="stats-section">
+        <div class="stats-section-title" id="stats-time-toggle"><span class="section-arrow">&#9660;</span> Aktive Lernzeit</div>
+        <div class="stats-section-content" id="stats-time-content">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-label">Today</div>
+              <div class="stat-card-value" id="stats-time-today">0:00</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-label">7-Day Average</div>
+              <div class="stat-card-value" id="stats-time-avg">0:00</div>
+            </div>
+            <div class="stat-card" style="grid-column:1/-1;">
+              <div class="stat-card-label">Total Cumulative Time</div>
+              <div class="stat-card-value" id="stats-time-total">0:00</div>
+              <div class="stats-sparkline" id="stats-time-sparkline"></div>
+              <div class="stats-sparkline-labels" id="stats-time-sparkline-labels"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Metrics -->
+      <div class="stats-section">
+        <div class="stats-section-title" id="stats-perf-toggle"><span class="section-arrow">&#9660;</span> Leistungsübersicht</div>
+        <div class="stats-section-content" id="stats-perf-content">
+          <div style="margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Translation</div>
+          <div id="stats-translation-metrics"></div>
+
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Vocabulary</div>
+          <div id="stats-vocab-metrics"></div>
+
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Grammar</div>
+          <div id="stats-grammar-metrics"></div>
+
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Conversation</div>
+          <div id="stats-conv-metrics"></div>
+
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Streak</div>
+          <div id="stats-streak-metrics"></div>
+        </div>
+      </div>
+
+      <!-- LLM Assessment -->
+      <div class="stats-section">
+        <div class="stats-section-title" id="stats-assess-toggle"><span class="section-arrow">&#9660;</span> LLM-Bewertung</div>
+        <div class="stats-section-content" id="stats-assess-content">
+          <button class="stats-assess-btn" id="stats-assess-btn">Bewertung generieren</button>
+          <div id="stats-assessment-area"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -17624,6 +17949,7 @@ class App {
     this.currentMode = "translation";
     this.currentTextId = null;
     this.currentExerciseIdx = 0;
+    this._exercisePositions = {}; // saves exercise index per text when switching tabs
     this.posActive = true;
     this.glossAllActive = false;
     this.glossHideActive = false;
@@ -17641,6 +17967,12 @@ class App {
     this._ttsBtn = null;
     this._ttsOpenAIParts = [];
     this._ttsOpenAIIdx = 0;
+    // Chunked German TTS state
+    this._germanTtsQueue = [];
+    this._germanTtsQueueIdx = 0;
+    this._germanTtsBtn = null;
+    this._germanTtsRate = 0.85;
+    this._germanTtsOnEnd = null;
     const loadedCustom = this.load("customTexts");
     this.customTexts = (loadedCustom && typeof loadedCustom === "object" && !Array.isArray(loadedCustom)) ? loadedCustom : {};
     this.allTexts = { ...TEXTS, ...this.customTexts };
@@ -17675,6 +18007,22 @@ class App {
     this.grammarActiveItem = null;
     this.grammarExerciseState = null;
     this.grammarLessonCheckAnswers = {};
+
+    // Active time tracking state
+    this._lastActivityTime = Date.now();
+    this._activeTimeData = this.load("activeTime") || {};
+    this._activeTimeDirty = false;
+
+    // Translation history for stats
+    this._translationHistory = this.load("translationHistory") || [];
+
+    // Conversation session tracking
+    this._convSessionCount = this.load("convSessionCount") || 0;
+    this._convTotalExchanges = this.load("convTotalExchanges") || 0;
+
+    // Streak tracking
+    this._streakData = this.load("streakData") || { current: 0, longest: 0, lastDate: null };
+
     this.init();
   }
 
@@ -17711,6 +18059,23 @@ class App {
     document.getElementById("import-btn").addEventListener("click", () => this.openImport());
     document.getElementById("import-cancel").addEventListener("click", () => this.closeImport());
     document.getElementById("import-go").addEventListener("click", () => this.doImport());
+    // Statistics & Assessment
+    document.getElementById("stats-btn").addEventListener("click", () => this.openStats());
+    document.getElementById("stats-close-btn").addEventListener("click", () => this.closeStats());
+    document.getElementById("stats-assess-btn").addEventListener("click", () => this.generateAssessment());
+    ["stats-time-toggle", "stats-perf-toggle", "stats-assess-toggle"].forEach(id => {
+      document.getElementById(id).addEventListener("click", () => {
+        const title = document.getElementById(id);
+        const contentId = id.replace("-toggle", "-content");
+        title.classList.toggle("collapsed");
+        document.getElementById(contentId).classList.toggle("collapsed");
+      });
+    });
+    document.getElementById("stats-modal").addEventListener("click", (e) => {
+      if (e.target.id === "stats-modal") this.closeStats();
+    });
+    // Active time tracking
+    this._initActiveTimeTracking();
 
     // Mobile menu
     const mobileBtn = document.getElementById("mobile-menu-btn");
@@ -17809,8 +18174,13 @@ class App {
 
   switchText(textId) {
     if (!this.texts[textId]) return;
+    // Save current position before leaving
+    if (this.currentTextId) {
+      this._exercisePositions[this.currentTextId] = this.currentExerciseIdx;
+    }
     this.currentTextId = textId;
-    this.currentExerciseIdx = 0;
+    // Restore previously saved position, or start at 0
+    this.currentExerciseIdx = this._exercisePositions[textId] || 0;
     this.render();
   }
 
@@ -18630,6 +19000,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     el.className = "visible " + (score >= 70 ? "good" : score >= 40 ? "fair" : "poor");
     document.getElementById("eval-score").textContent = score + "/100";
     document.getElementById("eval-feedback").innerHTML = this._escapeHtml(feedback);
+    // Record translation history for statistics
+    this._recordTranslation(score);
   }
 
   // ── Vocabulary example sentences ─────────────────────────────
@@ -18656,7 +19028,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     return !!(this.ttsApiKey || (this.apiKey && this.apiProvider === "openai"));
   }
 
-  async _openaiTTS(text, voice, onEnd) {
+  async _openaiTTS(text, voice, onEnd, onStart) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -18678,6 +19050,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
+      audio.onplay = () => { if (onStart) onStart(); };
       audio.onended = () => { URL.revokeObjectURL(url); if (onEnd) onEnd(); };
       audio.onerror = () => { URL.revokeObjectURL(url); if (onEnd) onEnd(); };
       this._ttsAudio = audio;
@@ -18746,17 +19119,26 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
       if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
       this._germanTtsActive = false;
+      this._germanTtsQueue = [];
       btn.innerHTML = "&#9654; Listen";
       return;
     }
     const ex = this.currentExercise;
     if (!ex || !ex.german) return;
     this._germanTtsActive = true;
-    btn.innerHTML = "&#9632; Stop";
-    this._speakGerman(ex.german, 0.85, () => {
-      this._germanTtsActive = false;
-      btn.innerHTML = "&#9654; Listen";
-    });
+    if (this._canUseOpenAITTS()) {
+      btn.innerHTML = "&#8987; Loading\u2026";
+      this._speakGermanChunked(ex.german, 0.85, btn, () => {
+        this._germanTtsActive = false;
+        btn.innerHTML = "&#9654; Listen";
+      });
+    } else {
+      btn.innerHTML = "&#9632; Stop";
+      this._browserSpeak(ex.german, "de-DE", 0.85, this._pickDeVoice(), () => {
+        this._germanTtsActive = false;
+        btn.innerHTML = "&#9654; Listen";
+      });
+    }
   }
 
   // Vocabulary word pronunciation
@@ -18764,6 +19146,70 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
     if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
     this._speakGerman(word, 0.80);
+  }
+
+  // Sentence-chunked German TTS — plays first sentence immediately, chains the rest
+  async _speakGermanChunked(text, rate, btn, onEnd) {
+    const sentences = text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+    if (sentences.length <= 1) {
+      // Short text: single fetch with loading→stop transition
+      await this._openaiTTS(
+        text, "nova",
+        (result) => {
+          if (result === "fallback") {
+            if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop";
+            this._browserSpeak(text, "de-DE", rate || 0.85, this._pickDeVoice(), () => {
+              this._germanTtsActive = false;
+              if (btn) btn.innerHTML = "&#9654; Listen";
+              if (onEnd) onEnd();
+            });
+          } else {
+            if (onEnd) onEnd();
+          }
+        },
+        () => { if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop"; }
+      );
+      return;
+    }
+    this._germanTtsQueue = sentences;
+    this._germanTtsQueueIdx = 0;
+    this._germanTtsBtn = btn;
+    this._germanTtsRate = rate;
+    this._germanTtsOnEnd = onEnd;
+    await this._playNextGermanTTSChunk();
+  }
+
+  async _playNextGermanTTSChunk() {
+    if (!this._germanTtsActive || this._germanTtsQueueIdx >= this._germanTtsQueue.length) {
+      this._germanTtsActive = false;
+      const btn = this._germanTtsBtn;
+      if (btn) btn.innerHTML = "&#9654; Listen";
+      if (this._germanTtsOnEnd) this._germanTtsOnEnd();
+      return;
+    }
+    const text = this._germanTtsQueue[this._germanTtsQueueIdx];
+    const isFirst = this._germanTtsQueueIdx === 0;
+    await this._openaiTTS(
+      text, "nova",
+      (result) => {
+        if (result === "fallback") {
+          const remaining = this._germanTtsQueue.slice(this._germanTtsQueueIdx).join(" ");
+          const btn = this._germanTtsBtn;
+          if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop";
+          this._browserSpeak(remaining, "de-DE", this._germanTtsRate || 0.85, this._pickDeVoice(), () => {
+            this._germanTtsActive = false;
+            if (btn) btn.innerHTML = "&#9654; Listen";
+            if (this._germanTtsOnEnd) this._germanTtsOnEnd();
+          });
+        } else {
+          this._germanTtsQueueIdx++;
+          this._playNextGermanTTSChunk();
+        }
+      },
+      isFirst ? () => {
+        if (this._germanTtsBtn && this._germanTtsActive) this._germanTtsBtn.innerHTML = "&#9632; Stop";
+      } : null
+    );
   }
 
   // Grammar lesson TTS
@@ -19366,6 +19812,18 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
 
     exerciseList.innerHTML = html;
+
+    // Exercise type dropdown — update immediately when changed (no need to restart batch)
+    const exerciseTypeSelect = exerciseList.querySelector("#vocab-exercise-select");
+    if (exerciseTypeSelect) {
+      exerciseTypeSelect.addEventListener("change", () => {
+        this.vocabExerciseType = exerciseTypeSelect.value;
+        if (this.vocabActiveBatch !== null && this.vocabActiveBatch !== undefined && this.vocabItems.length > 0) {
+          this.vocabFlipped = false;
+          this.renderVocabExercise();
+        }
+      });
+    }
 
     // Section header toggle (General Vocabulary / Author Vocabulary)
     exerciseList.querySelectorAll(".vocab-section-header").forEach(hdr => {
@@ -20880,7 +21338,7 @@ Lesson: ${ex.profile.description}`;
       } else if (block.type === "example") {
         const speakAttr = block.german.replace(/"/g, "&quot;");
         html += `<div class="lesson-block example">`;
-        html += `<div class="example-german">${block.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></div>`;
+        html += `<div class="example-german">${block.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></div>`;
         html += `<div class="example-english">— ${block.english}</div>`;
         html += `</div>`;
       } else if (block.type === "table") {
@@ -21034,7 +21492,7 @@ Lesson: ${ex.profile.description}`;
   if (currentItem.type === "translate") {
     const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="exercise-item translate-item">`;
-    html += `<p class="exercise-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="exercise-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<input type="text" class="exercise-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -21050,7 +21508,7 @@ Lesson: ${ex.profile.description}`;
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item identify-item">`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
-    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<div class="exercise-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -21133,7 +21591,7 @@ Lesson: ${ex.profile.description}`;
   } else if (currentItem.type === "parse") {
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item parse-item">`;
-    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
     html += `<input type="text" class="exercise-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -21257,7 +21715,7 @@ Lesson: ${ex.profile.description}`;
   if (currentItem.type === "translate") {
     const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="review-item translate-item">`;
-    html += `<p class="review-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="review-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<input type="text" class="review-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -21273,7 +21731,7 @@ Lesson: ${ex.profile.description}`;
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item identify-item">`;
     html += `<p class="review-question">${currentItem.question}</p>`;
-    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<div class="review-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -21355,7 +21813,7 @@ Lesson: ${ex.profile.description}`;
   } else if (currentItem.type === "parse") {
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item parse-item">`;
-    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;">&#9654;</button></p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
     html += `<p class="review-question">${currentItem.question}</p>`;
     html += `<input type="text" class="review-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -22400,6 +22858,11 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
 
       const text = await this._convLlmComplete(prompt, { maxTokens: 500 });
       this.renderConversationSummary(text, scenario);
+      // Track conversation session for statistics
+      this._convSessionCount++;
+      this._convTotalExchanges += dialogue.filter(m => m.role === "user").length;
+      this.save("convSessionCount", this._convSessionCount);
+      this.save("convTotalExchanges", this._convTotalExchanges);
     } catch (e) {
       console.warn("Summary failed:", e);
       this.renderConversationSummary("Could not generate summary. Check your API connection.", scenario);
@@ -22432,6 +22895,321 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
       this.renderConversationSidebar();
       this.renderConversationWelcome();
     });
+  }
+
+  // ── Active Time Tracking ──────────────────────────────────
+  _initActiveTimeTracking() {
+    const ACTIVITY_EVENTS = ['scroll', 'keydown', 'click', 'mousedown', 'touchstart'];
+    const IDLE_TIMEOUT = 60000;
+    const HEARTBEAT_INTERVAL = 15000;
+    const PERSIST_INTERVAL = 60000;
+
+    ACTIVITY_EVENTS.forEach(evt => {
+      document.addEventListener(evt, () => { this._lastActivityTime = Date.now(); }, { passive: true });
+    });
+
+    // Heartbeat: add 15s if user was active recently and tab is visible
+    setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      if (Date.now() - this._lastActivityTime < IDLE_TIMEOUT) {
+        const today = new Date().toISOString().slice(0, 10);
+        this._activeTimeData[today] = (this._activeTimeData[today] || 0) + 15;
+        this._activeTimeDirty = true;
+        // Update streak
+        this._updateStreak(today);
+      }
+    }, HEARTBEAT_INTERVAL);
+
+    // Persist every 60s
+    setInterval(() => {
+      if (this._activeTimeDirty) {
+        this.save("activeTime", this._activeTimeData);
+        this._activeTimeDirty = false;
+      }
+    }, PERSIST_INTERVAL);
+
+    // Persist on page unload
+    window.addEventListener("beforeunload", () => {
+      if (this._activeTimeDirty) {
+        this.save("activeTime", this._activeTimeData);
+      }
+    });
+  }
+
+  _updateStreak(today) {
+    const sd = this._streakData;
+    if (sd.lastDate === today) return; // already counted today
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (sd.lastDate === yesterday) {
+      sd.current += 1;
+    } else if (sd.lastDate !== today) {
+      sd.current = 1;
+    }
+    sd.lastDate = today;
+    if (sd.current > sd.longest) sd.longest = sd.current;
+    this._streakData = sd;
+    this.save("streakData", sd);
+  }
+
+  _formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h}:${String(m).padStart(2, '0')}` : `0:${String(m).padStart(2, '0')}`;
+  }
+
+  // ── Translation History Recording ─────────────────────────
+  _recordTranslation(score) {
+    const entry = {
+      date: new Date().toISOString().slice(0, 10),
+      exerciseId: this.currentExercise ? this.currentExercise.id : "unknown",
+      textId: this.currentText ? this.currentText.id : "unknown",
+      score: score,
+      timestamp: Date.now()
+    };
+    this._translationHistory.push(entry);
+    // Cap at 500 entries
+    if (this._translationHistory.length > 500) {
+      this._translationHistory = this._translationHistory.slice(-500);
+    }
+    this.save("translationHistory", this._translationHistory);
+  }
+
+  // ── Statistics Modal ──────────────────────────────────────
+  openStats() {
+    this._renderStatsContent();
+    document.getElementById("stats-modal").classList.add("visible");
+  }
+
+  closeStats() {
+    document.getElementById("stats-modal").classList.remove("visible");
+  }
+
+  _renderStatsContent() {
+    // — Active Time —
+    const today = new Date().toISOString().slice(0, 10);
+    const todaySecs = this._activeTimeData[today] || 0;
+    document.getElementById("stats-time-today").textContent = this._formatTime(todaySecs);
+
+    // 7-day data
+    const last7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      last7.push({ date: d, secs: this._activeTimeData[d] || 0 });
+    }
+    const avg7 = Math.round(last7.reduce((s, d) => s + d.secs, 0) / 7);
+    document.getElementById("stats-time-avg").textContent = this._formatTime(avg7);
+
+    const totalSecs = Object.values(this._activeTimeData).reduce((s, v) => s + v, 0);
+    document.getElementById("stats-time-total").textContent = this._formatTime(totalSecs);
+
+    // Sparkline
+    const maxSecs = Math.max(...last7.map(d => d.secs), 1);
+    const sparkEl = document.getElementById("stats-time-sparkline");
+    const labelsEl = document.getElementById("stats-time-sparkline-labels");
+    sparkEl.innerHTML = last7.map(d =>
+      `<div class="stats-sparkline-bar" style="height:${Math.max(2, (d.secs / maxSecs) * 36)}px;" title="${this._formatTime(d.secs)}"></div>`
+    ).join("");
+    labelsEl.innerHTML = last7.map(d => {
+      const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      return `<span>${dayNames[new Date(d.date + "T12:00:00").getDay()]}</span>`;
+    }).join("");
+
+    // — Performance: Translation —
+    const completedCount = Object.keys(this.completed).length;
+    const totalExercises = Object.values(this.allTexts).reduce((s, t) => s + (t.exercises ? t.exercises.length : 0), 0);
+    const history = this._translationHistory;
+    const avgScore = history.length > 0 ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : 0;
+    // Trend: compare last 5 vs previous 5
+    let trendHtml = '<span class="trend-flat">—</span>';
+    if (history.length >= 10) {
+      const recent5 = history.slice(-5).reduce((s, h) => s + h.score, 0) / 5;
+      const prev5 = history.slice(-10, -5).reduce((s, h) => s + h.score, 0) / 5;
+      if (recent5 > prev5 + 3) trendHtml = '<span class="trend-up">&#9650;</span>';
+      else if (recent5 < prev5 - 3) trendHtml = '<span class="trend-down">&#9660;</span>';
+    }
+    document.getElementById("stats-translation-metrics").innerHTML = `
+      <div class="stats-metric-row"><span class="stats-metric-label">Exercises completed</span><span class="stats-metric-value">${completedCount} / ${totalExercises}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Average accuracy</span><span class="stats-metric-value">${avgScore}% ${trendHtml}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Evaluations recorded</span><span class="stats-metric-value">${history.length}</span></div>
+    `;
+
+    // — Performance: Vocabulary —
+    const vocabMastered = Object.keys(this.vocabProgress).filter(k => this.vocabProgress[k]).length;
+    // Count total vocab items across all texts
+    let totalVocab = 0;
+    Object.values(this.allTexts).forEach(t => {
+      if (t.vocabulary) totalVocab += Object.keys(t.vocabulary).length;
+    });
+    const masteryRate = totalVocab > 0 ? Math.round((vocabMastered / totalVocab) * 100) : 0;
+    // New words this week
+    const oneWeekAgo = Date.now() - 7 * 86400000;
+    const recentTranslations = history.filter(h => h.timestamp > oneWeekAgo).length;
+    document.getElementById("stats-vocab-metrics").innerHTML = `
+      <div class="stats-metric-row"><span class="stats-metric-label">Words mastered</span><span class="stats-metric-value">${vocabMastered} / ${totalVocab}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Mastery rate</span><span class="stats-metric-value">${masteryRate}%</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Exercises this week</span><span class="stats-metric-value">${recentTranslations}</span></div>
+    `;
+
+    // — Performance: Grammar —
+    const grammarCompleted = Object.keys(this.grammarUnitProgress).filter(uid => {
+      const up = this.grammarUnitProgress[uid];
+      return up && up.lessons && Object.keys(up.lessons).length > 0;
+    }).length;
+    const totalGrammarUnits = typeof GRAMMAR_UNITS !== "undefined" ? GRAMMAR_UNITS.length : 0;
+    const grammarExScores = [];
+    Object.values(this.grammarUnitProgress).forEach(up => {
+      if (up && up.exercises) {
+        Object.values(up.exercises).forEach(ex => {
+          if (typeof ex === "object" && ex.score !== undefined) grammarExScores.push(ex.score);
+          else if (typeof ex === "number") grammarExScores.push(ex);
+        });
+      }
+    });
+    const avgGrammarScore = grammarExScores.length > 0 ? Math.round(grammarExScores.reduce((s, v) => s + v, 0) / grammarExScores.length) : 0;
+    document.getElementById("stats-grammar-metrics").innerHTML = `
+      <div class="stats-metric-row"><span class="stats-metric-label">Units started</span><span class="stats-metric-value">${grammarCompleted} / ${totalGrammarUnits}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Avg exercise score</span><span class="stats-metric-value">${grammarExScores.length > 0 ? avgGrammarScore + "%" : "—"}</span></div>
+    `;
+
+    // — Performance: Conversation —
+    const convSessions = this._convSessionCount;
+    const convExchanges = this._convTotalExchanges;
+    const avgExchangeLen = convSessions > 0 ? Math.round(convExchanges / convSessions) : 0;
+    document.getElementById("stats-conv-metrics").innerHTML = `
+      <div class="stats-metric-row"><span class="stats-metric-label">Sessions completed</span><span class="stats-metric-value">${convSessions}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Avg exchanges/session</span><span class="stats-metric-value">${convSessions > 0 ? avgExchangeLen : "—"}</span></div>
+    `;
+
+    // — Streak —
+    const streak = this._streakData;
+    document.getElementById("stats-streak-metrics").innerHTML = `
+      <div class="stats-metric-row"><span class="stats-metric-label">Current streak</span><span class="stats-metric-value">${streak.current} day${streak.current !== 1 ? "s" : ""}</span></div>
+      <div class="stats-metric-row"><span class="stats-metric-label">Longest streak</span><span class="stats-metric-value">${streak.longest} day${streak.longest !== 1 ? "s" : ""}</span></div>
+    `;
+
+    // — CEFR Badge —
+    const cachedAssessment = this.load("llmAssessment");
+    const badge = document.getElementById("stats-cefr-badge");
+    if (cachedAssessment && cachedAssessment.level) {
+      badge.textContent = cachedAssessment.level;
+      badge.className = "cefr-badge cefr-" + cachedAssessment.level;
+    } else {
+      badge.textContent = "—";
+      badge.className = "cefr-badge cefr-unknown";
+    }
+
+    // — LLM Assessment area —
+    this._renderAssessmentArea(cachedAssessment);
+  }
+
+  _renderAssessmentArea(cached) {
+    const area = document.getElementById("stats-assessment-area");
+    if (!cached) {
+      area.innerHTML = `<p style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',Arial,sans-serif;">No assessment yet. Click the button above to generate an LLM-based proficiency assessment.</p>`;
+      return;
+    }
+    let recHtml = "";
+    if (cached.recommendations && cached.recommendations.length > 0) {
+      recHtml = `<h4>Recommendations</h4><ul>${cached.recommendations.map(r => `<li>${this._escapeHtml(r)}</li>`).join("")}</ul>`;
+    }
+    area.innerHTML = `
+      <div class="stats-assessment-result">
+        <h4>CEFR Level: ${this._escapeHtml(cached.level || "?")}</h4>
+        <div>${this._renderSimpleMarkdown(cached.assessment || "")}</div>
+        ${recHtml}
+      </div>
+      <div class="stats-assessment-meta">
+        <span>Generated: ${cached.timestamp ? new Date(cached.timestamp).toLocaleString() : "unknown"}</span>
+        <button id="stats-regenerate-btn">Regenerate</button>
+      </div>
+    `;
+    const regenBtn = document.getElementById("stats-regenerate-btn");
+    if (regenBtn) regenBtn.addEventListener("click", () => this.generateAssessment());
+  }
+
+  async generateAssessment() {
+    if (!this.apiKey) {
+      const area = document.getElementById("stats-assessment-area");
+      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;">Please configure an API key in Settings to generate an assessment.</p>`;
+      return;
+    }
+
+    const btn = document.getElementById("stats-assess-btn");
+    btn.disabled = true;
+    btn.textContent = "Generating assessment...";
+
+    // Gather stats summary for the prompt
+    const completedCount = Object.keys(this.completed).length;
+    const history = this._translationHistory;
+    const avgScore = history.length > 0 ? Math.round(history.reduce((s, h) => s + h.score, 0) / history.length) : 0;
+    const vocabMastered = Object.keys(this.vocabProgress).filter(k => this.vocabProgress[k]).length;
+    const grammarStarted = Object.keys(this.grammarUnitProgress).length;
+    const convSessions = this._convSessionCount;
+    const totalTime = this._formatTime(Object.values(this._activeTimeData).reduce((s, v) => s + v, 0));
+    const recentScores = history.slice(-10).map(h => h.score);
+
+    // Gather completed text IDs to show which authors/works they've worked on
+    const workedTexts = {};
+    Object.keys(this.completed).forEach(key => {
+      const textId = key.split(":")[0];
+      if (!workedTexts[textId]) workedTexts[textId] = 0;
+      workedTexts[textId]++;
+    });
+    const workedSummary = Object.entries(workedTexts).map(([id, count]) => `${id}: ${count} passages`).join(", ");
+
+    const systemPrompt = `You are a language proficiency assessor specializing in academic German, particularly philosophical and literary translation. Assess the learner's reading comprehension and translation proficiency using the CEFR framework (A1-C2).
+
+Weight your assessment:
+- Vocabulary depth and range: 35% (especially philosophical/academic vocabulary — Wittgenstein, Nietzsche, Freud terminology)
+- Ability to parse complex sentence structures: 30% (German subordinate clauses, case system, philosophical prose with nested relative clauses)
+- Grammar accuracy: 20% (case endings, verb positioning, subjunctive)
+- Conversational fluency: 15%
+
+For a learner focused on translating Wittgenstein, Nietzsche, and Freud, privilege reading comprehension over spoken fluency. Accurate translation of Tractatus propositions or Genealogy passages indicates high proficiency even without conversational data.
+
+Respond as JSON: { "level": "B2", "assessment": "...", "recommendations": ["...", "...", "..."] }`;
+
+    const userPrompt = `Here is the learner's data from the Übersetzungswerkstatt app:
+
+- Translation exercises completed: ${completedCount}
+- Works practiced: ${workedSummary || "none yet"}
+- Average translation score: ${avgScore}% (from ${history.length} evaluations)
+- Recent 10 scores: [${recentScores.join(", ")}]
+- Vocabulary items mastered: ${vocabMastered}
+- Grammar units started: ${grammarStarted}
+- Conversation sessions: ${convSessions}
+- Total active study time: ${totalTime}
+
+Assess this learner's current CEFR level for reading/translating academic German philosophical texts. Provide a 2-3 paragraph assessment covering strengths, areas for improvement, and 3 specific recommendations.`;
+
+    try {
+      const fullPrompt = systemPrompt + "\n\n" + userPrompt;
+      const text = await this.llmComplete(fullPrompt, { maxTokens: 1024 });
+      let result;
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*"level"[\s\S]*\}/);
+        result = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+      } catch (e) {
+        result = { level: "?", assessment: text, recommendations: [] };
+      }
+
+      // Cache with timestamp
+      result.timestamp = Date.now();
+      this.save("llmAssessment", result);
+
+      // Update badge
+      const badge = document.getElementById("stats-cefr-badge");
+      badge.textContent = result.level;
+      badge.className = "cefr-badge cefr-" + result.level;
+
+      this._renderAssessmentArea(result);
+    } catch (e) {
+      const area = document.getElementById("stats-assessment-area");
+      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;">Assessment failed: ${this._escapeHtml(e.message)}</p>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Bewertung generieren";
+    }
   }
 
 }
