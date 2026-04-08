@@ -19097,6 +19097,7 @@ class App {
     this._ttsCache = new Map();        // text → Blob (null = fetch in progress)
     this._ttsPrefetchQueue = [];
     this._ttsPrefetchActive = false;
+    this._ttsGeneration = 0;    // incremented on stop; used to cancel stale in-flight requests
     const loadedCustom = this.load("customTexts");
     this.customTexts = (loadedCustom && typeof loadedCustom === "object" && !Array.isArray(loadedCustom)) ? loadedCustom : {};
     this.allTexts = { ...TEXTS, ...this.customTexts };
@@ -20264,6 +20265,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   async _openaiTTS(text, voice, onEnd, onStart) {
+    const _gen = this._ttsGeneration; // capture before any await; bail out if stale
     // Check in-memory cache first for instant playback
     const cachedBlob = this._ttsCache && this._ttsCache.get(text);
     if (cachedBlob) {
@@ -20294,11 +20296,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       }
       clearTimeout(timeoutId);
       if (!response.ok) throw new Error("OpenAI TTS error: " + response.status);
-      // Bail out if user stopped while fetch was in flight
-      if (!this._ttsActive && !this._germanTtsActive && !this._speakWordActive) return;
+      // Bail out if a newer TTS request has started (generation changed) or all TTS was stopped
+      if (this._ttsGeneration !== _gen) return;
       const blob = await response.blob();
-      // Bail out if user stopped while blob was being read
-      if (!this._ttsActive && !this._germanTtsActive && !this._speakWordActive) return;
+      // Bail out again after blob read
+      if (this._ttsGeneration !== _gen) return;
       // Store in cache for instant replay
       if (this._ttsCache && (!this._ttsCache.has(text) || this._ttsCache.get(text) === null)) {
         this._ttsCache.set(text, blob);
@@ -20432,6 +20434,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   // Central stop helper — kills all audio sources
   _stopAllTTS() {
+    this._ttsGeneration++;
     if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
     if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio.currentTime = 0; this._ttsAudio = null; }
   }
