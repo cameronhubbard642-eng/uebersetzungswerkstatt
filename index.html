@@ -20472,6 +20472,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   nextExercise() {
     if (this.currentExerciseIdx < this.currentText.exercises.length - 1) {
+      this._resetAllTTSState();
       this.currentExerciseIdx++;
       this.render();
     }
@@ -20989,6 +20990,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   startVocabBatch(batchIdx) {
+    this._resetAllTTSState();
     const batches = this.buildVocabBatches();
     const batch = batches[batchIdx];
     if (!batch) return;
@@ -21214,6 +21216,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.vocabProgress[key] = true;
     }
     this.save("vocabProgress", this.vocabProgress);
+    this._resetAllTTSState();
     this.vocabCurrentIdx++;
     this.vocabFlipped = false;
     this.renderVocabExercise();
@@ -21242,6 +21245,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
 
     setTimeout(() => {
+      this._resetAllTTSState();
       this.vocabCurrentIdx++;
       this.renderVocabExercise();
     }, 1000);
@@ -21282,6 +21286,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     checkBtn.style.display = "none";
     nextBtn.style.display = "inline-block";
     nextBtn.addEventListener("click", () => {
+      this._resetAllTTSState();
       this.vocabCurrentIdx++;
       this.renderVocabExercise();
     });
@@ -22442,6 +22447,7 @@ Lesson: ${ex.profile.description}`;
 // 4. renderGrammarLesson(unitId, lessonId)
 // ============================================================================
   renderGrammarLesson(unitId, lessonId) {
+  this._resetAllTTSState();
   const unitIndex = parseInt(unitId.split('_')[1]);
   const [lessonUnitIdx, lessonIdx] = lessonId.split('_').map(Number);
 
@@ -22592,6 +22598,7 @@ Lesson: ${ex.profile.description}`;
 // 5. renderGrammarExercise(unitId, exerciseId)
 // ============================================================================
   renderGrammarExercise(unitId, exerciseId) {
+  this._resetAllTTSState();
   const unitIndex = parseInt(unitId.split('_')[1]);
   const [exerciseUnitIdx, exerciseIdx] = exerciseId.split('_').map(Number);
 
