@@ -20129,7 +20129,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       return;
     }
 
-    // Start fresh playback
+    // Start fresh playback — reset all other TTS channels first
+    this._resetAllTTSState();
     const ex = this.currentExercise;
     if (!ex || !ex.german) return;
     this._germanTtsActive = true;
@@ -20215,13 +20216,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         return;
       }
     }
-    // Stop any current playback and start new
-    this._stopAllTTS();
-    // Reset previous active button to its play state
-    if (this._speakWordBtn && this._speakWordBtn !== btn) {
-      const wasPronounce = this._speakWordBtn.classList.contains("vocab-pronounce-btn");
-      this._speakWordBtn.innerHTML = wasPronounce ? "&#9654; Pronounce" : "&#9654;";
-    }
+    // Stop all TTS channels and reset their state before starting new word
+    this._resetAllTTSState();
     this._speakWordActive = true;
     this._speakWordPaused = false;
     this._speakWordText = word;
@@ -20336,7 +20332,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       return;
     }
 
-    // Start fresh playback
+    // Start fresh playback — reset all other TTS channels first
+    this._resetAllTTSState();
     const text = (this._canUseOpenAITTS() && this._currentGrammarTTSText)
       ? this._currentGrammarTTSText
       : this._getLessonText();
