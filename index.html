@@ -20588,26 +20588,38 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
     }
 
-    // If playing → pause
+    // If playing → pause (same button) or switch to new lesson (different button)
     if (this._ttsActive) {
-      if (this._ttsAudio && !this._ttsAudio.paused) {
-        this._ttsAudio.pause();
-        this._ttsPaused = true;
-        btn.innerHTML = "&#9654; Resume";
+      if (btn !== this._ttsBtn) {
+        // Different button — stop current and fall through to start fresh
+        this._stopAllTTS();
+        this._ttsActive = false;
+        this._ttsPaused = false;
+        if (this._ttsBtn) {
+          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+        }
+        // fall through to start fresh playback below
+      } else {
+        // Same button — pause/resume
+        if (this._ttsAudio && !this._ttsAudio.paused) {
+          this._ttsAudio.pause();
+          this._ttsPaused = true;
+          btn.innerHTML = "&#9654; Resume";
+          return;
+        }
+        if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
+          speechSynthesis.pause();
+          this._ttsPaused = true;
+          btn.innerHTML = "&#9654; Resume";
+          return;
+        }
+        // Fallback: stop entirely
+        this._stopAllTTS();
+        this._ttsActive = false;
+        this._ttsPaused = false;
+        btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
         return;
       }
-      if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
-        speechSynthesis.pause();
-        this._ttsPaused = true;
-        btn.innerHTML = "&#9654; Resume";
-        return;
-      }
-      // Fallback: stop entirely
-      this._stopAllTTS();
-      this._ttsActive = false;
-      this._ttsPaused = false;
-      btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
-      return;
     }
 
     // Start fresh playback — reset all other TTS channels first
