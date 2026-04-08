@@ -74,6 +74,7 @@ body.sidebar-open {
   height: 100dvh;
 }
 #sidebar-header {
+  flex-shrink: 0;
   padding: 20px 16px 12px;
   border-bottom: 1px solid var(--border);
 }
@@ -90,6 +91,7 @@ body.sidebar-open {
   font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 .text-tabs {
+  flex-shrink: 0;
   display: flex;
   border-bottom: 1px solid var(--border);
 }
@@ -208,6 +210,7 @@ body.sidebar-open {
 #sidebar-footer {
   flex-shrink: 0;
   padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -632,6 +635,7 @@ body.sidebar-open {
 
 /* Mode Switcher */
 .mode-switcher {
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2px;
@@ -1244,10 +1248,6 @@ body.sidebar-open {
   }
   #sidebar {
     padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  #sidebar-footer {
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
 
@@ -5025,6 +5025,7 @@ const DICT = {
   "beibringt": { pos: "VERB", gloss: "teaches" },
   "beide": { pos: "PRON", gloss: "both" },
   "beiden": { pos: "ART", gloss: "both" },
+  "beinbruch": { pos: "NOUN", gloss: "broken leg; (idiom) good luck" },
   "beides": { pos: "PRON", gloss: "both" },
   "beim": { pos: "PREP", gloss: "at the" },
   "beinahe": { pos: "ADV", gloss: "almost" },
@@ -19029,6 +19030,7 @@ class App {
 
   switchText(textId) {
     if (!this.texts[textId]) return;
+    this._resetAllTTSState();
     // Save current position before leaving
     if (this.currentTextId) {
       this._exercisePositions[this.currentTextId] = this.currentExerciseIdx;
@@ -19040,6 +19042,7 @@ class App {
   }
 
   switchExercise(idx) {
+    this._resetAllTTSState();
     this.currentExerciseIdx = idx;
     this.render();
   }
@@ -20154,6 +20157,35 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio.currentTime = 0; this._ttsAudio = null; }
   }
 
+  // Full TTS state reset — call when navigating between exercises, lessons, modes, texts
+  _resetAllTTSState() {
+    this._stopAllTTS();
+    // Translation Listen state
+    this._germanTtsActive = false;
+    this._germanTtsPaused = false;
+    this._germanTtsQueue = [];
+    this._germanTtsQueueIdx = 0;
+    const germanBtn = document.getElementById("german-tts-btn");
+    if (germanBtn) germanBtn.innerHTML = "&#9654; Listen";
+    // Grammar lesson TTS state
+    this._ttsActive = false;
+    this._ttsPaused = false;
+    this._ttsChunks = [];
+    this._ttsIdx = 0;
+    this._ttsOpenAIParts = [];
+    this._ttsOpenAIIdx = 0;
+    if (this._ttsBtn) { this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; this._ttsBtn = null; }
+    // Inline speak / vocab pronounce state
+    this._speakWordActive = false;
+    this._speakWordPaused = false;
+    if (this._speakWordBtn) {
+      const wasPronounce = this._speakWordBtn.classList.contains("vocab-pronounce-btn");
+      this._speakWordBtn.innerHTML = wasPronounce ? "&#9654; Pronounce" : "&#9654;";
+      this._speakWordBtn = null;
+    }
+    this._speakWordText = null;
+  }
+
   // Vocabulary word / inline pronunciation (play / pause / resume)
   speakWord(word, btn) {
     const isVocab = btn && btn.classList.contains("vocab-pronounce-btn");
@@ -20695,6 +20727,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   /* ========== VOCABULARY MODE ========== */
   switchMode(mode) {
+    this._resetAllTTSState();
     this.currentMode = mode;
     const translationContent = document.getElementById("translation-content");
     const vocabContent = document.getElementById("vocab-content");
