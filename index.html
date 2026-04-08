@@ -18798,7 +18798,9 @@ class App {
     this.voiceDeName = this.load("voiceDeName") || "";
     this.voiceEnName = this.load("voiceEnName") || "";
     this._germanTtsActive = false;
+    this._germanTtsPaused = false;
     this._ttsActive = false;
+    this._ttsPaused = false;
     this._ttsAudio = null;
     this._ttsChunks = [];
     this._ttsIdx = 0;
@@ -18811,6 +18813,11 @@ class App {
     this._germanTtsBtn = null;
     this._germanTtsRate = 0.85;
     this._germanTtsOnEnd = null;
+    // Inline speak / vocab pronounce state
+    this._speakWordActive = false;
+    this._speakWordPaused = false;
+    this._speakWordText = null;
+    this._speakWordBtn = null;
     // TTS audio pre-fetch cache
     this._ttsCache = new Map();        // text → Blob (null = fetch in progress)
     this._ttsPrefetchQueue = [];
@@ -18987,7 +18994,7 @@ class App {
       // Grammar TTS (button rendered dynamically in lesson content)
       if (e.target.id === "grammar-tts-btn") this.toggleLessonTTS(e.target);
       if (e.target.classList.contains("grammar-speak-btn") && e.target.dataset.text) {
-        this.speakWord(e.target.dataset.text);
+        this.speakWord(e.target.dataset.text, e.target);
       }
       // Vocabulary mode event delegation
       if (this.currentMode === "vocabulary" && e.target.closest("#vocab-content")) {
@@ -20032,15 +20039,16 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
   }
 
-  _speakGerman(text, rate, onEnd) {
+  _speakGerman(text, rate, onEnd, onStart) {
     if (this._canUseOpenAITTS()) {
       this._openaiTTS(text, "nova", (result) => {
         if (result === "fallback") {
           this._browserSpeak(text, "de-DE", rate || 0.85, this._pickDeVoice(), onEnd);
         } else if (onEnd) { onEnd(); }
-      });
+      }, onStart);
       return;
     }
+    if (onStart) onStart();
     this._browserSpeak(text, "de-DE", rate || 0.85, this._pickDeVoice(), onEnd);
   }
 
@@ -20082,55 +20090,132 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     return enUSFemale[0] || enFemale[0] || enUS[0] || enVoices[0] || null;
   }
 
-  // Translation tab TTS toggle
+  // Translation tab TTS toggle (play / pause / resume)
   toggleGermanTTS() {
     const btn = document.getElementById("german-tts-btn");
     if (!btn) return;
+
+    // If paused → resume
+    if (this._germanTtsPaused) {
+      this._germanTtsPaused = false;
+      btn.innerHTML = "&#9646;&#9646; Pause";
+      if (this._ttsAudio) { this._ttsAudio.play(); return; }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
+    }
+
+    // If playing → pause
     if (this._germanTtsActive) {
-      if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
-      if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
+      if (this._ttsAudio && !this._ttsAudio.paused) {
+        this._ttsAudio.pause();
+        this._germanTtsPaused = true;
+        btn.innerHTML = "&#9654; Resume";
+        return;
+      }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+        this._germanTtsPaused = true;
+        btn.innerHTML = "&#9654; Resume";
+        return;
+      }
+      // Fallback: stop entirely
+      this._stopAllTTS();
       this._germanTtsActive = false;
+      this._germanTtsPaused = false;
       this._germanTtsQueue = [];
       btn.innerHTML = "&#9654; Listen";
       return;
     }
+
+    // Start fresh playback
     const ex = this.currentExercise;
     if (!ex || !ex.german) return;
     this._germanTtsActive = true;
+    this._germanTtsPaused = false;
     if (this._canUseOpenAITTS()) {
       btn.innerHTML = "&#8987; Loading\u2026";
       this._speakGermanChunked(ex.german, 0.85, btn, () => {
         this._germanTtsActive = false;
+        this._germanTtsPaused = false;
         btn.innerHTML = "&#9654; Listen";
       });
     } else {
-      btn.innerHTML = "&#9632; Stop";
+      btn.innerHTML = "&#9646;&#9646; Pause";
       this._browserSpeak(ex.german, "de-DE", 0.85, this._pickDeVoice(), () => {
         this._germanTtsActive = false;
+        this._germanTtsPaused = false;
         btn.innerHTML = "&#9654; Listen";
       });
     }
   }
 
-  // Vocabulary word pronunciation
-  speakWord(word) {
+  // Central stop helper — kills all audio sources
+  _stopAllTTS() {
     if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
-    if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
-    this._speakGerman(word, 0.80);
+    if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio.currentTime = 0; this._ttsAudio = null; }
+  }
+
+  // Vocabulary word / inline pronunciation (play / pause / resume)
+  speakWord(word, btn) {
+    const isVocab = btn && btn.classList.contains("vocab-pronounce-btn");
+    const playLabel = isVocab ? "&#9654; Pronounce" : "&#9654;";
+    const pauseLabel = isVocab ? "&#9646;&#9646; Pause" : "&#9646;&#9646;";
+    const resumeLabel = isVocab ? "&#9654; Resume" : "&#9654;";
+
+    // If same word is paused → resume
+    if (this._speakWordPaused && this._speakWordText === word) {
+      this._speakWordPaused = false;
+      if (btn) btn.innerHTML = pauseLabel;
+      if (this._ttsAudio) { this._ttsAudio.play(); return; }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
+    }
+    // If same word is playing → pause
+    if (this._speakWordActive && this._speakWordText === word) {
+      if (this._ttsAudio && !this._ttsAudio.paused) {
+        this._ttsAudio.pause();
+        this._speakWordPaused = true;
+        if (btn) btn.innerHTML = resumeLabel;
+        return;
+      }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+        this._speakWordPaused = true;
+        if (btn) btn.innerHTML = resumeLabel;
+        return;
+      }
+    }
+    // Stop any current playback and start new
+    this._stopAllTTS();
+    // Reset previous active button to its play state
+    if (this._speakWordBtn && this._speakWordBtn !== btn) {
+      const wasPronounce = this._speakWordBtn.classList.contains("vocab-pronounce-btn");
+      this._speakWordBtn.innerHTML = wasPronounce ? "&#9654; Pronounce" : "&#9654;";
+    }
+    this._speakWordActive = true;
+    this._speakWordPaused = false;
+    this._speakWordText = word;
+    this._speakWordBtn = btn || null;
+    if (btn) btn.innerHTML = pauseLabel;
+    this._speakGerman(word, 0.80, () => {
+      this._speakWordActive = false;
+      this._speakWordPaused = false;
+      this._speakWordText = null;
+      if (btn) btn.innerHTML = playLabel;
+      this._speakWordBtn = null;
+    });
   }
 
   // Sentence-chunked German TTS — plays first sentence immediately, chains the rest
   async _speakGermanChunked(text, rate, btn, onEnd) {
     const sentences = text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
     if (sentences.length <= 1) {
-      // Short text: single fetch with loading→stop transition
       await this._openaiTTS(
         text, "nova",
         (result) => {
           if (result === "fallback") {
-            if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop";
+            if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause";
             this._browserSpeak(text, "de-DE", rate || 0.85, this._pickDeVoice(), () => {
               this._germanTtsActive = false;
+              this._germanTtsPaused = false;
               if (btn) btn.innerHTML = "&#9654; Listen";
               if (onEnd) onEnd();
             });
@@ -20138,7 +20223,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
             if (onEnd) onEnd();
           }
         },
-        () => { if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop"; }
+        () => { if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause"; }
       );
       return;
     }
@@ -20153,6 +20238,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   async _playNextGermanTTSChunk() {
     if (!this._germanTtsActive || this._germanTtsQueueIdx >= this._germanTtsQueue.length) {
       this._germanTtsActive = false;
+      this._germanTtsPaused = false;
       const btn = this._germanTtsBtn;
       if (btn) btn.innerHTML = "&#9654; Listen";
       if (this._germanTtsOnEnd) this._germanTtsOnEnd();
@@ -20166,9 +20252,10 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (result === "fallback") {
           const remaining = this._germanTtsQueue.slice(this._germanTtsQueueIdx).join(" ");
           const btn = this._germanTtsBtn;
-          if (btn && this._germanTtsActive) btn.innerHTML = "&#9632; Stop";
+          if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause";
           this._browserSpeak(remaining, "de-DE", this._germanTtsRate || 0.85, this._pickDeVoice(), () => {
             this._germanTtsActive = false;
+            this._germanTtsPaused = false;
             if (btn) btn.innerHTML = "&#9654; Listen";
             if (this._germanTtsOnEnd) this._germanTtsOnEnd();
           });
@@ -20178,49 +20265,74 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         }
       },
       isFirst ? () => {
-        if (this._germanTtsBtn && this._germanTtsActive) this._germanTtsBtn.innerHTML = "&#9632; Stop";
+        if (this._germanTtsBtn && this._germanTtsActive) this._germanTtsBtn.innerHTML = "&#9646;&#9646; Pause";
       } : null
     );
   }
 
-  // Grammar lesson TTS
+  // Grammar lesson TTS (play / pause / resume)
   toggleLessonTTS(btn) {
     if (!btn) return;
+
+    // If paused → resume
+    if (this._ttsPaused) {
+      this._ttsPaused = false;
+      btn.innerHTML = "&#9646;&#9646; Pause";
+      if (this._ttsAudio) { this._ttsAudio.play(); return; }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
+    }
+
+    // If playing → pause
     if (this._ttsActive) {
-      if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
-      if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
+      if (this._ttsAudio && !this._ttsAudio.paused) {
+        this._ttsAudio.pause();
+        this._ttsPaused = true;
+        btn.innerHTML = "&#9654; Resume";
+        return;
+      }
+      if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+        this._ttsPaused = true;
+        btn.innerHTML = "&#9654; Resume";
+        return;
+      }
+      // Fallback: stop entirely
+      this._stopAllTTS();
       this._ttsActive = false;
+      this._ttsPaused = false;
       btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
       return;
     }
+
+    // Start fresh playback
     const text = (this._canUseOpenAITTS() && this._currentGrammarTTSText)
       ? this._currentGrammarTTSText
       : this._getLessonText();
     if (!text) return;
     this._ttsActive = true;
+    this._ttsPaused = false;
     this._ttsBtn = btn;
     this._grammarTTSInitialBtnLabel = btn.innerHTML;
-    btn.innerHTML = "&#9632; Stop";
     if (this._canUseOpenAITTS()) {
       this._lessonTTSWithOpenAI(text);
     } else {
+      btn.innerHTML = "&#9646;&#9646; Pause";
       this._ttsReadVerbatim(text);
     }
   }
 
   async _lessonTTSWithOpenAI(text) {
     const btn = this._ttsBtn;
-    // Only show loading state if the audio isn't already cached
     const firstChunk = text.length <= 4000 ? text : (text.split(/(?<=[.!?])\s+/).filter(Boolean)[0] || text.slice(0, 4000));
     const isCached = this._ttsCache && this._ttsCache.get(firstChunk) instanceof Blob;
-    if (btn && !isCached) btn.innerHTML = "&#8987; Generating audio…";
+    if (btn && !isCached) btn.innerHTML = "&#8987; Generating audio\u2026";
     try {
       const MAX_INPUT = 4000;
       if (text.length <= MAX_INPUT) {
         await this._openaiTTS(text, "nova", (result) => {
           if (result === "fallback") { this._ttsReadVerbatim(text); }
-          else { this._ttsActive = false; if (btn) btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; }
-        });
+          else { this._ttsActive = false; this._ttsPaused = false; if (btn) btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; }
+        }, () => { if (btn && this._ttsActive) btn.innerHTML = "&#9646;&#9646; Pause"; });
       } else {
         const parts = [];
         let buf = "";
@@ -20231,7 +20343,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (buf.trim()) parts.push(buf.trim());
         this._ttsOpenAIParts = parts;
         this._ttsOpenAIIdx = 0;
-        if (btn) btn.innerHTML = "&#9632; Stop";
+        if (btn) btn.innerHTML = "&#9646;&#9646; Pause";
         this._playNextOpenAIPart();
       }
     } catch (e) { this._ttsReadVerbatim(text); }
@@ -20240,6 +20352,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   async _playNextOpenAIPart() {
     if (!this._ttsActive || this._ttsOpenAIIdx >= this._ttsOpenAIParts.length) {
       this._ttsActive = false;
+      this._ttsPaused = false;
       if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
       return;
     }
@@ -20301,7 +20414,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   _speakNextChunk() {
     if (!this._ttsActive || this._ttsIdx >= this._ttsChunks.length) {
       this._ttsActive = false;
-      if (this._ttsBtn) this._ttsBtn.innerHTML = "&#9654; Listen to Lesson";
+      this._ttsPaused = false;
+      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
       return;
     }
     const chunk = this._ttsChunks[this._ttsIdx];
@@ -20899,11 +21013,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderVocabSidebar();
     });
 
-    // Pronounce buttons
+    // Pronounce buttons (pass btn for pause/resume state)
     contentArea.querySelectorAll(".vocab-pronounce-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        this.speakWord(btn.dataset.word);
+        this.speakWord(btn.dataset.word, btn);
       });
     });
 
@@ -20911,6 +21025,18 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const exBtn = document.getElementById("vocab-examples-btn");
     if (exBtn) {
       exBtn.addEventListener("click", () => this.loadVocabExamples(this.vocabItems[this.vocabCurrentIdx]));
+    }
+
+    // Pre-fetch audio for current + next vocab words
+    if (this._canUseOpenAITTS()) {
+      const wordsToFetch = [];
+      if (item && item.german) wordsToFetch.push(item.german);
+      const nextItem = this.vocabItems[this.vocabCurrentIdx + 1];
+      if (nextItem && nextItem.german) wordsToFetch.push(nextItem.german);
+      // Also prefetch the one after that (vocab words are short, cheap to cache)
+      const nextNext = this.vocabItems[this.vocabCurrentIdx + 2];
+      if (nextNext && nextNext.german) wordsToFetch.push(nextNext.german);
+      this._prefetchTTS(wordsToFetch);
     }
   }
 
@@ -22473,6 +22599,28 @@ Lesson: ${ex.profile.description}`;
   }
 
   this.grammarActiveItem = { type: "exercise", unitId, itemId: exerciseId };
+
+  // Pre-fetch audio for German text in current and next exercise items
+  if (this._canUseOpenAITTS()) {
+    const textsToFetch = [];
+    // Current item's German text
+    if (currentItem.german) textsToFetch.push(currentItem.german);
+    if (currentItem.sentence) textsToFetch.push(currentItem.sentence);
+    // Next item's German text
+    const nextItem = exercise.items[state.currentIdx + 1];
+    if (nextItem) {
+      if (nextItem.german) textsToFetch.push(nextItem.german);
+      if (nextItem.sentence) textsToFetch.push(nextItem.sentence);
+    }
+    // Next exercise's first item
+    const nextExercise = unit.exercises[exerciseIdx + 1];
+    if (nextExercise && nextExercise.items && nextExercise.items[0]) {
+      const ni = nextExercise.items[0];
+      if (ni.german) textsToFetch.push(ni.german);
+      if (ni.sentence) textsToFetch.push(ni.sentence);
+    }
+    if (textsToFetch.length) this._prefetchTTS(textsToFetch);
+  }
 
   let html = '<div class="exercise-view">';
 
