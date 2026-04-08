@@ -1247,7 +1247,7 @@ body.sidebar-open {
     padding-bottom: env(safe-area-inset-bottom);
   }
   #sidebar-footer {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
 
@@ -8782,6 +8782,833 @@ const DICT = {
   "übermacht": { pos: "NOUN", gloss: "supremacy" },
   "übertreibung": { pos: "NOUN", gloss: "exaggeration" },
   "übrigen": { pos: "ADJ", gloss: "remaining" },
+
+  // === Additional words from exercise corpus ===
+  "abenteuer": { pos: "NOUN", gloss: "adventure" },
+  "abgerechnet": { pos: "VERB", gloss: "deducted, settled (accounts)" },
+  "abgeschafft": { pos: "VERB", gloss: "abolished, done away with" },
+  "abgewendet": { pos: "VERB", gloss: "averted, turned away" },
+  "abhandlung": { pos: "NOUN", gloss: "treatise, essay" },
+  "abhandlungen": { pos: "NOUN", gloss: "treatises, essays" },
+  "abspielt": { pos: "VERB", gloss: "plays out, takes place" },
+  "abteil": { pos: "NOUN", gloss: "compartment (e.g. train)" },
+  "abteilen": { pos: "VERB", gloss: "to divide, partition" },
+  "abwehr": { pos: "NOUN", gloss: "defense, repulsion" },
+  "abzuweisen": { pos: "VERB", gloss: "to reject, dismiss" },
+  "achtzehn": { pos: "NUM", gloss: "eighteen" },
+  "additionszeichen": { pos: "NOUN", gloss: "addition sign, plus sign" },
+  "adjektiv": { pos: "NOUN", gloss: "adjective" },
+  "akt": { pos: "NOUN", gloss: "act; nude (art)" },
+  "allemal": { pos: "ADV", gloss: "always, in any case, every time" },
+  "alltäglichkeit": { pos: "NOUN", gloss: "everydayness, ordinariness" },
+  "allzumenschliches": { pos: "ADJ", gloss: "all-too-human (neuter form)" },
+  "analysieren": { pos: "VERB", gloss: "to analyze" },
+  "analysiert": { pos: "VERB", gloss: "analyzed, analyzes" },
+  "ander": { pos: "ADJ", gloss: "other, different (uninflected/archaic form)" },
+  "anfalls": { pos: "NOUN", gloss: "of the attack/fit (genitive of Anfall)" },
+  "angebotenen": { pos: "VERB", gloss: "offered (past participle, inflected)" },
+  "angeht": { pos: "VERB", gloss: "concerns, goes on, starts" },
+  "angehängte": { pos: "VERB", gloss: "appended, attached (past participle)" },
+  "angelegenheit": { pos: "NOUN", gloss: "matter, affair, concern" },
+  "angenehmes": { pos: "ADJ", gloss: "something pleasant (neuter)" },
+  "angestrahlt": { pos: "VERB", gloss: "illuminated, beamed at" },
+  "angewendet": { pos: "VERB", gloss: "applied, used" },
+  "angsterregenden": { pos: "ADJ", gloss: "anxiety-inducing (inflected)" },
+  "anhängen": { pos: "VERB", gloss: "to attach, append; to adhere to" },
+  "animistische": { pos: "ADJ", gloss: "animistic (inflected)" },
+  "animistischer": { pos: "ADJ", gloss: "animistic (genitive/comparative)" },
+  "anmerkung": { pos: "NOUN", gloss: "note, remark, annotation" },
+  "anregt": { pos: "VERB", gloss: "stimulates, prompts" },
+  "anrennen": { pos: "VERB", gloss: "to run into, charge against" },
+  "anrufen": { pos: "VERB", gloss: "to call, invoke" },
+  "anscheinend": { pos: "ADV", gloss: "apparently, seemingly" },
+  "ansprüche": { pos: "NOUN", gloss: "claims, demands" },
+  "anstoßenden": { pos: "ADJ", gloss: "adjacent, abutting (inflected)" },
+  "antasten": { pos: "VERB", gloss: "to touch, violate, encroach upon" },
+  "antwortet": { pos: "VERB", gloss: "answers, replies" },
+  "anwesenheit": { pos: "NOUN", gloss: "presence" },
+  "anziehenden": { pos: "ADJ", gloss: "attractive, appealing (inflected)" },
+  "anzuregen": { pos: "VERB", gloss: "to stimulate, to prompt" },
+  "aphorismen": { pos: "NOUN", gloss: "aphorisms" },
+  "aphorismus": { pos: "NOUN", gloss: "aphorism" },
+  "arglistig": { pos: "ADJ", gloss: "deceitful, malicious" },
+  "arithmetik": { pos: "NOUN", gloss: "arithmetic" },
+  "asketischen": { pos: "ADJ", gloss: "ascetic (inflected)" },
+  "aspekte": { pos: "NOUN", gloss: "aspects" },
+  "asymmetrie": { pos: "NOUN", gloss: "asymmetry" },
+  "atem": { pos: "NOUN", gloss: "breath" },
+  "atome": { pos: "NOUN", gloss: "atoms" },
+  "atzung": { pos: "NOUN", gloss: "etching, corrosion; feeding (archaic)" },
+  "aufgefallen": { pos: "VERB", gloss: "noticed, struck (past participle of auffallen)" },
+  "aufgegangen": { pos: "VERB", gloss: "risen, gone up; dissolved into (past participle)" },
+  "aufging": { pos: "VERB", gloss: "rose, went up (past tense of aufgehen)" },
+  "aufhebt": { pos: "VERB", gloss: "lifts up; cancels, sublates (Hegelian)" },
+  "auflehnung": { pos: "NOUN", gloss: "rebellion, resistance" },
+  "aufmachen": { pos: "VERB", gloss: "to open, to get up" },
+  "aufrichtung": { pos: "NOUN", gloss: "erection, raising up; encouragement" },
+  "aufsatz": { pos: "NOUN", gloss: "essay, composition" },
+  "aufschlüsse": { pos: "NOUN", gloss: "disclosures, clarifications" },
+  "aufschrei": { pos: "NOUN", gloss: "outcry, scream" },
+  "aufstand": { pos: "NOUN", gloss: "uprising, revolt" },
+  "aufsteigen": { pos: "VERB", gloss: "to rise, ascend" },
+  "auftritt": { pos: "NOUN", gloss: "appearance, entrance; scene (stage)" },
+  "aufzählung": { pos: "NOUN", gloss: "enumeration, listing" },
+  "augenarzt": { pos: "NOUN", gloss: "ophthalmologist, eye doctor" },
+  "augenblick": { pos: "NOUN", gloss: "moment, instant" },
+  "augenfarbe": { pos: "NOUN", gloss: "eye color" },
+  "ausgabe": { pos: "NOUN", gloss: "edition, issue; expenditure" },
+  "ausgegangen": { pos: "VERB", gloss: "gone out, departed (past participle)" },
+  "ausgegossen": { pos: "VERB", gloss: "poured out (past participle)" },
+  "ausgehen": { pos: "VERB", gloss: "to go out, to proceed from" },
+  "ausgesprochen": { pos: "VERB", gloss: "expressed, pronounced; decidedly" },
+  "ausgetrockneten": { pos: "ADJ", gloss: "dried out, desiccated (inflected)" },
+  "auslaufen": { pos: "VERB", gloss: "to run out, expire, sail out" },
+  "auslegung": { pos: "NOUN", gloss: "interpretation, exegesis" },
+  "aussähe": { pos: "VERB", gloss: "would look like (subjunctive of aussehen)" },
+  "ausweg": { pos: "NOUN", gloss: "way out, escape" },
+  "ausweicht": { pos: "VERB", gloss: "evades, dodges" },
+  "auszusetzen": { pos: "VERB", gloss: "to expose; to object to; to suspend" },
+  "außen": { pos: "ADV", gloss: "outside, on the outside" },
+  "bach": { pos: "NOUN", gloss: "brook, stream" },
+  "bald": { pos: "ADV", gloss: "soon" },
+  "ballspiele": { pos: "NOUN", gloss: "ball games" },
+  "beamtete": { pos: "NOUN", gloss: "official, civil servant (inflected)" },
+  "bedeute": { pos: "VERB", gloss: "means, signifies (subjunctive)" },
+  "bedeutunglos": { pos: "ADJ", gloss: "meaningless, insignificant" },
+  "bedürfte": { pos: "VERB", gloss: "would need, required (subjunctive of bedürfen)" },
+  "befehl": { pos: "NOUN", gloss: "command, order" },
+  "befehlen": { pos: "VERB", gloss: "to command, order" },
+  "befindet": { pos: "VERB", gloss: "is located, finds itself" },
+  "befindlichen": { pos: "ADJ", gloss: "located, situated (inflected)" },
+  "befriedigt": { pos: "VERB", gloss: "satisfied, fulfills" },
+  "begegnet": { pos: "VERB", gloss: "meets, encounters" },
+  "begleiteten": { pos: "VERB", gloss: "accompanied (past tense, inflected)" },
+  "begriffswort": { pos: "NOUN", gloss: "concept word, noun" },
+  "begriffswortes": { pos: "NOUN", gloss: "of the concept word (genitive)" },
+  "begründen": { pos: "VERB", gloss: "to found, justify, establish" },
+  "behaglichen": { pos: "ADJ", gloss: "comfortable, cozy (inflected)" },
+  "beherrschen": { pos: "VERB", gloss: "to master, control, dominate" },
+  "beistimmen": { pos: "VERB", gloss: "to agree, assent" },
+  "bekommt": { pos: "VERB", gloss: "gets, receives" },
+  "belanglos": { pos: "ADJ", gloss: "irrelevant, trivial" },
+  "benannt": { pos: "VERB", gloss: "named, designated (past participle)" },
+  "benennt": { pos: "VERB", gloss: "names, designates" },
+  "berufen": { pos: "VERB", gloss: "to call, appoint; to appeal to" },
+  "beschlossen": { pos: "VERB", gloss: "decided, resolved (past participle)" },
+  "beschreibenden": { pos: "ADJ", gloss: "descriptive (inflected)" },
+  "beschwichtigt": { pos: "VERB", gloss: "appeases, pacifies" },
+  "beschädigen": { pos: "VERB", gloss: "to damage, harm" },
+  "beschäftigen": { pos: "VERB", gloss: "to occupy, employ, deal with" },
+  "beseelt": { pos: "VERB", gloss: "animates, inspires; ensouled" },
+  "beseelung": { pos: "NOUN", gloss: "animation, ensoulment" },
+  "bestimme": { pos: "VERB", gloss: "determine, define (first person / subjunctive)" },
+  "bestimmenden": { pos: "ADJ", gloss: "determining, defining (inflected)" },
+  "bestimmung": { pos: "NOUN", gloss: "determination, designation, vocation" },
+  "bestrafen": { pos: "VERB", gloss: "to punish" },
+  "bett": { pos: "NOUN", gloss: "bed" },
+  "beulen": { pos: "NOUN", gloss: "bumps, dents, bulges" },
+  "bevor": { pos: "CONJ", gloss: "before" },
+  "bewahrt": { pos: "VERB", gloss: "preserves, keeps" },
+  "bezeichnende": { pos: "ADJ", gloss: "characteristic, significant (inflected)" },
+  "bezeichnenden": { pos: "ADJ", gloss: "characteristic, significant (inflected)" },
+  "bietet": { pos: "VERB", gloss: "offers, provides" },
+  "bisherige": { pos: "ADJ", gloss: "previous, hitherto existing" },
+  "bitte": { pos: "PART", gloss: "please; request" },
+  "blieb": { pos: "VERB", gloss: "stayed, remained (past tense of bleiben)" },
+  "blutig": { pos: "ADJ", gloss: "bloody" },
+  "bon": { pos: "ADJ", gloss: "good (French loanword used in German philosophical texts)" },
+  "bratwurst": { pos: "NOUN", gloss: "bratwurst, fried sausage" },
+  "brennpunkt": { pos: "NOUN", gloss: "focal point, focus" },
+  "brettspiele": { pos: "NOUN", gloss: "board games" },
+  "buchstabe": { pos: "NOUN", gloss: "letter (of the alphabet)" },
+  "bücher": { pos: "NOUN", gloss: "books" },
+  "bündel": { pos: "NOUN", gloss: "bundle, bunch" },
+  "charakterisieren": { pos: "VERB", gloss: "to characterize" },
+  "christenthums": { pos: "NOUN", gloss: "of Christianity (archaic genitive)" },
+  "chronometers": { pos: "NOUN", gloss: "of the chronometer (genitive)" },
+  "dachte": { pos: "VERB", gloss: "thought (past tense of denken)" },
+  "dankbarkeit": { pos: "NOUN", gloss: "gratitude, thankfulness" },
+  "daraufhin": { pos: "ADV", gloss: "thereupon, as a result" },
+  "dasz": { pos: "CONJ", gloss: "that (archaic spelling of dass)" },
+  "dauerhaftem": { pos: "ADJ", gloss: "durable, lasting (dative inflection)" },
+  "deckel": { pos: "NOUN", gloss: "lid, cover" },
+  "decretiren": { pos: "VERB", gloss: "to decree (archaic spelling of dekretieren)" },
+  "dementierung": { pos: "NOUN", gloss: "denial, refutation" },
+  "denk": { pos: "VERB", gloss: "think! (imperative of denken)" },
+  "desjenigen": { pos: "PRON", gloss: "of that one, of the one (genitive)" },
+  "dreimaligen": { pos: "ADJ", gloss: "threefold, triple (inflected)" },
+  "dreizehnjähriger": { pos: "ADJ", gloss: "thirteen-year-old (inflected)" },
+  "dritter": { pos: "ADJ", gloss: "third (inflected)" },
+  "duellgegner": { pos: "NOUN", gloss: "dueling opponent" },
+  "duellplatz": { pos: "NOUN", gloss: "dueling ground" },
+  "durchschauen": { pos: "VERB", gloss: "to see through, to look through" },
+  "durften": { pos: "VERB", gloss: "were allowed to (past tense of dürfen)" },
+  "dynamische": { pos: "ADJ", gloss: "dynamic (inflected)" },
+  "dünkt": { pos: "VERB", gloss: "seems, appears (archaic: dünkt mich = it seems to me)" },
+  "dürfte": { pos: "VERB", gloss: "may, might (subjunctive of dürfen)" },
+  "ei": { pos: "NOUN", gloss: "egg" },
+  "eigenschaftswort": { pos: "NOUN", gloss: "adjective (lit. property word)" },
+  "eigenthümlichen": { pos: "ADJ", gloss: "peculiar, characteristic (archaic spelling, inflected)" },
+  "eindeutig": { pos: "ADJ", gloss: "unambiguous, clear" },
+  "eindringling": { pos: "NOUN", gloss: "intruder" },
+  "einfältige": { pos: "ADJ", gloss: "simple-minded, naive (inflected)" },
+  "einfügt": { pos: "VERB", gloss: "inserts, adds" },
+  "einheimischen": { pos: "ADJ", gloss: "native, local (inflected)" },
+  "einladen": { pos: "VERB", gloss: "to invite" },
+  "einleuchte": { pos: "VERB", gloss: "makes sense, is clear (subjunctive)" },
+  "einstieg": { pos: "NOUN", gloss: "entry, access, beginning" },
+  "eintrat": { pos: "VERB", gloss: "entered, occurred (past tense of eintreten)" },
+  "elixire": { pos: "NOUN", gloss: "elixirs" },
+  "empfindungen": { pos: "NOUN", gloss: "sensations, feelings" },
+  "empfindungsworte": { pos: "NOUN", gloss: "words of sensation/feeling" },
+  "empfindungsäußerungen": { pos: "NOUN", gloss: "expressions of sensation/feeling" },
+  "endung": { pos: "NOUN", gloss: "ending, suffix" },
+  "energische": { pos: "ADJ", gloss: "energetic, vigorous (inflected)" },
+  "eng": { pos: "ADJ", gloss: "narrow, tight, close" },
+  "entartung": { pos: "NOUN", gloss: "degeneration" },
+  "entdeckung": { pos: "NOUN", gloss: "discovery" },
+  "entfernen": { pos: "VERB", gloss: "to remove, distance" },
+  "entgegen": { pos: "PREP", gloss: "contrary to, against, toward" },
+  "entgegengesetzt": { pos: "ADJ", gloss: "opposite, contrary" },
+  "entgegengesetzten": { pos: "ADJ", gloss: "opposite, contrary (inflected)" },
+  "entladen": { pos: "VERB", gloss: "to unload, discharge" },
+  "entscheide": { pos: "VERB", gloss: "decide (first person / imperative)" },
+  "entscheidende": { pos: "ADJ", gloss: "decisive, determining (inflected)" },
+  "entschließt": { pos: "VERB", gloss: "decides, resolves" },
+  "entsetzen": { pos: "NOUN", gloss: "horror, dismay" },
+  "entworfenes": { pos: "VERB", gloss: "drafted, designed (past participle, neuter)" },
+  "entziehen": { pos: "VERB", gloss: "to withdraw, deprive" },
+  "entziffert": { pos: "VERB", gloss: "deciphered, decodes" },
+  "entzückt": { pos: "VERB", gloss: "delighted, enchanted" },
+  "epileptischen": { pos: "ADJ", gloss: "epileptic (inflected)" },
+  "erblickt": { pos: "VERB", gloss: "catches sight of, perceives" },
+  "erfand": { pos: "VERB", gloss: "invented (past tense of erfinden)" },
+  "erfassen": { pos: "VERB", gloss: "to grasp, comprehend, capture" },
+  "ergebnisse": { pos: "NOUN", gloss: "results, outcomes" },
+  "erinnerung": { pos: "NOUN", gloss: "memory, recollection" },
+  "ermordeten": { pos: "VERB", gloss: "murdered (past participle, inflected)" },
+  "ermutigen": { pos: "VERB", gloss: "to encourage" },
+  "ernst": { pos: "NOUN", gloss: "seriousness, earnestness" },
+  "erschrak": { pos: "VERB", gloss: "was startled, got frightened (past tense of erschrecken)" },
+  "erstaunen": { pos: "NOUN", gloss: "astonishment, amazement" },
+  "ertheilen": { pos: "VERB", gloss: "to grant, give, impart (archaic spelling of erteilen)" },
+  "erwiesen": { pos: "VERB", gloss: "proven, demonstrated (past participle)" },
+  "erworbene": { pos: "VERB", gloss: "acquired (past participle, inflected)" },
+  "erwähnen": { pos: "VERB", gloss: "to mention" },
+  "ethischem": { pos: "ADJ", gloss: "ethical (dative inflection)" },
+  "ethischer": { pos: "ADJ", gloss: "ethical (genitive/comparative inflection)" },
+  "eulen": { pos: "NOUN", gloss: "owls" },
+  "exakter": { pos: "ADJ", gloss: "more exact, more precise" },
+  "existieren": { pos: "VERB", gloss: "to exist" },
+  "fahren": { pos: "VERB", gloss: "to travel, drive, go" },
+  "fahrtbewegung": { pos: "NOUN", gloss: "travel movement, motion of a journey" },
+  "falltür": { pos: "NOUN", gloss: "trapdoor" },
+  "familienähnlichkeiten": { pos: "NOUN", gloss: "family resemblances" },
+  "feiert": { pos: "VERB", gloss: "celebrates" },
+  "feingefühl": { pos: "NOUN", gloss: "sensitivity, tact, delicacy" },
+  "feminine": { pos: "ADJ", gloss: "feminine (inflected)" },
+  "fenster": { pos: "NOUN", gloss: "window" },
+  "fernste": { pos: "ADJ", gloss: "farthest, most distant (superlative)" },
+  "flamme": { pos: "NOUN", gloss: "flame" },
+  "fliege": { pos: "NOUN", gloss: "fly (insect); bow tie" },
+  "fliegenglas": { pos: "NOUN", gloss: "fly glass, fly bottle" },
+  "flügelthiere": { pos: "NOUN", gloss: "winged animals (archaic spelling)" },
+  "folglich": { pos: "ADV", gloss: "consequently, therefore" },
+  "fordern": { pos: "VERB", gloss: "to demand, require" },
+  "formaler": { pos: "ADJ", gloss: "more formal, formal (inflected)" },
+  "fragestellung": { pos: "NOUN", gloss: "formulation of a question, problem statement" },
+  "frau": { pos: "NOUN", gloss: "woman, wife, Mrs." },
+  "frühstück": { pos: "NOUN", gloss: "breakfast" },
+  "funktioniert": { pos: "VERB", gloss: "functions, works" },
+  "fälschlich": { pos: "ADV", gloss: "falsely, erroneously" },
+  "fänden": { pos: "VERB", gloss: "would find (subjunctive of finden)" },
+  "förderten": { pos: "VERB", gloss: "promoted, supported (past tense)" },
+  "fühlt": { pos: "VERB", gloss: "feels" },
+  "führende": { pos: "ADJ", gloss: "leading, guiding (inflected)" },
+  "fülle": { pos: "NOUN", gloss: "abundance, fullness" },
+  "gang": { pos: "NOUN", gloss: "corridor, gait, course" },
+  "gastfreund": { pos: "NOUN", gloss: "host, guest-friend" },
+  "gattung": { pos: "NOUN", gloss: "genus, kind, genre" },
+  "gattungsname": { pos: "NOUN", gloss: "generic name, common noun" },
+  "geborene": { pos: "VERB", gloss: "born (past participle, inflected)" },
+  "geburt": { pos: "NOUN", gloss: "birth" },
+  "gedeihen": { pos: "VERB", gloss: "to thrive, prosper" },
+  "gedächtniss": { pos: "NOUN", gloss: "memory (archaic spelling of Gedächtnis)" },
+  "gefallen": { pos: "VERB", gloss: "pleases, fallen (past participle of fallen/gefallen)" },
+  "gefangen": { pos: "VERB", gloss: "captured, imprisoned (past participle)" },
+  "geflüchtete": { pos: "NOUN", gloss: "refugee, fugitive (substantivized adjective)" },
+  "geformter": { pos: "ADJ", gloss: "formed, shaped (inflected)" },
+  "gefühlsarten": { pos: "NOUN", gloss: "types of feelings/emotions" },
+  "gefühlsregung": { pos: "NOUN", gloss: "emotional stirring, feeling" },
+  "gegangen": { pos: "VERB", gloss: "gone (past participle of gehen)" },
+  "gegenbewegung": { pos: "NOUN", gloss: "counter-movement" },
+  "gegenseitig": { pos: "ADJ", gloss: "mutual, reciprocal" },
+  "gegensätzlich": { pos: "ADJ", gloss: "contrary, opposing" },
+  "gegensätzlichen": { pos: "ADJ", gloss: "contrary, opposing (inflected)" },
+  "gegenüberliegende": { pos: "ADJ", gloss: "opposite, facing (inflected)" },
+  "gegner": { pos: "NOUN", gloss: "opponent, adversary" },
+  "geholt": { pos: "VERB", gloss: "fetched, gotten (past participle)" },
+  "gehorchen": { pos: "VERB", gloss: "to obey" },
+  "gehölz": { pos: "NOUN", gloss: "grove, copse" },
+  "geirrt": { pos: "VERB", gloss: "erred, been mistaken (past participle)" },
+  "gekennzeichnet": { pos: "VERB", gloss: "marked, characterized (past participle)" },
+  "gelangt": { pos: "VERB", gloss: "reaches, arrives at" },
+  "gelb": { pos: "ADJ", gloss: "yellow" },
+  "gelegen": { pos: "ADJ", gloss: "located, situated; opportune" },
+  "gelesen": { pos: "VERB", gloss: "read (past participle of lesen)" },
+  "gellenden": { pos: "ADJ", gloss: "shrill, piercing (inflected)" },
+  "geländer": { pos: "NOUN", gloss: "railing, banister" },
+  "gemahnt": { pos: "VERB", gloss: "reminds, admonishes" },
+  "genealogische": { pos: "ADJ", gloss: "genealogical (inflected)" },
+  "genügen": { pos: "VERB", gloss: "to suffice, be enough" },
+  "genügende": { pos: "ADJ", gloss: "sufficient, adequate (inflected)" },
+  "gepackt": { pos: "VERB", gloss: "packed, seized (past participle)" },
+  "geprägt": { pos: "VERB", gloss: "coined, shaped, characterized (past participle)" },
+  "geschlagen": { pos: "VERB", gloss: "beaten, struck (past participle)" },
+  "geschlechte": { pos: "NOUN", gloss: "gender, sex, generation (archaic/dative form)" },
+  "geschwankt": { pos: "VERB", gloss: "wavered, swayed (past participle)" },
+  "gesellschaft": { pos: "NOUN", gloss: "society, company" },
+  "gesicht": { pos: "NOUN", gloss: "face, vision" },
+  "gespenst": { pos: "NOUN", gloss: "ghost, specter" },
+  "gespräch": { pos: "NOUN", gloss: "conversation, dialogue" },
+  "gestank": { pos: "NOUN", gloss: "stench, stink" },
+  "gestern": { pos: "ADV", gloss: "yesterday" },
+  "gesucht": { pos: "VERB", gloss: "sought, searched (past participle)" },
+  "getrennt": { pos: "VERB", gloss: "separated (past participle)" },
+  "getroffen": { pos: "VERB", gloss: "met, hit (past participle of treffen)" },
+  "gewachsen": { pos: "VERB", gloss: "grown; equal to (past participle of wachsen)" },
+  "gewahr": { pos: "ADJ", gloss: "aware, conscious of" },
+  "gewandert": { pos: "VERB", gloss: "hiked, wandered (past participle)" },
+  "gewesen": { pos: "VERB", gloss: "been (past participle of sein)" },
+  "gezelt": { pos: "NOUN", gloss: "tent (archaic)" },
+  "gezweifelt": { pos: "VERB", gloss: "doubted (past participle)" },
+  "gift": { pos: "NOUN", gloss: "poison" },
+  "glaubhaft": { pos: "ADJ", gloss: "credible, plausible" },
+  "gleichsinnigen": { pos: "ADJ", gloss: "in the same direction/sense (inflected)" },
+  "gleichzeitig": { pos: "ADJ", gloss: "simultaneous, at the same time" },
+  "glockenschläge": { pos: "NOUN", gloss: "bell strokes, chimes" },
+  "glücklich": { pos: "ADJ", gloss: "happy, fortunate" },
+  "grauenerregenden": { pos: "ADJ", gloss: "horrifying, terror-inducing (inflected)" },
+  "grausamkeit": { pos: "NOUN", gloss: "cruelty" },
+  "grausen": { pos: "NOUN", gloss: "horror, dread" },
+  "großartige": { pos: "ADJ", gloss: "magnificent, grand (inflected)" },
+  "großartigen": { pos: "ADJ", gloss: "magnificent, grand (inflected)" },
+  "grundgesetz": { pos: "NOUN", gloss: "basic law, fundamental law" },
+  "größere": { pos: "ADJ", gloss: "larger, greater (comparative, inflected)" },
+  "grün": { pos: "ADJ", gloss: "green" },
+  "hab": { pos: "VERB", gloss: "have (colloquial/dialectal shortened form of habe)" },
+  "halbmond": { pos: "NOUN", gloss: "half-moon, crescent" },
+  "halt": { pos: "PART", gloss: "just, simply (modal particle); stop" },
+  "haltende": { pos: "ADJ", gloss: "holding, keeping (inflected participle)" },
+  "hamburger": { pos: "NOUN", gloss: "hamburger; person from Hamburg" },
+  "hammer": { pos: "NOUN", gloss: "hammer" },
+  "hartnäckigen": { pos: "ADJ", gloss: "stubborn, persistent (inflected)" },
+  "heftig": { pos: "ADJ", gloss: "intense, vehement, violent" },
+  "heftigeren": { pos: "ADJ", gloss: "more intense, more violent (comparative, inflected)" },
+  "heilmittel": { pos: "NOUN", gloss: "remedy, cure" },
+  "heimeligkeit": { pos: "NOUN", gloss: "coziness, homeliness" },
+  "heimisch": { pos: "ADJ", gloss: "at home, native, familiar" },
+  "heimweh": { pos: "NOUN", gloss: "homesickness" },
+  "heiszen": { pos: "VERB", gloss: "to be called, mean (archaic spelling of heißen)" },
+  "held": { pos: "NOUN", gloss: "hero" },
+  "helfen": { pos: "VERB", gloss: "to help" },
+  "hell": { pos: "ADJ", gloss: "bright, light, clear" },
+  "hemmten": { pos: "VERB", gloss: "impeded, hindered (past tense)" },
+  "herabgekommener": { pos: "ADJ", gloss: "descended, degraded (inflected)" },
+  "heranzugehen": { pos: "VERB", gloss: "to approach, to go up to" },
+  "herkommt": { pos: "VERB", gloss: "comes from, originates" },
+  "herunter": { pos: "ADV", gloss: "down, downward" },
+  "hervorragend": { pos: "ADJ", gloss: "outstanding, excellent" },
+  "hervorrufen": { pos: "VERB", gloss: "to evoke, bring about" },
+  "hervorruft": { pos: "VERB", gloss: "evokes, produces" },
+  "hervortritt": { pos: "VERB", gloss: "comes to the fore, emerges" },
+  "hervorzurufen": { pos: "VERB", gloss: "to evoke, to bring about" },
+  "heutigem": { pos: "ADJ", gloss: "of today, present-day (dative)" },
+  "hiebfest": { pos: "ADJ", gloss: "blow-proof, firm against attack" },
+  "hiedurch": { pos: "ADV", gloss: "through this, hereby (archaic)" },
+  "hiefür": { pos: "ADV", gloss: "for this (archaic spelling of hierfür)" },
+  "hielt": { pos: "VERB", gloss: "held, kept (past tense of halten)" },
+  "hierin": { pos: "ADV", gloss: "herein, in this" },
+  "hierzu": { pos: "ADV", gloss: "to this, for this purpose" },
+  "hieße": { pos: "VERB", gloss: "would mean, would be called (subjunctive of heißen)" },
+  "hießen": { pos: "VERB", gloss: "were called, meant (past tense of heißen)" },
+  "hinkt": { pos: "VERB", gloss: "limps" },
+  "hinsicht": { pos: "NOUN", gloss: "regard, respect, consideration" },
+  "hinterher": { pos: "ADV", gloss: "afterward, behind" },
+  "hinweis": { pos: "NOUN", gloss: "hint, reference, indication" },
+  "hinweisende": { pos: "ADJ", gloss: "pointing, indicating (inflected)" },
+  "hinüber": { pos: "ADV", gloss: "over, across" },
+  "hoffe": { pos: "VERB", gloss: "hope (first person singular)" },
+  "holz": { pos: "NOUN", gloss: "wood" },
+  "holzgeschnitzten": { pos: "ADJ", gloss: "wood-carved (inflected)" },
+  "honigsammler": { pos: "NOUN", gloss: "honey gatherer" },
+  "horizont": { pos: "NOUN", gloss: "horizon" },
+  "horizontalen": { pos: "ADJ", gloss: "horizontal (inflected)" },
+  "huscht": { pos: "VERB", gloss: "darts, flits, scurries" },
+  "hält": { pos: "VERB", gloss: "holds, keeps, considers" },
+  "hände": { pos: "NOUN", gloss: "hands" },
+  "hänseln": { pos: "VERB", gloss: "to tease, mock" },
+  "hättest": { pos: "VERB", gloss: "would have (second person singular subjunctive of haben)" },
+  "höhepunkt": { pos: "NOUN", gloss: "peak, climax, highlight" },
+  "ideal": { pos: "NOUN", gloss: "ideal" },
+  "ideals": { pos: "NOUN", gloss: "of the ideal (genitive)" },
+  "imstande": { pos: "ADJ", gloss: "capable, able" },
+  "indirekt": { pos: "ADJ", gloss: "indirect" },
+  "inhaltsreiche": { pos: "ADJ", gloss: "rich in content (inflected)" },
+  "innerer": { pos: "ADJ", gloss: "inner, interior (inflected)" },
+  "instinct": { pos: "NOUN", gloss: "instinct (archaic/Latinate spelling)" },
+  "interessant": { pos: "ADJ", gloss: "interesting" },
+  "intransitives": { pos: "ADJ", gloss: "intransitive (neuter inflected)" },
+  "intuition": { pos: "NOUN", gloss: "intuition" },
+  "ironisieren": { pos: "VERB", gloss: "to ironize, treat ironically" },
+  "isolieren": { pos: "VERB", gloss: "to isolate" },
+  "jung": { pos: "ADJ", gloss: "young" },
+  "junge": { pos: "NOUN", gloss: "boy; young animal" },
+  "junges": { pos: "ADJ", gloss: "young (neuter inflected)" },
+  "kabinetts": { pos: "NOUN", gloss: "of the cabinet (genitive)" },
+  "kalkülen": { pos: "NOUN", gloss: "calculi, calculi (plural of Kalkül)" },
+  "kalter": { pos: "ADJ", gloss: "cold (inflected)" },
+  "kampfspiele": { pos: "NOUN", gloss: "combat games, competitive games" },
+  "kardinalzahlen": { pos: "NOUN", gloss: "cardinal numbers" },
+  "kartenspiele": { pos: "NOUN", gloss: "card games" },
+  "kausalitätsform": { pos: "NOUN", gloss: "form of causality" },
+  "keineswegs": { pos: "ADV", gloss: "by no means, not at all" },
+  "kinderchen": { pos: "NOUN", gloss: "little children (diminutive)" },
+  "kinderspiel": { pos: "NOUN", gloss: "child's play" },
+  "klarwerden": { pos: "VERB", gloss: "to become clear" },
+  "klarzustellen": { pos: "VERB", gloss: "to clarify, make clear" },
+  "klänge": { pos: "NOUN", gloss: "sounds, tones (plural)" },
+  "knabe": { pos: "NOUN", gloss: "boy, lad" },
+  "knappe": { pos: "NOUN", gloss: "squire; brief (inflected)" },
+  "kolonne": { pos: "NOUN", gloss: "column" },
+  "kolonnen": { pos: "NOUN", gloss: "columns" },
+  "kombinationsregel": { pos: "NOUN", gloss: "rule of combination" },
+  "komik": { pos: "NOUN", gloss: "comedy, comic quality" },
+  "konstellation": { pos: "NOUN", gloss: "constellation, configuration" },
+  "kopula": { pos: "NOUN", gloss: "copula (linking verb)" },
+  "kostbar": { pos: "ADJ", gloss: "precious, valuable" },
+  "kristallreinheit": { pos: "NOUN", gloss: "crystal clarity, crystal purity" },
+  "kriterien": { pos: "NOUN", gloss: "criteria" },
+  "kriterium": { pos: "NOUN", gloss: "criterion" },
+  "krokodile": { pos: "NOUN", gloss: "crocodiles" },
+  "krokodilen": { pos: "NOUN", gloss: "crocodiles (dative plural)" },
+  "krumme": { pos: "ADJ", gloss: "crooked, curved (inflected)" },
+  "kultur": { pos: "NOUN", gloss: "culture" },
+  "kunde": { pos: "NOUN", gloss: "customer; knowledge, lore" },
+  "kunstgriffe": { pos: "NOUN", gloss: "tricks, artifices, techniques" },
+  "kunstvoll": { pos: "ADJ", gloss: "artistic, skillful" },
+  "kunstvollen": { pos: "ADJ", gloss: "artistic, skillful (inflected)" },
+  "könig": { pos: "NOUN", gloss: "king" },
+  "könntest": { pos: "VERB", gloss: "could (second person singular subjunctive of können)" },
+  "kümmern": { pos: "VERB", gloss: "to care about, concern oneself" },
+  "künstlerischen": { pos: "ADJ", gloss: "artistic (inflected)" },
+  "kürze": { pos: "NOUN", gloss: "brevity, shortness" },
+  "kürzere": { pos: "ADJ", gloss: "shorter (comparative, inflected)" },
+  "kürzesten": { pos: "ADJ", gloss: "shortest (superlative, inflected)" },
+  "laden": { pos: "VERB", gloss: "to load; to invite; shop" },
+  "lag": { pos: "VERB", gloss: "lay, was situated (past tense of liegen)" },
+  "lager": { pos: "NOUN", gloss: "camp, warehouse, stock" },
+  "land": { pos: "NOUN", gloss: "land, country" },
+  "landschaft": { pos: "NOUN", gloss: "landscape, scenery" },
+  "las": { pos: "VERB", gloss: "read (past tense of lesen)" },
+  "lasse": { pos: "VERB", gloss: "let, allow (first person / subjunctive of lassen)" },
+  "lebensalter": { pos: "NOUN", gloss: "age, stage of life" },
+  "lebensform": { pos: "NOUN", gloss: "form of life" },
+  "lehrer": { pos: "NOUN", gloss: "teacher" },
+  "leichtverständlicher": { pos: "ADJ", gloss: "more easily understandable (comparative)" },
+  "leim": { pos: "NOUN", gloss: "glue" },
+  "leimtopf": { pos: "NOUN", gloss: "glue pot" },
+  "lernende": { pos: "NOUN", gloss: "learner, student (substantivized)" },
+  "lernt": { pos: "VERB", gloss: "learns" },
+  "liebäugelnden": { pos: "VERB", gloss: "ogling, flirting (inflected participle)" },
+  "literarisches": { pos: "ADJ", gloss: "literary (neuter inflected)" },
+  "lohn": { pos: "NOUN", gloss: "wage, reward" },
+  "losgekommen": { pos: "VERB", gloss: "got away, come loose (past participle)" },
+  "lustig": { pos: "ADJ", gloss: "funny, merry" },
+  "länger": { pos: "ADJ", gloss: "longer (comparative)" },
+  "löwe": { pos: "NOUN", gloss: "lion" },
+  "manchmal": { pos: "ADV", gloss: "sometimes" },
+  "manöver": { pos: "NOUN", gloss: "maneuver" },
+  "maske": { pos: "NOUN", gloss: "mask" },
+  "matte": { pos: "NOUN", gloss: "mat; meadow (Swiss)" },
+  "meer": { pos: "NOUN", gloss: "sea, ocean" },
+  "mehrerer": { pos: "ADJ", gloss: "of several (genitive)" },
+  "meinungen": { pos: "NOUN", gloss: "opinions" },
+  "meist": { pos: "ADV", gloss: "mostly, usually" },
+  "meisterdieb": { pos: "NOUN", gloss: "master thief" },
+  "meisterdiebes": { pos: "NOUN", gloss: "of the master thief (genitive)" },
+  "meldungen": { pos: "NOUN", gloss: "reports, announcements" },
+  "menschenkindlein": { pos: "NOUN", gloss: "little child of man (diminutive)" },
+  "menschheit": { pos: "NOUN", gloss: "humanity, mankind" },
+  "menschliche": { pos: "ADJ", gloss: "human (inflected)" },
+  "menschliches": { pos: "ADJ", gloss: "human (neuter inflected)" },
+  "merkst": { pos: "VERB", gloss: "notice, realize (second person singular)" },
+  "metaphysische": { pos: "ADJ", gloss: "metaphysical (inflected)" },
+  "mindesten": { pos: "ADJ", gloss: "least (superlative, inflected)" },
+  "minimum": { pos: "NOUN", gloss: "minimum" },
+  "mitnehmen": { pos: "VERB", gloss: "to take along" },
+  "mittag": { pos: "NOUN", gloss: "midday, noon" },
+  "mißverstehen": { pos: "VERB", gloss: "to misunderstand (archaic spelling)" },
+  "mißverständnis": { pos: "NOUN", gloss: "misunderstanding (archaic spelling)" },
+  "moderne": { pos: "ADJ", gloss: "modern (inflected)" },
+  "moleküle": { pos: "NOUN", gloss: "molecules" },
+  "monologisch": { pos: "ADJ", gloss: "monological" },
+  "morgenröthe": { pos: "NOUN", gloss: "dawn, aurora (archaic spelling of Morgenröte)" },
+  "möblierte": { pos: "ADJ", gloss: "furnished (inflected)" },
+  "nachmittag": { pos: "NOUN", gloss: "afternoon" },
+  "nachricht": { pos: "NOUN", gloss: "news, message" },
+  "nachtstücken": { pos: "NOUN", gloss: "nocturnes, night pieces (dative plural)" },
+  "nahm": { pos: "VERB", gloss: "took (past tense of nehmen)" },
+  "namentlich": { pos: "ADV", gloss: "namely, especially, by name" },
+  "naturnotwendigen": { pos: "ADJ", gloss: "naturally necessary (inflected)" },
+  "naturwissenschaftlichen": { pos: "ADJ", gloss: "natural-scientific (inflected)" },
+  "neben": { pos: "PREP", gloss: "next to, beside" },
+  "nebenbuhler": { pos: "NOUN", gloss: "rival" },
+  "nest": { pos: "NOUN", gloss: "nest" },
+  "niedergelegt": { pos: "VERB", gloss: "laid down, recorded (past participle)" },
+  "niederlegen": { pos: "VERB", gloss: "to lay down, resign, put down" },
+  "niederschrift": { pos: "NOUN", gloss: "written record, notes" },
+  "nirgends": { pos: "ADV", gloss: "nowhere" },
+  "nix": { pos: "PART", gloss: "nothing (colloquial for nichts)" },
+  "nothstand": { pos: "NOUN", gloss: "state of emergency, distress (archaic spelling)" },
+  "nothwendig": { pos: "ADJ", gloss: "necessary (archaic spelling of notwendig)" },
+  "null": { pos: "NUM", gloss: "zero, null" },
+  "nägel": { pos: "NOUN", gloss: "nails" },
+  "nöthigen": { pos: "VERB", gloss: "to compel, press, force (archaic spelling of nötigen)" },
+  "nüchterne": { pos: "ADJ", gloss: "sober, matter-of-fact (inflected)" },
+  "nüchternen": { pos: "ADJ", gloss: "sober, matter-of-fact (inflected)" },
+  "nütz": { pos: "ADJ", gloss: "useful (archaic/dialectal form of nütze)" },
+  "oberflächlich": { pos: "ADJ", gloss: "superficial" },
+  "objektivität": { pos: "NOUN", gloss: "objectivity" },
+  "oper": { pos: "NOUN", gloss: "opera" },
+  "patient": { pos: "NOUN", gloss: "patient" },
+  "peinlichen": { pos: "ADJ", gloss: "painful, embarrassing (inflected)" },
+  "personenname": { pos: "NOUN", gloss: "personal name, proper name" },
+  "pfeil": { pos: "NOUN", gloss: "arrow" },
+  "pflanze": { pos: "NOUN", gloss: "plant" },
+  "pflegt": { pos: "VERB", gloss: "tends, is accustomed to" },
+  "phantasiegebilde": { pos: "NOUN", gloss: "fantasy construct, imaginary creation" },
+  "phantasiestücken": { pos: "NOUN", gloss: "fantasy pieces (dative plural)" },
+  "philosophismus": { pos: "NOUN", gloss: "philosophism, excessive philosophizing" },
+  "picken": { pos: "VERB", gloss: "to peck, pick" },
+  "poetischer": { pos: "ADJ", gloss: "poetic (inflected)" },
+  "prag": { pos: "NOUN", gloss: "Prague (proper noun — city name)" },
+  "praxis": { pos: "NOUN", gloss: "practice, praxis" },
+  "priester": { pos: "NOUN", gloss: "priest" },
+  "primitiveren": { pos: "ADJ", gloss: "more primitive (comparative, inflected)" },
+  "produktionen": { pos: "NOUN", gloss: "productions" },
+  "prägt": { pos: "VERB", gloss: "stamps, shapes, characterizes" },
+  "präzedenzfall": { pos: "NOUN", gloss: "precedent, precedent case" },
+  "rath": { pos: "NOUN", gloss: "council, advice (archaic spelling of Rat)" },
+  "ratschläge": { pos: "NOUN", gloss: "advice, recommendations" },
+  "rechtfertigt": { pos: "VERB", gloss: "justifies" },
+  "rechtschaffen": { pos: "ADJ", gloss: "righteous, honest, upright" },
+  "reiht": { pos: "VERB", gloss: "lines up, strings together" },
+  "reisemütze": { pos: "NOUN", gloss: "traveling cap" },
+  "resistenz": { pos: "NOUN", gloss: "resistance" },
+  "ressentiment": { pos: "NOUN", gloss: "resentment" },
+  "richter": { pos: "NOUN", gloss: "judge" },
+  "richtet": { pos: "VERB", gloss: "directs, judges, sets up" },
+  "ring": { pos: "NOUN", gloss: "ring" },
+  "romanischen": { pos: "ADJ", gloss: "Romance, Romanesque (inflected)" },
+  "rosen": { pos: "NOUN", gloss: "roses" },
+  "ruck": { pos: "NOUN", gloss: "jerk, jolt" },
+  "rufe": { pos: "VERB", gloss: "call (first person / subjunctive of rufen)" },
+  "räthe": { pos: "NOUN", gloss: "councils, councillors (archaic plural of Rat)" },
+  "rückkehr": { pos: "NOUN", gloss: "return" },
+  "rückwärts": { pos: "ADV", gloss: "backward, backwards" },
+  "sack": { pos: "NOUN", gloss: "sack, bag" },
+  "sand": { pos: "NOUN", gloss: "sand" },
+  "satt": { pos: "ADJ", gloss: "full, satiated" },
+  "saß": { pos: "VERB", gloss: "sat (past tense of sitzen)" },
+  "schamröthe": { pos: "NOUN", gloss: "blush of shame (archaic spelling)" },
+  "schauerhaft": { pos: "ADJ", gloss: "horrible, dreadful" },
+  "schauerliche": { pos: "ADJ", gloss: "horrific, dreadful (inflected)" },
+  "scheinbegriffes": { pos: "NOUN", gloss: "of the pseudo-concept (genitive)" },
+  "scherz": { pos: "NOUN", gloss: "joke, jest" },
+  "scherzwort": { pos: "NOUN", gloss: "joke word, witty expression" },
+  "scheusale": { pos: "NOUN", gloss: "monsters, abominations (plural)" },
+  "schlacht": { pos: "NOUN", gloss: "battle" },
+  "schlafrock": { pos: "NOUN", gloss: "dressing gown, nightgown" },
+  "schlafwagens": { pos: "NOUN", gloss: "of the sleeping car (genitive)" },
+  "schlecht": { pos: "ADJ", gloss: "bad, poor" },
+  "schleppen": { pos: "VERB", gloss: "to drag, haul" },
+  "schlichten": { pos: "VERB", gloss: "to settle, mediate, smooth" },
+  "schlüsse": { pos: "NOUN", gloss: "conclusions, inferences" },
+  "schmackhafter": { pos: "ADJ", gloss: "tastier, more palatable (comparative)" },
+  "schnell": { pos: "ADJ", gloss: "fast, quick" },
+  "schneller": { pos: "ADJ", gloss: "faster (comparative)" },
+  "schnäbel": { pos: "NOUN", gloss: "beaks, bills" },
+  "schrauben": { pos: "NOUN", gloss: "screws" },
+  "schraubenzieher": { pos: "NOUN", gloss: "screwdriver" },
+  "schreckliche": { pos: "ADJ", gloss: "terrible, dreadful (inflected)" },
+  "schrei": { pos: "NOUN", gloss: "scream, cry" },
+  "schreibübung": { pos: "NOUN", gloss: "writing exercise" },
+  "schulmeister": { pos: "NOUN", gloss: "schoolmaster" },
+  "schwankende": { pos: "ADJ", gloss: "wavering, swaying (inflected)" },
+  "schwer": { pos: "ADJ", gloss: "heavy, difficult" },
+  "schwäche": { pos: "NOUN", gloss: "weakness" },
+  "schwächen": { pos: "VERB", gloss: "to weaken" },
+  "schädliche": { pos: "ADJ", gloss: "harmful (inflected)" },
+  "schöpfung": { pos: "NOUN", gloss: "creation" },
+  "see": { pos: "NOUN", gloss: "lake; sea" },
+  "seelentätigkeit": { pos: "NOUN", gloss: "mental/soul activity" },
+  "selbstgesprächen": { pos: "NOUN", gloss: "soliloquies, self-conversations (dative plural)" },
+  "seltsam": { pos: "ADJ", gloss: "strange, odd" },
+  "sessels": { pos: "NOUN", gloss: "of the armchair (genitive)" },
+  "setze": { pos: "VERB", gloss: "set, place (first person / imperative)" },
+  "sicherlich": { pos: "ADV", gloss: "certainly, surely" },
+  "sichersten": { pos: "ADJ", gloss: "safest, most certain (superlative)" },
+  "sitzt": { pos: "VERB", gloss: "sits" },
+  "sofortigen": { pos: "ADJ", gloss: "immediate (inflected)" },
+  "sparen": { pos: "VERB", gloss: "to save, economize" },
+  "sprang": { pos: "VERB", gloss: "sprang, jumped (past tense of springen)" },
+  "spreche": { pos: "VERB", gloss: "speak (first person singular)" },
+  "sprich": { pos: "VERB", gloss: "speak! (imperative of sprechen)" },
+  "sprichst": { pos: "VERB", gloss: "speak (second person singular)" },
+  "sprächen": { pos: "VERB", gloss: "would speak (subjunctive plural)" },
+  "spuken": { pos: "VERB", gloss: "to haunt, spook" },
+  "spukt": { pos: "VERB", gloss: "haunts, spooks" },
+  "späht": { pos: "VERB", gloss: "spies, scouts, peers" },
+  "spöttisch": { pos: "ADJ", gloss: "mocking, scornful" },
+  "staatssachen": { pos: "NOUN", gloss: "affairs of state" },
+  "stamm": { pos: "NOUN", gloss: "tribe, trunk, stem" },
+  "stammt": { pos: "VERB", gloss: "originates, stems from" },
+  "steigt": { pos: "VERB", gloss: "climbs, rises" },
+  "stein": { pos: "NOUN", gloss: "stone" },
+  "stolpert": { pos: "VERB", gloss: "stumbles" },
+  "stolz": { pos: "NOUN", gloss: "pride" },
+  "stoßen": { pos: "VERB", gloss: "to push, shove, encounter" },
+  "strand": { pos: "NOUN", gloss: "beach, shore" },
+  "streitschrift": { pos: "NOUN", gloss: "polemic, polemical tract" },
+  "streuen": { pos: "VERB", gloss: "to scatter, spread, strew" },
+  "strich": { pos: "NOUN", gloss: "stroke, line, dash" },
+  "strömt": { pos: "VERB", gloss: "streams, flows" },
+  "stube": { pos: "NOUN", gloss: "room, parlor" },
+  "studie": { pos: "NOUN", gloss: "study" },
+  "studieren": { pos: "VERB", gloss: "to study" },
+  "stünde": { pos: "VERB", gloss: "would stand (subjunctive of stehen)" },
+  "stürben": { pos: "VERB", gloss: "would die (subjunctive of sterben)" },
+  "stützen": { pos: "VERB", gloss: "to support, prop up" },
+  "symbolik": { pos: "NOUN", gloss: "symbolism" },
+  "symbolisiert": { pos: "VERB", gloss: "symbolizes" },
+  "sympathischen": { pos: "ADJ", gloss: "sympathetic, likable (inflected)" },
+  "symptom": { pos: "NOUN", gloss: "symptom" },
+  "säge": { pos: "NOUN", gloss: "saw (tool)" },
+  "tabu": { pos: "NOUN", gloss: "taboo" },
+  "tadeln": { pos: "VERB", gloss: "to reproach, criticize" },
+  "tag": { pos: "NOUN", gloss: "day" },
+  "taufe": { pos: "NOUN", gloss: "baptism, christening" },
+  "teich": { pos: "NOUN", gloss: "pond" },
+  "tell": { pos: "NOUN", gloss: "Tell (Wilhelm Tell, Swiss folk hero — proper noun in context)" },
+  "temperament": { pos: "NOUN", gloss: "temperament" },
+  "teufelslärm": { pos: "NOUN", gloss: "devilish noise, infernal racket" },
+  "thatsächlich": { pos: "ADV", gloss: "actually, in fact (archaic spelling of tatsächlich)" },
+  "theater": { pos: "NOUN", gloss: "theater" },
+  "theologie": { pos: "NOUN", gloss: "theology" },
+  "therapien": { pos: "NOUN", gloss: "therapies" },
+  "tiefgreifend": { pos: "ADJ", gloss: "profound, far-reaching" },
+  "tisch": { pos: "NOUN", gloss: "table" },
+  "tisches": { pos: "NOUN", gloss: "of the table (genitive)" },
+  "titel": { pos: "NOUN", gloss: "title" },
+  "tochter": { pos: "NOUN", gloss: "daughter" },
+  "toilette": { pos: "NOUN", gloss: "toilet, dressing table" },
+  "tot": { pos: "ADJ", gloss: "dead" },
+  "totem": { pos: "NOUN", gloss: "totem" },
+  "trachten": { pos: "VERB", gloss: "to strive, aspire; endeavors" },
+  "trauen": { pos: "VERB", gloss: "to trust; to marry" },
+  "traumsprache": { pos: "NOUN", gloss: "dream language" },
+  "treppe": { pos: "NOUN", gloss: "staircase, stairs" },
+  "träumer": { pos: "NOUN", gloss: "dreamer" },
+  "trübe": { pos: "ADJ", gloss: "gloomy, murky, dull" },
+  "tue": { pos: "VERB", gloss: "do (first person singular of tun)" },
+  "tut": { pos: "VERB", gloss: "does (third person singular of tun)" },
+  "ueberraschung": { pos: "NOUN", gloss: "surprise (archaic spelling of Überraschung)" },
+  "uhr": { pos: "NOUN", gloss: "clock, watch; o'clock" },
+  "umgebracht": { pos: "VERB", gloss: "killed (past participle of umbringen)" },
+  "umgeschaffen": { pos: "VERB", gloss: "transformed, reshaped (past participle)" },
+  "umkehrbar": { pos: "ADJ", gloss: "reversible" },
+  "unangenehmes": { pos: "ADJ", gloss: "something unpleasant (neuter)" },
+  "unartigen": { pos: "ADJ", gloss: "naughty, ill-mannered (inflected)" },
+  "unbekannt": { pos: "ADJ", gloss: "unknown" },
+  "unbewegte": { pos: "ADJ", gloss: "unmoved, motionless (inflected)" },
+  "undefinierbares": { pos: "ADJ", gloss: "indefinable (neuter)" },
+  "unerbittlich": { pos: "ADJ", gloss: "inexorable, relentless" },
+  "unerlaubt": { pos: "ADJ", gloss: "unauthorized, prohibited" },
+  "unerträglicher": { pos: "ADJ", gloss: "more unbearable (comparative, inflected)" },
+  "unfall": { pos: "NOUN", gloss: "accident" },
+  "ungeheure": { pos: "ADJ", gloss: "enormous, monstrous (inflected)" },
+  "ungerufen": { pos: "ADJ", gloss: "uncalled, without being summoned" },
+  "ungewissen": { pos: "ADJ", gloss: "uncertain (inflected)" },
+  "ungewöhnlich": { pos: "ADJ", gloss: "unusual, extraordinary" },
+  "ungünstiges": { pos: "ADJ", gloss: "unfavorable (neuter inflected)" },
+  "unheimlichste": { pos: "ADJ", gloss: "most uncanny (superlative)" },
+  "unheimlichsten": { pos: "ADJ", gloss: "most uncanny (superlative, inflected)" },
+  "unnütz": { pos: "ADJ", gloss: "useless" },
+  "unschätzbare": { pos: "ADJ", gloss: "invaluable (inflected)" },
+  "unsterbliche": { pos: "ADJ", gloss: "immortal (inflected)" },
+  "unterricht": { pos: "NOUN", gloss: "instruction, lesson" },
+  "unterwegs": { pos: "ADV", gloss: "on the way, en route" },
+  "unverallgemeinerten": { pos: "ADJ", gloss: "ungeneralized (inflected)" },
+  "unverantwortlicher": { pos: "ADJ", gloss: "irresponsible (inflected)" },
+  "unvergleichlich": { pos: "ADJ", gloss: "incomparable" },
+  "unvermutet": { pos: "ADJ", gloss: "unexpected, unforeseen" },
+  "unvernunft": { pos: "NOUN", gloss: "unreason, irrationality" },
+  "unverzüglich": { pos: "ADJ", gloss: "immediate, without delay" },
+  "unzuverlässiges": { pos: "ADJ", gloss: "unreliable (neuter inflected)" },
+  "unzählige": { pos: "ADJ", gloss: "countless, innumerable (inflected)" },
+  "ursache": { pos: "NOUN", gloss: "cause, reason" },
+  "urteilsstrich": { pos: "NOUN", gloss: "judgment stroke (Frege's assertion sign)" },
+  "verallgemeinern": { pos: "VERB", gloss: "to generalize" },
+  "veranlaßt": { pos: "VERB", gloss: "causes, prompts (archaic spelling of veranlasst)" },
+  "verantwortlich": { pos: "ADJ", gloss: "responsible" },
+  "verarmung": { pos: "NOUN", gloss: "impoverishment" },
+  "verbessern": { pos: "VERB", gloss: "to improve, correct" },
+  "verbindungstür": { pos: "NOUN", gloss: "connecting door" },
+  "verbirgt": { pos: "VERB", gloss: "conceals, hides" },
+  "verborgengehaltenen": { pos: "ADJ", gloss: "kept hidden (inflected participle)" },
+  "verbreiten": { pos: "VERB", gloss: "to spread, disseminate" },
+  "verbreiteten": { pos: "VERB", gloss: "spread, disseminated (past tense/inflected)" },
+  "verbreitetsten": { pos: "ADJ", gloss: "most widespread (superlative, inflected)" },
+  "verdienst": { pos: "NOUN", gloss: "merit, earnings" },
+  "verdutzt": { pos: "ADJ", gloss: "baffled, taken aback" },
+  "verfahren": { pos: "NOUN", gloss: "procedure, method, process" },
+  "verfügung": { pos: "NOUN", gloss: "disposal, arrangement, decree" },
+  "vergißt": { pos: "VERB", gloss: "forgets (archaic spelling of vergisst)" },
+  "vergönnt": { pos: "VERB", gloss: "grants, vouchsafes" },
+  "verhältnis": { pos: "NOUN", gloss: "relationship, ratio, proportion" },
+  "verhüllt": { pos: "VERB", gloss: "veils, conceals" },
+  "verlangen": { pos: "VERB", gloss: "to desire, demand; longing" },
+  "verlaufs": { pos: "NOUN", gloss: "of the course/progression (genitive)" },
+  "verleihen": { pos: "VERB", gloss: "to lend, confer, grant" },
+  "verleiten": { pos: "VERB", gloss: "to mislead, tempt, seduce" },
+  "verliebt": { pos: "ADJ", gloss: "in love" },
+  "verlustig": { pos: "ADJ", gloss: "forfeited, deprived of" },
+  "vermeintliche": { pos: "ADJ", gloss: "supposed, alleged (inflected)" },
+  "vernichtung": { pos: "NOUN", gloss: "destruction, annihilation" },
+  "verpflichtend": { pos: "ADJ", gloss: "obligating, binding" },
+  "verringert": { pos: "VERB", gloss: "reduces, diminishes" },
+  "verräth": { pos: "VERB", gloss: "betrays (archaic spelling of verrät)" },
+  "verschiedne": { pos: "ADJ", gloss: "various, different (contracted form)" },
+  "verschoben": { pos: "VERB", gloss: "shifted, displaced (past participle)" },
+  "verschwommen": { pos: "ADJ", gloss: "blurred, vague" },
+  "versetzen": { pos: "VERB", gloss: "to transfer, transpose, reply" },
+  "versprochen": { pos: "VERB", gloss: "promised (past participle)" },
+  "verspüren": { pos: "VERB", gloss: "to feel, sense, perceive" },
+  "verstand": { pos: "NOUN", gloss: "understanding, intellect, reason" },
+  "verständig": { pos: "ADJ", gloss: "sensible, reasonable, understanding" },
+  "versunkene": { pos: "ADJ", gloss: "sunken, immersed (inflected)" },
+  "vertikalen": { pos: "ADJ", gloss: "vertical (inflected)" },
+  "vervielfältigung": { pos: "NOUN", gloss: "multiplication, reproduction, duplication" },
+  "verwandelt": { pos: "VERB", gloss: "transformed, converts" },
+  "verwandt": { pos: "ADJ", gloss: "related, akin" },
+  "verzweifelt": { pos: "ADJ", gloss: "desperate, despairing" },
+  "vorgeführt": { pos: "VERB", gloss: "demonstrated, presented (past participle)" },
+  "vorgehen": { pos: "VERB", gloss: "to proceed, go ahead" },
+  "vorhergehenden": { pos: "ADJ", gloss: "preceding, previous (inflected)" },
+  "vorigen": { pos: "ADJ", gloss: "previous, former (inflected)" },
+  "vorlegen": { pos: "VERB", gloss: "to present, submit, lay before" },
+  "vorläufige": { pos: "ADJ", gloss: "provisional, preliminary (inflected)" },
+  "vorschein": { pos: "NOUN", gloss: "appearance (zum Vorschein kommen: to come to light)" },
+  "vorschwebte": { pos: "VERB", gloss: "hovered before (one's mind), envisioned (past tense)" },
+  "vorstellen": { pos: "VERB", gloss: "to imagine, introduce, present" },
+  "vorstellungskreisen": { pos: "NOUN", gloss: "circles of ideas/representations (dative plural)" },
+  "vorurteil": { pos: "NOUN", gloss: "prejudice" },
+  "vorurtheile": { pos: "NOUN", gloss: "prejudices (archaic spelling of Vorurteile)" },
+  "wachsfiguren": { pos: "NOUN", gloss: "wax figures" },
+  "wagniss": { pos: "NOUN", gloss: "venture, risk (archaic spelling of Wagnis)" },
+  "wahnsinnigen": { pos: "ADJ", gloss: "insane, mad (inflected)" },
+  "wahrheitskombinationen": { pos: "NOUN", gloss: "truth combinations" },
+  "wandelt": { pos: "VERB", gloss: "transforms, walks, changes" },
+  "wartet": { pos: "VERB", gloss: "waits" },
+  "wasser": { pos: "NOUN", gloss: "water" },
+  "weihte": { pos: "VERB", gloss: "consecrated, dedicated (past tense of weihen)" },
+  "weissagung": { pos: "NOUN", gloss: "prophecy, prediction" },
+  "weitergehen": { pos: "VERB", gloss: "to go on, continue" },
+  "wem": { pos: "PRON", gloss: "to whom (dative interrogative/relative)" },
+  "wendet": { pos: "VERB", gloss: "turns, applies" },
+  "werkzeuge": { pos: "NOUN", gloss: "tools" },
+  "werkzeugkasten": { pos: "NOUN", gloss: "toolbox" },
+  "werth": { pos: "NOUN", gloss: "worth, value (archaic spelling of Wert)" },
+  "werthe": { pos: "NOUN", gloss: "values (archaic plural of Wert)" },
+  "werthschätzungen": { pos: "NOUN", gloss: "valuations, esteem (archaic spelling)" },
+  "werthurtheile": { pos: "NOUN", gloss: "value judgments (archaic spelling)" },
+  "wertvollen": { pos: "ADJ", gloss: "valuable (inflected)" },
+  "weswegen": { pos: "ADV", gloss: "why, for which reason" },
+  "wetterglas": { pos: "NOUN", gloss: "barometer, weather glass" },
+  "widersprechende": { pos: "ADJ", gloss: "contradictory (inflected)" },
+  "widerstreit": { pos: "NOUN", gloss: "conflict, contradiction" },
+  "wiedergeben": { pos: "VERB", gloss: "to render, reproduce, give back" },
+  "wiedergegeben": { pos: "VERB", gloss: "rendered, reproduced (past participle)" },
+  "wiederkehrendes": { pos: "ADJ", gloss: "recurring, returning (neuter)" },
+  "wiederzugeben": { pos: "VERB", gloss: "to render, reproduce" },
+  "wieviele": { pos: "ADV", gloss: "how many" },
+  "willenlähmende": { pos: "ADJ", gloss: "will-paralyzing (inflected)" },
+  "wimmelt": { pos: "VERB", gloss: "swarms, teems" },
+  "winkel": { pos: "NOUN", gloss: "angle, corner" },
+  "winters": { pos: "NOUN", gloss: "in winter, of winter (archaic genitive of Winter)" },
+  "wisse": { pos: "VERB", gloss: "may know, should know (subjunctive of wissen)" },
+  "wissenschaftliche": { pos: "ADJ", gloss: "scientific, scholarly (inflected)" },
+  "wohlgeruch": { pos: "NOUN", gloss: "pleasant scent, fragrance" },
+  "wohnung": { pos: "NOUN", gloss: "apartment, dwelling" },
+  "woran": { pos: "ADV", gloss: "at what, whereat, on which" },
+  "wortbedeutung": { pos: "NOUN", gloss: "word meaning" },
+  "wortkarge": { pos: "ADJ", gloss: "taciturn, of few words (inflected)" },
+  "worüber": { pos: "ADV", gloss: "about which, whereover" },
+  "wuchs": { pos: "VERB", gloss: "grew (past tense of wachsen)" },
+  "wunderbaren": { pos: "ADJ", gloss: "wonderful, miraculous (inflected)" },
+  "wusste": { pos: "VERB", gloss: "knew (past tense of wissen)" },
+  "wähnen": { pos: "VERB", gloss: "to imagine, believe falsely" },
+  "würstchen": { pos: "NOUN", gloss: "little sausage (diminutive)" },
+  "zahllos": { pos: "ADJ", gloss: "countless, innumerable" },
+  "zange": { pos: "NOUN", gloss: "pliers, tongs" },
+  "zartes": { pos: "ADJ", gloss: "tender, delicate (neuter inflected)" },
+  "zeichenregel": { pos: "NOUN", gloss: "sign rule, rule of notation" },
+  "zeitwort": { pos: "NOUN", gloss: "verb (lit. time word)" },
+  "zeremonie": { pos: "NOUN", gloss: "ceremony" },
+  "zerreißen": { pos: "VERB", gloss: "to tear apart, rip" },
+  "zerrissene": { pos: "ADJ", gloss: "torn, rent (inflected)" },
+  "zerrissenen": { pos: "ADJ", gloss: "torn, rent (inflected)" },
+  "zeugt": { pos: "VERB", gloss: "testifies, begets" },
+  "zitternden": { pos: "ADJ", gloss: "trembling (inflected)" },
+  "zugegrabenen": { pos: "ADJ", gloss: "buried, covered over (inflected)" },
+  "zugehört": { pos: "VERB", gloss: "belongs to, listened (past participle)" },
+  "zugeordnet": { pos: "VERB", gloss: "assigned, allocated (past participle)" },
+  "zumaß": { pos: "VERB", gloss: "measured out, assigned (past tense of zumessen)" },
+  "zumute": { pos: "ADV", gloss: "in one's mood/state of mind (zumute sein: to feel)" },
+  "zuordnen": { pos: "VERB", gloss: "to assign, allocate, map to" },
+  "zusammengefügt": { pos: "VERB", gloss: "joined together, assembled (past participle)" },
+  "zusammengesetztheit": { pos: "NOUN", gloss: "compositeness, complexity" },
+  "zusammensetzt": { pos: "VERB", gloss: "composes, puts together" },
+  "zusammentragen": { pos: "VERB", gloss: "to collect, compile" },
+  "zuschauer": { pos: "NOUN", gloss: "spectator, onlooker" },
+  "zuschreiben": { pos: "VERB", gloss: "to attribute, ascribe" },
+  "zutaten": { pos: "NOUN", gloss: "ingredients" },
+  "zuversicht": { pos: "NOUN", gloss: "confidence, trust" },
+  "zwangsneurose": { pos: "NOUN", gloss: "obsessive-compulsive neurosis" },
+  "zweifellos": { pos: "ADV", gloss: "undoubtedly, without doubt" },
+  "zweite": { pos: "ADJ", gloss: "second (inflected)" },
+  "zwölf": { pos: "NUM", gloss: "twelve" },
+  "zählen": { pos: "VERB", gloss: "to count" },
+  "ägypten": { pos: "NOUN", gloss: "Egypt" },
+  "ägypter": { pos: "NOUN", gloss: "Egyptian (person)" },
+  "älter": { pos: "ADJ", gloss: "older (comparative of alt)" },
+  "älterer": { pos: "ADJ", gloss: "older (comparative, inflected)" },
+  "ärztlich": { pos: "ADJ", gloss: "medical, of a physician" },
+  "örten": { pos: "VERB", gloss: "to locate, determine position (past tense/plural)" },
+  "überblicken": { pos: "VERB", gloss: "to survey, overlook, have an overview of" },
+  "überlegenheit": { pos: "NOUN", gloss: "superiority" },
+  "überlegte": { pos: "VERB", gloss: "considered, deliberated (past tense)" },
+  "übersehen": { pos: "VERB", gloss: "to overlook, miss" },
+  "übersieht": { pos: "VERB", gloss: "overlooks, misses" },
+  "übrig": { pos: "ADJ", gloss: "remaining, left over" },
+  "übt": { pos: "VERB", gloss: "practices, exercises" },
+  "funtion": { pos: "NOUN", gloss: "function (typo for Funktion, appears in exercise text)" },
+  "genitalsymbols": { pos: "NOUN", gloss: "of the genital symbol (genitive case)" },
+  "heit": { pos: "PART", gloss: "-heit (feminine noun-forming suffix)" },
+  "mhd": { pos: "NOUN", gloss: "Middle High German (abbrev. Mittelhochdeutsch)" },
+  "nachfolder": { pos: "NOUN", gloss: "successor (archaic/typo variant of Nachfolger)" },
+  "offnes": { pos: "ADJ", gloss: "open (archaic form of offenes)" },
 
 };
 
@@ -17953,6 +18780,8 @@ const GRAMMAR_UNITS = [
 // ============================================================
 // APPLICATION
 // ============================================================
+const API_TIMEOUT_MS = 30000; // Timeout for all external API fetch calls (ms)
+
 class App {
   constructor() {
     this.currentMode = "translation";
@@ -17995,6 +18824,12 @@ class App {
     this.vocabItems = [];
     this.vocabCurrentIdx = 0;
     this.vocabProgress = {};
+    // Pre-group VOCAB by section once for O(1) lookup in multiple-choice rendering
+    this._vocabBySection = {};
+    for (const v of VOCAB) {
+      if (!this._vocabBySection[v.section]) this._vocabBySection[v.section] = [];
+      this._vocabBySection[v.section].push(v);
+    }
     // Migrate vocab progress from old double-prefixed key (uw_uw_vocabProgress → uw_vocabProgress)
     try {
       const oldKey = localStorage.getItem("uw_uw_vocabProgress");
@@ -18002,7 +18837,7 @@ class App {
         localStorage.setItem("uw_vocabProgress", oldKey);
         localStorage.removeItem("uw_uw_vocabProgress");
       }
-    } catch(e) {}
+    } catch(e) { console.warn("localStorage migration failed:", e); }
     this.vocabFlipped = false;
     // Grammar mode state
     this.grammarPhase = "repetition"; // repetition | cloze | production
@@ -18039,7 +18874,7 @@ class App {
     this.init();
   }
 
-  save(key, val) { try { localStorage.setItem("uw_" + key, JSON.stringify(val)); } catch(e) {} }
+  save(key, val) { try { localStorage.setItem("uw_" + key, JSON.stringify(val)); } catch(e) { if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') { console.warn('localStorage quota exceeded — progress not saved for key:', key); } } }
   load(key) { try { return JSON.parse(localStorage.getItem("uw_" + key)); } catch(e) { return null; } }
 
   init() {
@@ -18653,9 +19488,17 @@ class App {
       const curEx = this.currentExercise;
       const curText = this.currentText;
       const texts = [];
-      if (curEx && curEx.german) texts.push(curEx.german);
+      if (curEx && curEx.german) {
+        const sents1 = curEx.german.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+        if (sents1.length <= 1) texts.push(curEx.german);
+        else sents1.forEach(s => texts.push(s));
+      }
       const nextEx = curText && curText.exercises ? curText.exercises[this.currentExerciseIdx + 1] : null;
-      if (nextEx && nextEx.german) texts.push(nextEx.german);
+      if (nextEx && nextEx.german) {
+        const sents2 = nextEx.german.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+        if (sents2.length <= 1) texts.push(nextEx.german);
+        else sents2.forEach(s => texts.push(s));
+      }
       this._evictTTSCache(texts);
       this._prefetchTTS(texts);
     }
@@ -18778,7 +19621,7 @@ class App {
 
   async _callAnthropic(prompt, maxTokens, model) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
     let response;
     try {
       response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -18798,7 +19641,7 @@ class App {
       });
     } catch (e) {
       clearTimeout(timeoutId);
-      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      if (e.name === "AbortError") throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000} seconds.`);
       throw e;
     }
     clearTimeout(timeoutId);
@@ -18810,7 +19653,7 @@ class App {
 
   async _callOpenAI(prompt, maxTokens, model) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
     let response;
     try {
       response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -18828,7 +19671,7 @@ class App {
       });
     } catch (e) {
       clearTimeout(timeoutId);
-      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      if (e.name === "AbortError") throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000} seconds.`);
       throw e;
     }
     clearTimeout(timeoutId);
@@ -18841,7 +19684,7 @@ class App {
   async _callGemini(prompt, maxTokens, model) {
     const modelName = model || "gemini-2.0-flash";
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
     let response;
     try {
       response = await fetch(
@@ -18858,7 +19701,7 @@ class App {
       );
     } catch (e) {
       clearTimeout(timeoutId);
-      if (e.name === "AbortError") throw new Error("Request timed out after 30 seconds.");
+      if (e.name === "AbortError") throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000} seconds.`);
       throw e;
     }
     clearTimeout(timeoutId);
@@ -19101,6 +19944,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (!keep.has(key)) this._ttsCache.delete(key);
     }
     this._ttsPrefetchQueue = this._ttsPrefetchQueue.filter(t => keep.has(t));
+    // Hard cap: evict oldest entries (Map insertion order) if still over limit
+    const MAX_TTS_CACHE = 25;
+    while (this._ttsCache.size > MAX_TTS_CACHE) {
+      this._ttsCache.delete(this._ttsCache.keys().next().value);
+    }
   }
 
   _getLessonTextForGrammar(lesson) {
@@ -19131,12 +19979,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     return parts;
   }
 
-  _prefetchLessonAudio(lesson) {
-    if (!lesson) return;
-    const text = this._getLessonTextForGrammar(lesson);
-    if (text) this._prefetchTTS(this._chunkTextForTTS(text));
-  }
-
   async _openaiTTS(text, voice, onEnd, onStart) {
     // Check in-memory cache first for instant playback
     const cachedBlob = this._ttsCache && this._ttsCache.get(text);
@@ -19152,7 +19994,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
       let response;
       try {
         response = await fetch("https://api.openai.com/v1/audio/speech", {
@@ -19163,7 +20005,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         });
       } catch (e) {
         clearTimeout(timeoutId);
-        if (e.name === "AbortError") throw new Error("TTS request timed out after 30 seconds.");
+        if (e.name === "AbortError") throw new Error(`TTS request timed out after ${API_TIMEOUT_MS / 1000} seconds.`);
         throw e;
       }
       clearTimeout(timeoutId);
@@ -19181,7 +20023,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this._ttsAudio = audio;
       audio.play();
     } catch (e) {
-      console.warn("OpenAI TTS failed, falling back to browser:", e);
+      if (e.message && e.message.includes("401")) {
+        console.error("OpenAI TTS: authentication failed (401) — check your TTS API key in Settings.");
+      } else {
+        console.warn("OpenAI TTS failed, falling back to browser TTS:", e);
+      }
       if (onEnd) onEnd("fallback");
     }
   }
@@ -19344,13 +20190,16 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
       if (this._ttsAudio) { this._ttsAudio.pause(); this._ttsAudio = null; }
       this._ttsActive = false;
-      btn.innerHTML = "&#9654; Listen to Lesson";
+      btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
       return;
     }
-    const text = this._getLessonText();
+    const text = (this._canUseOpenAITTS() && this._currentGrammarTTSText)
+      ? this._currentGrammarTTSText
+      : this._getLessonText();
     if (!text) return;
     this._ttsActive = true;
     this._ttsBtn = btn;
+    this._grammarTTSInitialBtnLabel = btn.innerHTML;
     btn.innerHTML = "&#9632; Stop";
     if (this._canUseOpenAITTS()) {
       this._lessonTTSWithOpenAI(text);
@@ -19361,13 +20210,16 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   async _lessonTTSWithOpenAI(text) {
     const btn = this._ttsBtn;
-    if (btn) btn.innerHTML = "&#8987; Generating audio…";
+    // Only show loading state if the audio isn't already cached
+    const firstChunk = text.length <= 4000 ? text : (text.split(/(?<=[.!?])\s+/).filter(Boolean)[0] || text.slice(0, 4000));
+    const isCached = this._ttsCache && this._ttsCache.get(firstChunk) instanceof Blob;
+    if (btn && !isCached) btn.innerHTML = "&#8987; Generating audio…";
     try {
       const MAX_INPUT = 4000;
       if (text.length <= MAX_INPUT) {
         await this._openaiTTS(text, "nova", (result) => {
           if (result === "fallback") { this._ttsReadVerbatim(text); }
-          else { this._ttsActive = false; if (btn) btn.innerHTML = "&#9654; Listen to Lesson"; }
+          else { this._ttsActive = false; if (btn) btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; }
         });
       } else {
         const parts = [];
@@ -19388,7 +20240,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   async _playNextOpenAIPart() {
     if (!this._ttsActive || this._ttsOpenAIIdx >= this._ttsOpenAIParts.length) {
       this._ttsActive = false;
-      if (this._ttsBtn) this._ttsBtn.innerHTML = "&#9654; Listen to Lesson";
+      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
       return;
     }
     const part = this._ttsOpenAIParts[this._ttsOpenAIIdx];
@@ -20115,7 +20967,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   renderMultipleChoice(item) {
     const category = item.section;
-    const categoryItems = VOCAB.filter(v => v.section === category && v !== item);
+    const categoryItems = (this._vocabBySection[category] || []).filter(v => v !== item);
     const distractors = this._shuffleArray(categoryItems).slice(0, 3);
     const options = this._shuffleArray([item, ...distractors]);
 
@@ -20597,6 +21449,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!ex) {
       this.renderGrammarComplete(container);
       return;
+    }
+
+    // Store passage text for TTS and pre-fetch it
+    this._currentGrammarTTSText = ex.passage ? ex.passage.german : "";
+    if (this._canUseOpenAITTS() && this._currentGrammarTTSText) {
+      this._prefetchTTS([this._currentGrammarTTSText]);
     }
 
     let html = "";
@@ -21438,6 +22296,7 @@ Lesson: ${ex.profile.description}`;
 
   // Set active item
   this.grammarActiveItem = { type: "lesson", unitId, itemId: lessonId };
+  this._currentGrammarTTSText = this._getLessonTextForGrammar(lesson);
 
   // Pre-fetch audio for current and next lesson in background
   if (this._canUseOpenAITTS()) {
