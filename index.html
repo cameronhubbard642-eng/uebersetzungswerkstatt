@@ -20580,12 +20580,24 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   toggleLessonTTS(btn) {
     if (!btn) return;
 
-    // If paused → resume
+    // If paused → resume (same button) or stop and restart for new lesson (different button)
     if (this._ttsPaused) {
-      this._ttsPaused = false;
-      btn.innerHTML = "&#9646;&#9646; Pause";
-      if (this._ttsAudio) { this._ttsAudio.play(); return; }
-      if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
+      if (btn === this._ttsBtn) {
+        // Same button — resume
+        this._ttsPaused = false;
+        btn.innerHTML = "&#9646;&#9646; Pause";
+        if (this._ttsAudio) { this._ttsAudio.play(); return; }
+        if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
+      } else {
+        // Different button — stop current and fall through to start fresh
+        this._stopAllTTS();
+        this._ttsActive = false;
+        this._ttsPaused = false;
+        if (this._ttsBtn) {
+          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+        }
+        // fall through to start fresh playback below
+      }
     }
 
     // If playing → pause (same button) or switch to new lesson (different button)
