@@ -38,7 +38,7 @@
   --pos-num: #1e3a5f;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { overflow-x: hidden; }
+html, body { overflow-x: hidden; touch-action: manipulation; }
 /* Prevent iOS double-tap-to-zoom on all interactive elements */
 button, a, select, input, textarea, .exercise-item, .unit-header, .unit-item,
 .vocab-group-header, .text-tab, .mode-btn, .grammar-tab, .toggle-btn,
@@ -25874,6 +25874,15 @@ if ('serviceWorker' in navigator) {
     }).catch(err => console.warn('SW registration failed:', err));
   });
 }
+
+// Prevent pinch-zoom on iOS (Safari ignores user-scalable=no since iOS 10)
+document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
+document.addEventListener('gestureend', function(e) { e.preventDefault(); }, { passive: false });
+// Block multi-touch zoom
+document.addEventListener('touchmove', function(e) {
+  if (e.touches.length > 1) { e.preventDefault(); }
+}, { passive: false });
 </script>
 </body>
 </html>
