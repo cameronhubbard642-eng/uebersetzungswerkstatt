@@ -1,10 +1,10 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v1';
+const CACHE_NAME = 'werkstatt-v2';
 
 const PRECACHE_URLS = [
-  'uebersetzungswerkstatt.html',
+  'index.html',
   'manifest.json',
   'German-Icon-I.jpeg',
   'German-Icon-II.jpeg',
