@@ -25032,14 +25032,26 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
     html += '</div>';
     el.innerHTML = html;
 
-    // Bind unit row clicks — expand unit in sidebar tree
+    // Bind unit row clicks — expand unit in sidebar and open first incomplete lesson
     el.querySelectorAll('[data-unitclick]').forEach(row => {
       row.addEventListener('click', () => {
         const uid = row.dataset.unitclick;
+        const uidx = parseInt(uid.split('_')[1]);
+        const unit = GRAMMAR_UNITS[uidx];
         if (!this.grammarExpandedUnits) this.grammarExpandedUnits = {};
         this.grammarExpandedUnits[uid] = true;
         this.grammarView = 'lessons';
-        this.renderGrammarSidebar_new();
+        if (unit && unit.lessons && unit.lessons.length > 0) {
+          const up = this.grammarUnitProgress[uid] || {};
+          const targetLesson = unit.lessons.find((l, i) => !up.lessons || !up.lessons[`${uidx}_${i}`]) || unit.lessons[0];
+          const lessonIdx = unit.lessons.indexOf(targetLesson);
+          const lessonItemId = `${uidx}_${lessonIdx}`;
+          this.grammarActiveItem = { unitId: uid, type: 'lesson', itemId: lessonItemId };
+          this.renderGrammarSidebar_new();
+          this.renderGrammarLesson(uid, lessonItemId);
+        } else {
+          this.renderGrammarSidebar_new();
+        }
       });
     });
 
