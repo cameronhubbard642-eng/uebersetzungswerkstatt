@@ -318,8 +318,9 @@ body.sidebar-open {
   border-radius: 3px;
   transition: background 0.15s;
 }
-/* Per-word tooltip hidden — replaced by body-level portal (Feature 7) */
-.word-wrapper .tooltip {
+/* Per-word tooltip hidden in translation tab — replaced by body-level portal (Feature 7) */
+/* Scoped to #german-display so grammar glossing tooltips (Feature 6) still work */
+#german-display .word-wrapper .tooltip {
   display: none !important;
 }
 /* Body-level tooltip portal (Feature 7) */
@@ -19336,12 +19337,16 @@ const FSRS = (() => {
     return count;
   }
 
-  /** Persist to localStorage */
+  /** Persist to localStorage + IDB backup */
   function _save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(_cards));
     } catch(e) {
       console.warn("FSRS: localStorage save failed:", e);
+    }
+    // Fire-and-forget IDB backup (Feature 8 integration)
+    if (typeof WerkstattIDB !== 'undefined') {
+      WerkstattIDB.backup(STORAGE_KEY, _cards);
     }
   }
 
