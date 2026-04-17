@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Philosophische Übersetzungswerkstatt</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -290,10 +290,21 @@ body.sidebar-open {
   max-width: 820px;
   margin: 0 auto;
 }
-/* German text display */
+/* German text display — sticky source passage (Feature 7) */
 #german-display {
   margin-bottom: 28px;
   line-height: 2.8;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  max-height: 40vh;
+  overflow-y: auto;
+  background: var(--bg);
+  padding: 12px 0 8px;
+  transition: box-shadow 0.2s;
+}
+#german-display.stuck {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 .word-wrapper {
   display: inline-block;
@@ -307,25 +318,25 @@ body.sidebar-open {
   border-radius: 3px;
   transition: background 0.15s;
 }
+/* Per-word tooltip hidden — replaced by body-level portal (Feature 7) */
 .word-wrapper .tooltip {
+  display: none !important;
+}
+/* Body-level tooltip portal (Feature 7) */
+#passage-tooltip {
   display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
+  position: fixed;
+  background: var(--text, #333);
+  color: var(--bg, #fff);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   white-space: nowrap;
-  z-index: 100;
+  z-index: 10000;
   pointer-events: none;
 }
-.word-wrapper:hover .tooltip { display: block; }
-/* Touch devices: tap to show tooltip (added via JS class) */
-.word-wrapper.tooltip-active .tooltip { display: block; }
+#passage-tooltip.visible { display: block; }
 .word-wrapper .first-gloss {
   display: block;
   font-size: 11px;
@@ -1362,14 +1373,11 @@ body.sidebar-open {
     margin-bottom: 20px;
     overflow-wrap: break-word;
   }
-  .word-wrapper .tooltip {
+  /* Portal tooltip mobile adjustments (Feature 7) */
+  #passage-tooltip {
     font-size: 11px;
     max-width: 70vw;
     white-space: normal;
-    /* Prevent tooltip from going off-screen */
-    left: 0;
-    transform: none;
-    right: auto;
   }
 
   /* POS legend: stack items */
@@ -3852,15 +3860,93 @@ select:focus-visible, a:focus-visible {
     --warning: #c4a020;
     --error: #c45050;
   }
+
+  /* Feature 11: Comprehensive dark mode coverage */
+
+  /* Conversation message boxes */
+  .conv-msg.assistant { background: var(--sidebar-bg); }
+  .conv-msg.user { color: #fff; } /* keep white on accent */
+  .conv-msg.system { background: rgba(196,160,32,0.12); color: var(--warning); }
+
+  /* Conversation end button */
+  .conv-end-btn { border-color: var(--error); color: var(--error); }
+  .conv-end-btn:hover { background: var(--error); color: #fff; }
+
+  /* Conversation hint button */
+  .conv-hint-btn { border-color: var(--border); color: var(--text-muted); }
+  .conv-hint-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Send button in conversation */
+  .conv-send-btn { color: #fff; }
+
+  /* Sidebar badges */
+  .badge-gray { background: #3d3830; color: var(--text-muted); }
+  .badge-yellow { background: rgba(196,160,32,0.2); color: var(--warning); }
+  .badge-green { background: rgba(74,154,74,0.2); color: var(--success); }
+
+  /* Grammar unit tree type-specific borders & icons */
+  .unit-item.lesson { border-left-color: #5b8def; }
+  .unit-item.exercise { border-left-color: #e06060; }
+  .unit-item.review { border-left-color: var(--warning); }
+  .unit-item.lesson .unit-item-icon { color: #5b8def; }
+  .unit-item.exercise .unit-item-icon { color: #e06060; }
+  .unit-item.review .unit-item-icon { color: var(--warning); }
+
+  /* Exercise hovers — use transparent accent instead of rgba(0,0,0,...) */
+  .exercise-item:hover { background: rgba(196,112,61,0.08); }
+  .vocab-group-header:hover { background: rgba(196,112,61,0.06); }
+  .vocab-section-header:hover { background: rgba(196,112,61,0.06); }
+  .unit-item:hover { background: rgba(196,112,61,0.06); }
+  .unit-header:hover { background: rgba(196,112,61,0.08); }
+
+  /* Comparison/reference blocks with hardcoded rgba(0,0,0,0.02) */
+  .exercise-translate .german-text,
+  .grammar-passage,
+  .comparison-block,
+  .exercise-identify,
+  .exercise-fill,
+  .exercise-produce { background: rgba(255,255,255,0.03); }
+
+  /* Stats close button */
+  .stats-close-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .stats-section-content { border-color: var(--border); }
+  .stats-metric-divider { border-color: var(--border); }
+
+  /* CEFR badges — slightly muted for dark */
+  .cefr-A1, .cefr-A2 { background: #1a8a3e; }
+  .cefr-B1, .cefr-B2 { background: #2058c0; }
+  .cefr-C1, .cefr-C2 { background: #6830b8; }
+
+  /* Modal overlay darker */
+  .modal-overlay { background: rgba(0,0,0,0.6); }
+  .modal { background: var(--sidebar-bg); color: var(--text); }
+  .modal input[type="text"],
+  .modal input[type="password"],
+  .modal select { background: var(--white); color: var(--text); border-color: var(--border); }
+
+  /* Inline code/pre blocks */
+  pre, code { background: var(--white); color: var(--text); }
+
+  /* Sticky passage shadow in dark mode */
+  #german-display.stuck { box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+
+  /* Grammar paradigm note blocks */
+  .grammar-note-block { background: rgba(255,255,255,0.03); }
+
+  /* Review banner */
+  .review-banner { background: rgba(196,112,61,0.1); border-color: rgba(196,112,61,0.3); }
 }
 </style>
 </head>
 <body>
 
+<!-- Feature 7: Body-level tooltip portal -->
+<div id="passage-tooltip" role="tooltip" aria-hidden="true"></div>
+
 <button id="mobile-menu-btn" aria-label="Toggle menu">&#9776;</button>
-<div id="sidebar-overlay"></div>
-<div id="sidebar">
-  <div id="mode-switcher" class="mode-switcher">
+<div id="sidebar-overlay" aria-hidden="true"></div>
+<nav id="sidebar" aria-label="Sidebar navigation">
+  <div id="mode-switcher" class="mode-switcher" role="tablist" aria-label="Practice modes">
     <button class="mode-btn active" data-mode="translation" aria-label="Switch to translation mode">Translation</button>
     <button class="mode-btn" data-mode="vocabulary" aria-label="Switch to vocabulary mode">Vocabulary</button>
     <button class="mode-btn" data-mode="grammar" aria-label="Switch to grammar mode">Grammar</button>
@@ -3889,9 +3975,9 @@ select:focus-visible, a:focus-visible {
     <button class="sidebar-btn" id="stats-btn" aria-label="Open statistics">&#9776; Statistics &amp; Assessment</button>
     <button class="sidebar-btn" id="settings-btn" aria-label="Open settings">&#9881; Settings</button>
   </div>
-</div>
+</nav>
 
-<div id="main">
+<main id="main">
   <div id="toolbar">
     <div id="toolbar-left">
       <span id="exercise-title"></span>
@@ -3906,7 +3992,7 @@ select:focus-visible, a:focus-visible {
   <div id="content-area">
     <div id="translation-content">
     <div id="translation-welcome" class="progression-info" style="margin-top:40px;">
-      <h4>About Translation Practice</h4>
+      <h2 style="font-size:inherit;font-weight:600;">About Translation Practice</h2>
       <p>This app focuses on translating complete philosophical texts and passages in their entirety. The individual exercises break longer works — the <em>Tractatus Logico-Philosophicus</em>, <em>Philosophische Untersuchungen</em>, <em>Das Unheimliche</em>, and <em>Zur Genealogie der Moral</em> — into manageable segments for systematic translation practice.</p>
       <p>Select an author from the tabs at the top of the sidebar, then choose a passage from the list to begin. Each passage displays the original German text — click any word to see its gloss and part of speech.</p>
       <p>Type your English translation in the input area, then click <strong>Evaluate</strong> for AI-powered feedback on accuracy and style. Use <strong>Get Hints</strong> to reveal contextual clues, or <strong>Show Reference</strong> to compare with a published translation.</p>
@@ -3931,7 +4017,7 @@ select:focus-visible, a:focus-visible {
     <div id="german-display"></div>
     <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">&#9654; Listen</button></div>
     <div id="translation-section">
-      <label>Your Translation</label>
+      <label for="translation-input">Your Translation</label>
       <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
     </div>
     <div id="action-row">
@@ -3941,7 +4027,7 @@ select:focus-visible, a:focus-visible {
       <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
     </div>
     <div id="evaluation-result" aria-live="polite">
-      <h4>Evaluation</h4>
+      <h2 style="font-size:inherit;font-weight:600;">Evaluation</h2>
       <div class="score" id="eval-score"></div>
       <div class="feedback" id="eval-feedback"></div>
     </div>
@@ -3960,37 +4046,37 @@ select:focus-visible, a:focus-visible {
     <div id="grammar-content" style="display:none;" aria-live="polite"></div>
     <div id="conversation-content" style="display:none;" aria-live="polite"></div>
   </div>
-</div>
+</main>
 
 <!-- Settings Modal -->
-<div class="modal-overlay" id="settings-modal">
+<div class="modal-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
   <div class="modal">
     <h2>Settings</h2>
-    <label>LLM Provider</label>
+    <label for="api-provider-select">LLM Provider</label>
     <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
       <option value="anthropic">Anthropic (Claude)</option>
       <option value="openai">OpenAI (GPT-4o-mini)</option>
       <option value="gemini">Google (Gemini)</option>
     </select>
-    <label>API Key</label>
+    <label for="api-key-input">API Key</label>
     <input type="password" id="api-key-input" placeholder="sk-ant-... / sk-... / AIza...">
     <p class="modal-note">When set, translations are evaluated using LLM. Without a key, client-side heuristics are used. Your key is stored only in this browser's localStorage.</p>
-    <label>OpenAI TTS API Key <span style="font-weight:400;font-size:11px;color:var(--text-muted)">(text-to-speech only)</span></label>
+    <label for="tts-api-key-input">OpenAI TTS API Key <span style="font-weight:400;font-size:11px;color:var(--text-muted)">(text-to-speech only)</span></label>
     <input type="password" id="tts-api-key-input" placeholder="sk-... (optional, for OpenAI neural TTS)">
     <p class="modal-note">Optional. When set, OpenAI's neural TTS is used for German audio regardless of your LLM provider above — so you can use Anthropic or Gemini for evaluation while still using OpenAI for speech. If blank, falls back to the OpenAI LLM key (when provider is OpenAI) or browser voices.</p>
-    <label>German Voice</label>
+    <label for="voice-de-select">German Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
       <select id="voice-de-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
-      <button id="voice-de-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
+      <button id="voice-de-preview" class="modal-btn" style="white-space:nowrap;" aria-label="Preview German voice">Preview</button>
     </div>
-    <label>English Voice</label>
+    <label for="voice-en-select">English Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
       <select id="voice-en-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
-      <button id="voice-en-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
+      <button id="voice-en-preview" class="modal-btn" style="white-space:nowrap;" aria-label="Preview English voice">Preview</button>
     </div>
     <p class="modal-note" style="margin-top:6px;">For better German TTS quality, download enhanced voices in System Preferences → Accessibility → Spoken Content (macOS) or Settings → Text-to-speech (Windows).</p>
     <label style="margin-top:14px;">App Icon</label>
@@ -4034,7 +4120,7 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Import Modal -->
-<div class="modal-overlay" id="import-modal">
+<div class="modal-overlay" id="import-modal" role="dialog" aria-modal="true" aria-label="Import Text">
   <div class="modal">
     <h2>Import Text</h2>
     <p class="modal-note" style="margin-top:0">Import a JSON file with additional exercises. Expected format:</p>
@@ -4064,7 +4150,7 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Statistics & Assessment Modal -->
-<div class="modal-overlay" id="stats-modal">
+<div class="modal-overlay" id="stats-modal" role="dialog" aria-modal="true" aria-label="Statistics and Assessment">
   <div class="modal stats-modal">
     <div class="stats-modal-header">
       <h2><span class="cefr-badge cefr-unknown" id="stats-cefr-badge">—</span> Statistics &amp; Assessment</h2>
@@ -4120,7 +4206,7 @@ select:focus-visible, a:focus-visible {
       <div class="stats-section">
         <div class="stats-section-title" id="stats-assess-toggle"><span class="section-arrow">&#9660;</span> LLM Assessment</div>
         <div class="stats-section-content" id="stats-assess-content">
-          <button class="stats-assess-btn" id="stats-assess-btn">Generate Assessment</button>
+          <button class="stats-assess-btn" id="stats-assess-btn" aria-label="Generate LLM assessment of progress">Generate Assessment</button>
           <div id="stats-assessment-area"></div>
         </div>
       </div>
@@ -4130,7 +4216,7 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Sync Progress Modal -->
-<div class="modal-overlay" id="sync-modal">
+<div class="modal-overlay" id="sync-modal" role="dialog" aria-modal="true" aria-label="Sync Progress">
   <div class="modal">
     <h2>Sync Progress Across Devices</h2>
     <p class="modal-note" style="margin-top:0">Progress is stored in this browser's localStorage and does not sync automatically. Use export/import to transfer your progress between browsers or devices.</p>
@@ -19015,6 +19101,379 @@ const GRAMMAR_UNITS = [
 
 
 // ============================================================
+// FSRS v4.5 SPACED REPETITION ENGINE
+// ============================================================
+
+/**
+ * FSRS v4.5 implementation for the Übersetzungswerkstatt app.
+ * Card states: 0=New, 1=Learning, 2=Review, 3=Relearning
+ * Ratings: 1=Again, 2=Hard, 3=Good, 4=Easy
+ * Target retention: 0.9
+ */
+const FSRS = (() => {
+  // FSRS v4.5 default weight vector (19 weights)
+  const W = [
+    0.4072, 1.1829, 3.1262, 15.4722,   // w0-w3: initial stability for Again/Hard/Good/Easy
+    7.2102, 0.5316, 1.0651, 0.0589,     // w4-w7
+    1.5330, 0.1482, 1.0131, 1.8558,     // w8-w11
+    0.0200, 0.3400, 1.2600, 0.2900,     // w12-w15
+    2.6100, 0.5100, 0.6000              // w16-w18
+  ];
+  const DECAY = -0.5;
+  const FACTOR = 19.0 / 81.0;
+  const TARGET_RETENTION = 0.9;
+
+  // Storage key for all FSRS card state
+  const STORAGE_KEY = "uw_fsrsState";
+
+  let _cards = {};  // in-memory card store: { [cardKey]: cardObj }
+
+  /**
+   * Card schema:
+   * { difficulty, stability, lastReview (ISO string), reps, lapses, scheduledDays, state }
+   * state: 0=New, 1=Learning, 2=Review, 3=Relearning
+   */
+  function _newCard() {
+    return {
+      difficulty: 0,
+      stability: 0,
+      lastReview: null,
+      reps: 0,
+      lapses: 0,
+      scheduledDays: 0,
+      state: 0
+    };
+  }
+
+  function _clamp(val, min, max) { return Math.min(Math.max(val, min), max); }
+
+  /**
+   * Retrievability: probability of recall at elapsed days t with stability S.
+   * R(t, S) = (1 + FACTOR * t / S) ^ DECAY
+   */
+  function retrievability(card) {
+    if (!card.lastReview || card.stability <= 0) return 0;
+    const elapsed = (Date.now() - new Date(card.lastReview).getTime()) / (1000 * 60 * 60 * 24);
+    return Math.pow(1 + FACTOR * elapsed / card.stability, DECAY);
+  }
+
+  /** Initial difficulty for a given rating (1-4) */
+  function _initDifficulty(rating) {
+    return _clamp(W[4] - Math.exp(W[5] * (rating - 1)) + 1, 1, 10);
+  }
+
+  /** Initial stability for a given rating (1-4) */
+  function _initStability(rating) {
+    return Math.max(W[rating - 1], 0.1);
+  }
+
+  /** Next difficulty after a review with given rating */
+  function _nextDifficulty(d, rating) {
+    const newD = d - W[6] * (rating - 3);
+    // Mean reversion toward initial difficulty
+    const d0 = _initDifficulty(3);
+    return _clamp(W[7] * d0 + (1 - W[7]) * newD, 1, 10);
+  }
+
+  /** Next stability after a successful recall (rating >= 2) */
+  function _nextRecallStability(d, s, r, rating) {
+    const hardPenalty = (rating === 2) ? W[15] : 1;
+    const easyBonus = (rating === 4) ? W[16] : 1;
+    return s * (1 + Math.exp(W[8]) *
+      (11 - d) *
+      Math.pow(s, -W[9]) *
+      (Math.exp((1 - r) * W[10]) - 1) *
+      hardPenalty *
+      easyBonus);
+  }
+
+  /** Next stability after a lapse (rating === 1, Again) */
+  function _nextForgetStability(d, s, r) {
+    return Math.max(
+      W[11] *
+      Math.pow(d, -W[12]) *
+      (Math.pow(s + 1, W[13]) - 1) *
+      Math.exp((1 - r) * W[14]),
+      0.1
+    );
+  }
+
+  /** Compute the interval in days for a target retention */
+  function _nextInterval(s) {
+    return Math.max(Math.round(s / FACTOR * (Math.pow(TARGET_RETENTION, 1 / DECAY) - 1)), 1);
+  }
+
+  /**
+   * Process a review rating for a card.
+   * rating: 1=Again, 2=Hard, 3=Good, 4=Easy
+   * Returns the updated card object.
+   */
+  function review(cardKey, rating) {
+    let card = _cards[cardKey] || _newCard();
+
+    const now = new Date().toISOString();
+    const r = (card.lastReview && card.stability > 0) ? retrievability(card) : 0;
+
+    if (card.state === 0) {
+      // New card — first review
+      card.difficulty = _initDifficulty(rating);
+      card.stability = _initStability(rating);
+      card.reps = 1;
+      card.lapses = (rating === 1) ? 1 : 0;
+      card.state = (rating === 1) ? 1 : (rating < 4 ? 1 : 2);
+    } else if (card.state === 1 || card.state === 3) {
+      // Learning or Relearning
+      card.difficulty = _nextDifficulty(card.difficulty, rating);
+      if (rating === 1) {
+        card.stability = _initStability(1);
+        card.lapses++;
+        card.state = (card.state === 1) ? 1 : 3;
+      } else {
+        card.stability = _nextRecallStability(card.difficulty, card.stability, r || 0.9, rating);
+        card.reps++;
+        card.state = 2; // Graduate to Review
+      }
+    } else {
+      // Review (state === 2)
+      card.difficulty = _nextDifficulty(card.difficulty, rating);
+      if (rating === 1) {
+        // Lapse — move to Relearning
+        card.stability = _nextForgetStability(card.difficulty, card.stability, r);
+        card.lapses++;
+        card.state = 3;
+      } else {
+        card.stability = _nextRecallStability(card.difficulty, card.stability, r, rating);
+        card.reps++;
+        // stays in Review
+      }
+    }
+
+    card.scheduledDays = _nextInterval(card.stability);
+    card.lastReview = now;
+    _cards[cardKey] = card;
+    _save();
+    return card;
+  }
+
+  /** Get a card (returns null if not tracked yet) */
+  function getCard(cardKey) {
+    return _cards[cardKey] || null;
+  }
+
+  /** Get all cards as a plain object (for export) */
+  function getAllCards() {
+    return { ..._cards };
+  }
+
+  /** Load all cards from an object (for import merge) */
+  function mergeCards(imported) {
+    if (!imported || typeof imported !== "object") return 0;
+    let merged = 0;
+    for (const [key, incoming] of Object.entries(imported)) {
+      const existing = _cards[key];
+      if (!existing) {
+        _cards[key] = incoming;
+        merged++;
+      } else {
+        // Keep more recent lastReview; if tied, keep higher reps
+        const existDate = existing.lastReview ? new Date(existing.lastReview).getTime() : 0;
+        const incomDate = incoming.lastReview ? new Date(incoming.lastReview).getTime() : 0;
+        if (incomDate > existDate || (incomDate === existDate && (incoming.reps || 0) > (existing.reps || 0))) {
+          _cards[key] = incoming;
+          merged++;
+        }
+      }
+    }
+    if (merged > 0) _save();
+    return merged;
+  }
+
+  /** Replace entire card store (for reset) */
+  function resetAll() {
+    _cards = {};
+    _save();
+  }
+
+  /**
+   * Check if a card is overdue (past its scheduled review date).
+   */
+  function isOverdue(cardKey) {
+    const card = _cards[cardKey];
+    if (!card || !card.lastReview || card.state === 0) return false;
+    const elapsed = (Date.now() - new Date(card.lastReview).getTime()) / (1000 * 60 * 60 * 24);
+    return elapsed >= card.scheduledDays;
+  }
+
+  /**
+   * Get all overdue card keys, sorted by most overdue first.
+   */
+  function getOverdueKeys() {
+    const overdue = [];
+    for (const key in _cards) {
+      const card = _cards[key];
+      if (!card.lastReview || card.state === 0) continue;
+      const elapsed = (Date.now() - new Date(card.lastReview).getTime()) / (1000 * 60 * 60 * 24);
+      if (elapsed >= card.scheduledDays) {
+        overdue.push({ key, elapsed, scheduled: card.scheduledDays, overdueBy: elapsed - card.scheduledDays });
+      }
+    }
+    overdue.sort((a, b) => b.overdueBy - a.overdueBy);
+    return overdue.map(o => o.key);
+  }
+
+  /**
+   * Count overdue cards matching a key prefix (e.g. "vocab_" or "grammar_").
+   */
+  function countOverdue(prefix) {
+    let count = 0;
+    for (const key in _cards) {
+      if (prefix && !key.startsWith(prefix)) continue;
+      const card = _cards[key];
+      if (!card.lastReview || card.state === 0) continue;
+      const elapsed = (Date.now() - new Date(card.lastReview).getTime()) / (1000 * 60 * 60 * 24);
+      if (elapsed >= card.scheduledDays) count++;
+    }
+    return count;
+  }
+
+  /** Persist to localStorage */
+  function _save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(_cards));
+    } catch(e) {
+      console.warn("FSRS: localStorage save failed:", e);
+    }
+  }
+
+  /** Load from localStorage */
+  function _load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) _cards = JSON.parse(raw);
+    } catch(e) {
+      console.warn("FSRS: localStorage load failed:", e);
+      _cards = {};
+    }
+  }
+
+  // Initialize on load
+  _load();
+
+  return {
+    review,
+    getCard,
+    getAllCards,
+    mergeCards,
+    resetAll,
+    retrievability,
+    isOverdue,
+    getOverdueKeys,
+    countOverdue,
+    DECAY,
+    FACTOR,
+    TARGET_RETENTION,
+    _newCard  // exposed for import/export
+  };
+})();
+
+
+// ============================================================
+// INDEXEDDB BACKUP MIRROR
+// ============================================================
+
+/**
+ * WerkstattIDB: fire-and-forget IndexedDB backup of localStorage progress.
+ * On init, restores any keys present in IDB but missing from localStorage.
+ * API keys have extra guard so valid sessionStorage values aren't clobbered.
+ */
+const WerkstattIDB = (() => {
+  const DB_NAME = 'werkstatt-backup';
+  const STORE_NAME = 'progress';
+  let _db = null;
+
+  function _open() {
+    return new Promise((resolve, reject) => {
+      if (_db) { resolve(_db); return; }
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = () => { _db = req.result; resolve(_db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  /**
+   * Fire-and-forget write to IDB. Called after every this.save().
+   */
+  function backup(key, value) {
+    _open().then(db => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(value, key);
+    }).catch(() => {}); // silent fail
+  }
+
+  /**
+   * Restore from IDB: for each key in IDB where localStorage is null,
+   * write to localStorage and return the restored entries.
+   * API keys: only restore if sessionStorage also lacks the value.
+   */
+  async function restore() {
+    const restored = {};
+    try {
+      const db = await _open();
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const keys = await new Promise((res, rej) => {
+        const r = store.getAllKeys();
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+      for (const key of keys) {
+        const lsKey = "uw_" + key;
+        const lsVal = localStorage.getItem(lsKey);
+        if (lsVal !== null) continue; // already in localStorage, skip
+
+        // API key guard: don't clobber valid sessionStorage values
+        if (key === "apiKey" || key === "ttsApiKey") {
+          const ssVal = sessionStorage.getItem(lsKey);
+          if (ssVal !== null) continue;
+        }
+
+        const val = await new Promise((res, rej) => {
+          const r = store.get(key);
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        });
+        if (val !== undefined && val !== null) {
+          try {
+            localStorage.setItem(lsKey, JSON.stringify(val));
+            restored[key] = val;
+          } catch(e) {} // quota exceeded — skip
+        }
+      }
+    } catch(e) {
+      console.warn("WerkstattIDB restore failed:", e);
+    }
+    return restored;
+  }
+
+  /** Clear all IDB backup data (for reset) */
+  function clear() {
+    _open().then(db => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).clear();
+    }).catch(() => {});
+  }
+
+  return { backup, restore, clear };
+})();
+
+
+// ============================================================
 // APPLICATION
 // ============================================================
 const API_TIMEOUT_MS = 30000; // Timeout for all external API fetch calls (ms)
@@ -19086,6 +19545,14 @@ class App {
       }
     } catch(e) { console.warn("localStorage migration failed:", e); }
     this.vocabFlipped = false;
+
+    // FSRS-determined exercise tier state (Feature 3)
+    // Tiers: "recognition" (multiple-choice), "cloze" (fill-in with options), "production" (free-type)
+    this._vocabTierFailures = { recognition: 0, cloze: 0, production: 0 }; // consecutive failures per tier this session
+    this._vocabSessionDemotion = 0; // 0=no demotion, 1=demoted once, 2=demoted twice (floor)
+    this._grammarSessionDemotion = 0;
+    this._grammarTierFailures = { repetition: 0, cloze: 0, production: 0 };
+
     // Grammar mode state
     this.grammarPhase = "repetition"; // repetition | cloze | production
     this.grammarSelectedProfile = null;
@@ -19118,6 +19585,25 @@ class App {
     // Streak tracking
     this._streakData = this.load("streakData") || { current: 0, longest: 0, lastDate: null };
 
+    // Feature 5: Cross-session gloss persistence
+    this._glossSeen = this._loadGlossSeen();
+    this._glossSeenPending = {}; // words glossed this exercise, flushed on passage completion
+
+    // IDB restore: recover any keys lost from localStorage
+    this._idbRestorePromise = WerkstattIDB.restore().then(restored => {
+      if (Object.keys(restored).length > 0) {
+        // Re-load restored keys into in-memory state
+        if (restored.completed) this.completed = restored.completed;
+        if (restored.vocabProgress) this.vocabProgress = restored.vocabProgress;
+        if (restored.grammarProgress) this.grammarProgress = restored.grammarProgress;
+        if (restored.grammarUnitProgress) this.grammarUnitProgress = restored.grammarUnitProgress;
+        if (restored.translationHistory) this._translationHistory = restored.translationHistory;
+        if (restored.streakData) this._streakData = restored.streakData;
+        if (restored.activeTime) this._activeTimeData = restored.activeTime;
+        console.log("WerkstattIDB: restored keys:", Object.keys(restored).join(", "));
+      }
+    }).catch(() => {});
+
     this.init();
   }
 
@@ -19137,6 +19623,8 @@ class App {
         }
       }
     }
+    // Fire-and-forget IDB backup
+    WerkstattIDB.backup(key, val);
   }
   load(key) { try { return JSON.parse(localStorage.getItem("uw_" + key)); } catch(e) { return null; } }
 
@@ -19234,15 +19722,67 @@ class App {
       speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices());
     }
 
-    // Touch-friendly tooltips: tap to show/hide on touch devices
-    document.getElementById("german-display").addEventListener("click", (e) => {
+    // Feature 7: Sticky shadow detection via scroll listener
+    const germanDisplay = document.getElementById("german-display");
+    const contentArea = germanDisplay.closest("#content-area") || germanDisplay.parentElement;
+    if (contentArea) {
+      contentArea.addEventListener("scroll", () => {
+        const rect = germanDisplay.getBoundingClientRect();
+        const parentRect = contentArea.getBoundingClientRect();
+        germanDisplay.classList.toggle("stuck", rect.top <= parentRect.top + 2);
+      }, { passive: true });
+    }
+
+    // Feature 7: Body-level tooltip portal — delegated hover
+    const passageTooltip = document.getElementById("passage-tooltip");
+    const positionTooltip = (wrapper) => {
+      const tooltipData = wrapper.querySelector(".tooltip");
+      if (!tooltipData) return;
+      passageTooltip.textContent = tooltipData.textContent;
+      passageTooltip.classList.add("visible");
+      passageTooltip.setAttribute("aria-hidden", "false");
+      const wordRect = wrapper.getBoundingClientRect();
+      const tipWidth = passageTooltip.offsetWidth;
+      const tipHeight = passageTooltip.offsetHeight;
+      let left = wordRect.left + (wordRect.width / 2) - (tipWidth / 2);
+      let top = wordRect.top - tipHeight - 4;
+      // Auto-flip below word if would overflow viewport top
+      if (top < 4) {
+        top = wordRect.bottom + 4;
+      }
+      // Clamp horizontal to viewport
+      if (left < 4) left = 4;
+      if (left + tipWidth > window.innerWidth - 4) left = window.innerWidth - tipWidth - 4;
+      passageTooltip.style.left = left + "px";
+      passageTooltip.style.top = top + "px";
+    };
+    const hideTooltip = () => {
+      passageTooltip.classList.remove("visible");
+      passageTooltip.setAttribute("aria-hidden", "true");
+    };
+
+    germanDisplay.addEventListener("mouseover", (e) => {
       const wrapper = e.target.closest(".word-wrapper");
-      if (!wrapper) return;
-      // Clear any other active tooltip
-      document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => {
-        if (el !== wrapper) el.classList.remove("tooltip-active");
-      });
-      wrapper.classList.toggle("tooltip-active");
+      if (wrapper) positionTooltip(wrapper);
+    });
+    germanDisplay.addEventListener("mouseout", (e) => {
+      const wrapper = e.target.closest(".word-wrapper");
+      if (wrapper && !wrapper.contains(e.relatedTarget)) hideTooltip();
+    });
+
+    // Touch-friendly tooltips: tap to show/hide on touch devices (uses portal)
+    germanDisplay.addEventListener("click", (e) => {
+      const wrapper = e.target.closest(".word-wrapper");
+      if (!wrapper) { hideTooltip(); return; }
+      // Toggle: if already showing for this word, hide
+      if (wrapper.classList.contains("tooltip-active")) {
+        wrapper.classList.remove("tooltip-active");
+        hideTooltip();
+      } else {
+        document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => el.classList.remove("tooltip-active"));
+        wrapper.classList.add("tooltip-active");
+        positionTooltip(wrapper);
+      }
     });
 
     // Consolidated global click handler for delegated events
@@ -19270,13 +19810,55 @@ class App {
           this.handleTypedResponse();
         }
       }
-      // Dismiss tooltip when tapping outside
+      // Dismiss tooltip portal when tapping outside (Feature 7)
       if (!e.target.closest(".word-wrapper") && !e.target.closest("#german-display")) {
         document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => el.classList.remove("tooltip-active"));
+        const pt = document.getElementById("passage-tooltip");
+        if (pt) { pt.classList.remove("visible"); pt.setAttribute("aria-hidden", "true"); }
       }
     });
 
     this.render();
+
+    // Export reminder: show once per session if overdue
+    this._checkExportReminder();
+  }
+
+  _checkExportReminder() {
+    if (this._exportReminderShown) return;
+    const lastExport = this.load("lastExportDate");
+    const completedCount = Object.keys(this.completed).length;
+
+    let shouldRemind = false;
+    if (lastExport) {
+      const daysSince = (Date.now() - new Date(lastExport).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSince >= 7) shouldRemind = true;
+    } else {
+      // Never exported — remind if >=5 completed passages
+      if (completedCount >= 5) shouldRemind = true;
+    }
+
+    if (!shouldRemind) return;
+    this._exportReminderShown = true;
+
+    const banner = document.createElement('div');
+    banner.id = 'export-reminder-banner';
+    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#b7791f;color:#fff;padding:12px 16px;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;display:flex;align-items:center;justify-content:space-between;z-index:10000;box-shadow:0 -2px 8px rgba(0,0,0,0.15);';
+    banner.innerHTML = `
+      <span>It's been a while since you backed up your progress. Export now?</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <button id="export-reminder-btn" style="background:#fff;color:#b7791f;border:none;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Export</button>
+        <button id="export-reminder-dismiss" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 6px;opacity:0.8;">&times;</button>
+      </span>`;
+    document.body.appendChild(banner);
+
+    document.getElementById('export-reminder-btn').addEventListener('click', () => {
+      this.exportProgress();
+      banner.remove();
+    });
+    document.getElementById('export-reminder-dismiss').addEventListener('click', () => {
+      banner.remove();
+    });
   }
 
   get texts() { return this.allTexts; }
@@ -19285,6 +19867,7 @@ class App {
 
   switchText(textId) {
     if (!this.texts[textId]) return;
+    this._flushGlossSeen(); // Feature 5
     this._resetAllTTSState();
     // Save current position before leaving
     if (this.currentTextId) {
@@ -19725,16 +20308,20 @@ class App {
             tooltip.textContent = entry.gloss;
             wrapper.appendChild(tooltip);
 
-            // Inline gloss on first occurrence or when "All Glosses" is active
+            // Inline gloss: first occurrence, not suppressed by cross-session persistence or FSRS mastery
+            // Feature 5: "Show All Glosses" overrides suppression; "Hide Glosses" suppresses all
             if (!this.glossHideActive) {
               const lower = tok.text.toLowerCase();
               const isFirstTime = !seen[lower];
-              if (isFirstTime || this.glossAllActive) {
+              const suppressed = !this.glossAllActive && this._shouldSuppressGloss(tok.text);
+              if ((isFirstTime && !suppressed) || this.glossAllActive) {
                 const gloss = document.createElement("span");
                 gloss.className = "first-gloss";
                 gloss.textContent = entry.gloss;
                 wrapper.appendChild(gloss);
                 seen[lower] = true;
+                // Feature 5: Record this word as glossed for cross-session persistence
+                this._recordGlossSeen(tok.text);
               }
             }
           }
@@ -20752,6 +21339,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   nextExercise() {
+    // Feature 5: Flush pending glossed words to persistent storage
+    this._flushGlossSeen();
     if (this.currentExerciseIdx < this.currentText.exercises.length - 1) {
       this._resetAllTTSState();
       this.currentExerciseIdx++;
@@ -20781,6 +21370,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const iconRadio = document.querySelector(`#icon-picker input[value="${this.appIcon}"]`);
     if (iconRadio) iconRadio.checked = true;
     document.getElementById("settings-modal").classList.add("visible");
+    this._trapFocus("settings-modal");
     // Bind voice preview buttons
     const previewDe = document.getElementById("voice-de-preview");
     const previewEn = document.getElementById("voice-en-preview");
@@ -20790,6 +21380,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   closeSettings() {
     document.getElementById("settings-modal").classList.remove("visible");
+    this._releaseFocusTrap("settings-modal");
   }
 
   saveSettings() {
@@ -20839,7 +21430,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   resetProgress() {
-    if (confirm("Reset all progress? This clears vocabulary tracking, grammar tracking, and exercise completion.")) {
+    if (confirm("Reset all progress? This clears vocabulary tracking, grammar tracking, FSRS spaced repetition state, and exercise completion.")) {
       this.completed = {};
       this.save("completed", this.completed);
       this.grammarProgress = {};
@@ -20848,6 +21439,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.save("grammarProgress", this.grammarProgress);
       this.save("grammarUnitProgress", this.grammarUnitProgress);
       this.save("vocabProgress", this.vocabProgress);
+      FSRS.resetAll();
+      // Feature 5: Reset gloss persistence
+      this._glossSeen = {};
+      this._glossSeenPending = {};
+      this._saveGlossSeen();
+      WerkstattIDB.clear();
       this.render();
       this.closeSettings();
     }
@@ -20857,23 +21454,34 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     document.getElementById("sync-status").textContent = "";
     document.getElementById("sync-file-input").value = "";
     document.getElementById("sync-modal").classList.add("visible");
+    this._trapFocus("sync-modal");
   }
 
   closeSync() {
     document.getElementById("sync-modal").classList.remove("visible");
+    this._releaseFocusTrap("sync-modal");
   }
 
   exportProgress() {
     const payload = {
       _format: "uebersetzungswerkstatt-sync",
-      _version: 1,
+      _version: 2,
       exportedAt: new Date().toISOString(),
       completed: this.completed,
       customTexts: this.customTexts,
       grammarProgress: this.grammarProgress,
       grammarUnitProgress: this.grammarUnitProgress,
-      vocabProgress: this.vocabProgress
+      vocabProgress: this.vocabProgress,
+      fsrsState: FSRS.getAllCards(),
+      translationHistory: this._translationHistory || [],
+      glossSeen: this.load("glossSeen.v1") || {},
+      activeTime: this._activeTimeData || {},
+      streakData: this._streakData || {}
     };
+    // Also persist API keys to both sessionStorage and localStorage (iOS persistence fix)
+    if (this.apiKey) {
+      try { sessionStorage.setItem("uw_apiKey", this.apiKey); } catch(e) {}
+    }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -20883,6 +21491,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    // Record export date for export reminder (Feature 9)
+    this.save("lastExportDate", new Date().toISOString());
     const status = document.getElementById("sync-status");
     status.textContent = "Progress file exported.";
     status.style.color = "var(--success)";
@@ -20905,7 +21515,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           status.style.color = "var(--error)";
           return;
         }
-        // Merge completed — union of both sets
+        const parts = [];
+
+        // Merge completed — set union
         let merged = 0;
         if (data.completed && typeof data.completed === "object") {
           for (const [key, val] of Object.entries(data.completed)) {
@@ -20916,11 +21528,15 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           this.save("completed", this.completed);
         }
-        // Import API key only if not already set
+        if (merged) parts.push(`${merged} completions`);
+
+        // Import API key only if not already set; store in both localStorage + sessionStorage
         if (data.apiKey && !this.apiKey) {
           this.apiKey = data.apiKey;
           this.save("apiKey", this.apiKey);
+          try { sessionStorage.setItem("uw_apiKey", this.apiKey); } catch(e) {}
         }
+
         // Merge custom texts
         let textsAdded = 0;
         if (data.customTexts && typeof data.customTexts === "object") {
@@ -20933,17 +21549,25 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (textsAdded > 0) this.save("customTexts", this.customTexts);
         }
-        // Merge grammar progress
+        if (textsAdded) parts.push(`${textsAdded} custom text(s)`);
+
+        // Merge grammar progress — per-key, keep higher correct count
         let grammarMerged = 0;
         if (data.grammarProgress && typeof data.grammarProgress === "object") {
           for (const [key, val] of Object.entries(data.grammarProgress)) {
-            if (!this.grammarProgress[key]) {
+            const existing = this.grammarProgress[key];
+            if (!existing) {
+              this.grammarProgress[key] = val;
+              grammarMerged++;
+            } else if (val.correct && !existing.correct) {
+              // Keep the one with correct=true (higher "correct count")
               this.grammarProgress[key] = val;
               grammarMerged++;
             }
           }
           if (grammarMerged > 0) this.save("grammarProgress", this.grammarProgress);
         }
+
         // Merge grammar unit progress
         let unitsMerged = 0;
         if (data.grammarUnitProgress && typeof data.grammarUnitProgress === "object") {
@@ -20955,18 +21579,70 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (unitsMerged > 0) this.save("grammarUnitProgress", this.grammarUnitProgress);
         }
-        // Merge vocab progress
+        if (grammarMerged + unitsMerged) parts.push(`${grammarMerged + unitsMerged} grammar records`);
+
+        // Merge vocab progress — per-key, keep higher correct count (true > false/absent)
         let vocabMerged = 0;
         if (data.vocabProgress && typeof data.vocabProgress === "object") {
           for (const [key, val] of Object.entries(data.vocabProgress)) {
-            if (!this.vocabProgress[key]) {
+            if (!this.vocabProgress[key] && val) {
               this.vocabProgress[key] = val;
               vocabMerged++;
             }
           }
           if (vocabMerged > 0) this.save("vocabProgress", this.vocabProgress);
         }
-        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + ".";
+        if (vocabMerged) parts.push(`${vocabMerged} vocab records`);
+
+        // Merge FSRS state — per-card, keep more recent lastReview; if tied, higher reps
+        let fsrsMerged = 0;
+        if (data.fsrsState && typeof data.fsrsState === "object") {
+          fsrsMerged = FSRS.mergeCards(data.fsrsState);
+        }
+        if (fsrsMerged) parts.push(`${fsrsMerged} FSRS cards`);
+
+        // Merge translationHistory — dedup by composite key date|exerciseId, union
+        if (data.translationHistory && Array.isArray(data.translationHistory)) {
+          const existing = this._translationHistory || [];
+          const existingKeys = new Set(existing.map(e => (e.date || "") + "|" + (e.exerciseId || e.textId || "")));
+          let histAdded = 0;
+          for (const entry of data.translationHistory) {
+            const ck = (entry.date || "") + "|" + (entry.exerciseId || entry.textId || "");
+            if (!existingKeys.has(ck)) {
+              existing.push(entry);
+              existingKeys.add(ck);
+              histAdded++;
+            }
+          }
+          if (histAdded > 0) {
+            this._translationHistory = existing;
+            this.save("translationHistory", this._translationHistory);
+            parts.push(`${histAdded} translation records`);
+          }
+        }
+
+        // Merge glossSeen — set union
+        if (data.glossSeen && typeof data.glossSeen === "object") {
+          const current = this.load("glossSeen.v1") || { words: {} };
+          if (data.glossSeen.words) {
+            let glossAdded = 0;
+            for (const [word, val] of Object.entries(data.glossSeen.words)) {
+              if (!current.words[word]) {
+                current.words[word] = val;
+                glossAdded++;
+              }
+            }
+            if (glossAdded > 0) {
+              this.save("glossSeen.v1", current);
+              this._glossSeen = current.words; // Feature 5: sync in-memory state
+              parts.push(`${glossAdded} glossed words`);
+            }
+          }
+        }
+
+        status.textContent = parts.length > 0
+          ? "Imported: " + parts.join(", ") + "."
+          : "No new data to import — everything already present.";
         status.style.color = "var(--success)";
         this.render();
       } catch (err) {
@@ -20981,10 +21657,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     document.getElementById("import-status").textContent = "";
     document.getElementById("file-input").value = "";
     document.getElementById("import-modal").classList.add("visible");
+    this._trapFocus("import-modal");
   }
 
   closeImport() {
     document.getElementById("import-modal").classList.remove("visible");
+    this._releaseFocusTrap("import-modal");
   }
 
   doImport() {
@@ -21060,12 +21738,15 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderVocabSidebar();
       vocabContent.style.display = "";
       if (!this.vocabActiveBatch && this.vocabActiveBatch !== 0) {
-        vocabContent.innerHTML = `<div class="progression-info" style="margin-top:40px;">
+        // Feature 4: Show review banner if overdue items exist
+        let bannerHtml = this._renderReviewBanner("vocab");
+        vocabContent.innerHTML = bannerHtml + `<div class="progression-info" style="margin-top:40px;">
           <h2>How Progression Works</h2>
           <p>Vocabulary items are organized into batches of up to 25 words, grouped by part of speech (nouns, verbs, adjectives, etc.) and by author-specific terminology. Select a batch from the sidebar to begin practice.</p>
-          <p>Three exercise types are available: <strong>Flashcard</strong> (self-assessed recall — click the card to reveal the answer, then mark whether you knew it), <strong>Multiple Choice</strong> (select the correct English translation from four options), and <strong>Typed Response</strong> (type the English translation from memory). You can switch exercise types at any time using the dropdown above the batch list.</p>
+          <p>Exercise difficulty adapts automatically based on your mastery: new words start with <strong>Multiple Choice</strong> (recognition), then advance to <strong>Typed Response</strong> (production) as you improve. If you struggle, the app will temporarily ease the difficulty.</p>
           <p>The sidebar tracks your progress as completed/total for each batch and category. An item is marked complete when you answer it correctly. Your progress persists across sessions. Selecting a batch you have already completed will let you practice it again. To clear all vocabulary progress, use the Reset option in Settings.</p>
         </div>`;
+        this._bindReviewBanner("vocab", vocabContent);
       }
     } else if (mode === "grammar") {
       document.getElementById("exercise-list").style.display = "none";
@@ -21075,7 +21756,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderGrammarSidebar_new();
       grammarContent.style.display = "";
       if (!this.grammarActiveItem) {
-        this._renderGrammarWelcome();
+        // Feature 4: Show review banner if overdue grammar items exist
+        this._renderGrammarWelcomeWithBanner();
       }
     } else {
       // Translation mode — restore sidebar
@@ -21148,15 +21830,23 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const batches = this.buildVocabBatches();
     const vocabProgress = this.load("vocabProgress") || {};
 
-    // Exercise type selector at top
-    let html = `<div class="vocab-exercise-type" style="padding:6px 0 8px;">
-      <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);display:block;margin-bottom:4px;">Exercise Type</label>
-      <select id="vocab-exercise-select" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:'Helvetica Neue',sans-serif;background:var(--white);">
-        <option value="flashcard"${this.vocabExerciseType === "flashcard" ? " selected" : ""}>Flashcard</option>
-        <option value="multiple-choice"${this.vocabExerciseType === "multiple-choice" ? " selected" : ""}>Multiple Choice</option>
-        <option value="typed"${this.vocabExerciseType === "typed" ? " selected" : ""}>Typed Response</option>
-      </select>
-    </div>`;
+    // FSRS overdue count for "Review Past" button
+    const vocabOverdueCount = FSRS.countOverdue("vocab_");
+
+    // Review Past button at top (shown when there are overdue items)
+    let html = "";
+    if (vocabOverdueCount > 0) {
+      html += `<div style="padding:6px 0 4px;">
+        <button id="vocab-review-past-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+          Review Past
+          <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${vocabOverdueCount}</span>
+        </button>
+      </div>`;
+    }
+
+    // Feature 3: Exercise type is now FSRS-determined, no manual selector.
+    // Show a small info line instead.
+    html += `<div style="padding:4px 0 6px;font-size:10px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;font-style:italic;">Exercise difficulty adapts to your mastery level.</div>`;
 
     // Build groups with collapsible headers
     if (!this.vocabExpandedGroups) this.vocabExpandedGroups = {};
@@ -21241,14 +21931,20 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     exerciseList.innerHTML = html;
 
-    // Exercise type dropdown — update immediately when changed (no need to restart batch)
-    const exerciseTypeSelect = exerciseList.querySelector("#vocab-exercise-select");
-    if (exerciseTypeSelect) {
-      exerciseTypeSelect.addEventListener("change", () => {
-        this.vocabExerciseType = exerciseTypeSelect.value;
-        if (this.vocabActiveBatch !== null && this.vocabActiveBatch !== undefined && this.vocabItems.length > 0) {
-          this.vocabFlipped = false;
-          this.renderVocabExercise();
+    // Feature 3: Exercise type is now FSRS-determined; no dropdown listener needed.
+
+    // Review Past button handler
+    const reviewPastBtn = exerciseList.querySelector("#vocab-review-past-btn");
+    if (reviewPastBtn) {
+      reviewPastBtn.addEventListener("click", () => {
+        this.startVocabReview();
+        if (window.innerWidth <= 768) {
+          const sb = document.getElementById("sidebar");
+          const ol = document.getElementById("sidebar-overlay");
+          if (sb) sb.classList.remove("open");
+          if (ol) ol.classList.remove("visible");
+          document.documentElement.classList.remove("sidebar-open");
+          document.body.classList.remove("sidebar-open");
         }
       });
     }
@@ -21299,7 +21995,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!batch) return;
 
     this.vocabActiveBatch = batchIdx;
-    this.vocabExerciseType = document.getElementById("vocab-exercise-select").value;
+    // Feature 3: Exercise type now determined per-item by FSRS; no dropdown
     this.vocabItems = this._shuffleArray([...batch.items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
@@ -21334,11 +22030,16 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         <button class="vocab-back-btn" id="vocab-back-practice">Back to Batches</button>
       </div>`;
 
-    if (this.vocabExerciseType === "flashcard") {
+    // Feature 3: FSRS-determined exercise tier (replaces manual selector)
+    const vocabTier = this._getVocabTier(item);
+    const effectiveType = this._vocabTierToExerciseType(vocabTier);
+    this.vocabExerciseType = effectiveType; // sync for recording purposes
+
+    if (effectiveType === "flashcard") {
       html += this.renderFlashcard(item);
-    } else if (this.vocabExerciseType === "multiple-choice") {
+    } else if (effectiveType === "multiple-choice") {
       html += this.renderMultipleChoice(item);
-    } else if (this.vocabExerciseType === "typed") {
+    } else if (effectiveType === "typed") {
       html += this.renderTypedResponse(item);
     }
 
@@ -21519,6 +22220,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.vocabProgress[key] = true;
     }
     this.save("vocabProgress", this.vocabProgress);
+    // Feed FSRS: knew → Good(3), didn't know → Again(1)
+    this._recordVocabFSRS(item, knew ? 3 : 1);
     this._resetAllTTSState();
     this.vocabCurrentIdx++;
     this.vocabFlipped = false;
@@ -21546,6 +22249,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.vocabProgress[key] = true;
       this.save("vocabProgress", this.vocabProgress);
     }
+    // Feed FSRS: correct → Good(3), incorrect → Again(1)
+    this._recordVocabFSRS(item, isCorrect ? 3 : 1);
 
     setTimeout(() => {
       this._resetAllTTSState();
@@ -21584,6 +22289,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       feedback.className = "vocab-typed-feedback incorrect";
       feedback.textContent = `Not quite. The correct answer is: ${item.english}`;
     }
+    // Feed FSRS: correct → Good(3), incorrect → Again(1)
+    this._recordVocabFSRS(item, isCorrect ? 3 : 1);
 
     input.disabled = true;
     checkBtn.style.display = "none";
@@ -21593,6 +22300,289 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.vocabCurrentIdx++;
       this.renderVocabExercise();
     });
+  }
+
+  // ============================================================
+  // FSRS INTEGRATION HELPERS
+  // ============================================================
+
+  /**
+   * Record a vocab practice result to FSRS.
+   * Each vocab item maps to one FSRS card keyed as "vocab_<section>_<num>".
+   */
+  _recordVocabFSRS(item, rating) {
+    const fsrsKey = `vocab_${item.section}_${item.num}`;
+    FSRS.review(fsrsKey, rating);
+
+    // Feature 3: Track consecutive failures for session demotion
+    const tier = this._getVocabTier(item);
+    if (rating === 1) {
+      this._vocabTierFailures[tier] = (this._vocabTierFailures[tier] || 0) + 1;
+      if (this._vocabTierFailures[tier] >= 2) {
+        // Demote: cap so we don't go below recognition
+        this._vocabSessionDemotion = Math.min(this._vocabSessionDemotion + 1, 2);
+        this._vocabTierFailures[tier] = 0; // reset after demotion
+      }
+    } else {
+      this._vocabTierFailures[tier] = 0; // reset on success
+    }
+  }
+
+  /**
+   * Feature 3: Determine vocab exercise tier based on FSRS card state.
+   * Returns: "recognition" (multiple-choice), "cloze" (fill-in), or "production" (typed)
+   * Applies session demotion if triggered.
+   */
+  _getVocabTier(item) {
+    const fsrsKey = `vocab_${item.section}_${item.num}`;
+    const card = FSRS.getCard(fsrsKey);
+    let tier;
+    if (!card || card.state <= 1 || card.reps <= 1) {
+      tier = "recognition"; // New/learning → multiple-choice
+    } else if (card.stability < 7) {
+      tier = "cloze"; // Review with low stability → fill-in
+    } else {
+      tier = "production"; // Mature → free-type
+    }
+    // Apply session demotion
+    const tiers = ["recognition", "cloze", "production"];
+    const idx = tiers.indexOf(tier);
+    const demotedIdx = Math.max(idx - this._vocabSessionDemotion, 0);
+    return tiers[demotedIdx];
+  }
+
+  /**
+   * Feature 3: Map vocab tier to exercise type for rendering.
+   */
+  _vocabTierToExerciseType(tier) {
+    switch (tier) {
+      case "recognition": return "multiple-choice";
+      case "cloze": return "multiple-choice"; // cloze uses MC with unlabeled options
+      case "production": return "typed";
+      default: return "multiple-choice";
+    }
+  }
+
+  /**
+   * Feature 3: Determine grammar exercise phase based on FSRS card state.
+   * Returns: "repetition", "cloze", or "production"
+   */
+  _getEffectiveGrammarPhase(ex) {
+    let fsrsKey = null;
+    if (ex.paradigmKey) {
+      fsrsKey = `grammar_${ex.profile.pattern}_${ex.paradigmKey}`;
+    } else if (ex.sentenceId || (ex.sentence && ex.sentence.id)) {
+      fsrsKey = `grammar_${ex.sentenceId || ex.sentence.id}`;
+    }
+    if (!fsrsKey) return this.grammarPhase; // fallback to manual
+
+    const card = FSRS.getCard(fsrsKey);
+    let phase;
+    if (!card || card.state <= 1 || card.reps <= 1) {
+      phase = "repetition";
+    } else if (card.stability < 7) {
+      phase = "cloze";
+    } else {
+      phase = "production";
+    }
+    // Apply session demotion
+    const phases = ["repetition", "cloze", "production"];
+    const idx = phases.indexOf(phase);
+    const demotedIdx = Math.max(idx - this._grammarSessionDemotion, 0);
+    return phases[demotedIdx];
+  }
+
+  /**
+   * Feature 3: Record grammar tier failure for session demotion.
+   */
+  _recordGrammarTierFailure(phase, isCorrect) {
+    if (!isCorrect) {
+      this._grammarTierFailures[phase] = (this._grammarTierFailures[phase] || 0) + 1;
+      if (this._grammarTierFailures[phase] >= 2) {
+        this._grammarSessionDemotion = Math.min(this._grammarSessionDemotion + 1, 2);
+        this._grammarTierFailures[phase] = 0;
+      }
+    } else {
+      this._grammarTierFailures[phase] = 0;
+    }
+  }
+
+  // ============================================================
+  // Feature 5: CROSS-SESSION GLOSS PERSISTENCE
+  // ============================================================
+
+  _loadGlossSeen() {
+    // Uses uw_ prefix via this.load() for consistency with export/import
+    const data = this.load("glossSeen.v1");
+    if (data && data.words) return data.words;
+    return {};
+  }
+
+  _saveGlossSeen() {
+    this.save("glossSeen.v1", { words: this._glossSeen });
+  }
+
+  /**
+   * Feature 5: Check if a word's gloss should be suppressed.
+   * Returns true if the word should NOT show an inline gloss.
+   * Two suppression paths:
+   * 1. Word already in glossSeen → suppress
+   * 2. Word mastered via Vocab FSRS (state >= 2, retrievability >= 0.9, reps > 0, lastReview != null) → suppress
+   */
+  _shouldSuppressGloss(word) {
+    const lower = word.toLowerCase();
+    const entry = DICT[lower];
+    const seenKey = (entry && entry.lemma) ? entry.lemma : lower;
+
+    // Path 1: Already seen in a previous session
+    if (this._glossSeen[seenKey]) return true;
+
+    // Path 2: Mastered via vocab FSRS
+    // Check if any VOCAB item matches this word and is mastered
+    const vocabMatch = VOCAB.find(v => {
+      const vLower = v.german.toLowerCase();
+      return vLower === lower || vLower === seenKey;
+    });
+    if (vocabMatch) {
+      const fsrsKey = `vocab_${vocabMatch.section}_${vocabMatch.num}`;
+      const card = FSRS.getCard(fsrsKey);
+      if (card && card.state >= 2 && card.reps > 0 && card.lastReview) {
+        const r = FSRS.retrievability(card);
+        if (r >= 0.9) return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Feature 5: Record a word as glossed (pending flush).
+   */
+  _recordGlossSeen(word) {
+    const lower = word.toLowerCase();
+    const entry = DICT[lower];
+    const seenKey = (entry && entry.lemma) ? entry.lemma : lower;
+    this._glossSeenPending[seenKey] = true;
+  }
+
+  /**
+   * Feature 5: Flush pending glossed words to persistent storage.
+   * Called on passage completion/next exercise.
+   */
+  _flushGlossSeen() {
+    let dirty = false;
+    for (const key in this._glossSeenPending) {
+      if (!this._glossSeen[key]) {
+        this._glossSeen[key] = true;
+        dirty = true;
+      }
+    }
+    this._glossSeenPending = {};
+    if (dirty) this._saveGlossSeen();
+  }
+
+  // ============================================================
+  // Feature 4: INLINE REVIEW BANNER
+  // ============================================================
+
+  /**
+   * Feature 4: Render an inline review banner HTML string.
+   * Returns empty string if no overdue items or already in review mode.
+   */
+  _renderReviewBanner(tabType) {
+    if (this._vocabReviewMode || this._grammarReviewMode) return "";
+    const prefix = tabType === "vocab" ? "vocab_" : "grammar_";
+    const count = FSRS.countOverdue(prefix);
+    if (count === 0) return "";
+    const label = tabType === "vocab" ? "vocabulary" : "grammar";
+    return `<div class="review-banner" id="${tabType}-review-banner" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin:0 0 12px;background:var(--accent-light, #f0e6d3);border:1px solid var(--accent, #8b6914);border-radius:6px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;">
+      <span><strong>${count}</strong> ${label} item${count !== 1 ? "s" : ""} due for review</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <button class="review-banner-btn" data-action="review" style="padding:4px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;font-family:'Helvetica Neue',sans-serif;">Review now</button>
+        <button class="review-banner-dismiss" data-action="dismiss" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-muted);line-height:1;">&times;</button>
+      </span>
+    </div>`;
+  }
+
+  /**
+   * Feature 4: Bind review banner events within a container.
+   */
+  _bindReviewBanner(tabType, container) {
+    const banner = container.querySelector(`#${tabType}-review-banner`);
+    if (!banner) return;
+    banner.querySelector('[data-action="review"]')?.addEventListener("click", () => {
+      if (tabType === "vocab") this.startVocabReview();
+      else this.startGrammarReview();
+      banner.remove();
+    });
+    banner.querySelector('[data-action="dismiss"]')?.addEventListener("click", () => {
+      banner.remove();
+    });
+  }
+
+  /**
+   * Feature 4: Grammar welcome screen with review banner prepended.
+   */
+  _renderGrammarWelcomeWithBanner() {
+    this._renderGrammarWelcome();
+    const container = document.getElementById("grammar-content");
+    if (!container) return;
+    const bannerHtml = this._renderReviewBanner("grammar");
+    if (bannerHtml) {
+      container.insertAdjacentHTML("afterbegin", bannerHtml);
+      this._bindReviewBanner("grammar", container);
+    }
+  }
+
+  /**
+   * Get overdue vocab FSRS card keys and their corresponding VOCAB items.
+   */
+  _getOverdueVocabItems() {
+    const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("vocab_"));
+    const items = [];
+    for (const key of overdueKeys) {
+      // key format: vocab_<section>_<num>
+      const parts = key.replace("vocab_", "").split("_");
+      const num = parseInt(parts.pop());
+      const section = parts.join("_");
+      const vocabItem = VOCAB.find(v => v.section === section && v.num === num);
+      if (vocabItem) items.push(vocabItem);
+    }
+    return items;
+  }
+
+  /**
+   * Start a review session of overdue vocab items.
+   */
+  startVocabReview() {
+    const items = this._getOverdueVocabItems();
+    if (items.length === 0) return;
+
+    this._resetAllTTSState();
+    this.vocabActiveBatch = null;
+    this._vocabReviewMode = true;
+    // Feature 3: Exercise type determined per-item by FSRS tier
+    this.vocabItems = this._shuffleArray([...items]);
+    this.vocabCurrentIdx = 0;
+    this.vocabFlipped = false;
+    this.vocabProgress = this.load("vocabProgress") || {};
+
+    const contentArea = document.getElementById("vocab-content");
+    if (contentArea) {
+      contentArea.innerHTML = "";
+      this.renderVocabExercise();
+    }
+  }
+
+  /**
+   * Start a review session of overdue grammar items.
+   */
+  startGrammarReview() {
+    // Collect overdue grammar keys
+    const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
+    if (overdueKeys.length === 0) return;
+    // For now, show an alert with count — full review queue will be built by UX Implementer (Feature 3/4)
+    alert(`${overdueKeys.length} grammar item(s) due for review. Start a grammar practice session to review them.`);
   }
 
   // ============================================================
@@ -21608,6 +22598,19 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const exerciseList = targetContainer || document.getElementById("grammar-profile-list") || document.getElementById("exercise-list");
     if (!exerciseList) return;
     exerciseList.innerHTML = "";
+
+    // FSRS overdue count for grammar "Review Past" button
+    const grammarOverdueCount = FSRS.countOverdue("grammar_");
+    if (grammarOverdueCount > 0) {
+      const reviewDiv = document.createElement("div");
+      reviewDiv.style.cssText = "padding:6px 0 4px;";
+      reviewDiv.innerHTML = `<button id="grammar-review-past-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        Review Past
+        <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${grammarOverdueCount}</span>
+      </button>`;
+      exerciseList.appendChild(reviewDiv);
+      reviewDiv.querySelector("#grammar-review-past-btn").addEventListener("click", () => this.startGrammarReview());
+    }
 
     const categories = {};
     GRAMMAR_PROFILES.forEach(p => {
@@ -21929,18 +22932,23 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     // Active selection indicator
     html += `<div class="grammar-active-selection"><strong>${this.grammarSelectedProfile.description}</strong> — Exercise ${this.grammarCurrentIdx + 1} of ${this.grammarExercises.length}</div>`;
 
-    // Phase selector
+    // Feature 3: FSRS-determined grammar phase (replaces manual phase selector)
+    const effectivePhase = this._getEffectiveGrammarPhase(ex);
+    this.grammarPhase = effectivePhase; // sync for recording
+
+    // Show phase indicator (read-only, not selectable)
+    const phaseLabels = { repetition: "Recognition", cloze: "Cloze", production: "Production" };
     html += `<div class="grammar-phase-selector">`;
     for (const phase of ["repetition","cloze","production"]) {
-      const label = phase.charAt(0).toUpperCase() + phase.slice(1);
-      html += `<button class="grammar-phase-btn${this.grammarPhase === phase ? " active" : ""}" data-phase="${phase}">${label}</button>`;
+      html += `<button class="grammar-phase-btn${effectivePhase === phase ? " active" : ""}" data-phase="${phase}" disabled style="opacity:${effectivePhase === phase ? "1" : "0.4"};cursor:default;">${phaseLabels[phase]}</button>`;
     }
     html += `</div>`;
+    html += `<div style="font-size:10px;color:var(--text-muted);font-style:italic;margin:-6px 0 8px;font-family:'Helvetica Neue',sans-serif;">Phase adapts to your mastery level.</div>`;
 
     // Render phase-specific content
-    if (this.grammarPhase === "repetition") {
+    if (effectivePhase === "repetition") {
       html += this.renderRepetitionPhase(ex);
-    } else if (this.grammarPhase === "cloze") {
+    } else if (effectivePhase === "cloze") {
       html += this.renderClozePhase(ex);
     } else {
       html += this.renderProductionPhase(ex);
@@ -22101,7 +23109,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const words = ex.passage.german.split(/\s+/);
     const highlighted = words.map((w, i) => {
       if (i === ex.wordIndex) return `<span class="grammar-highlight">${w}</span>`;
-      return w;
+      // Feature 6: Gloss non-target words based on vocab FSRS mastery
+      return this._glossGrammarWord(w);
     }).join(" ");
     return `<div class="grammar-passage">${highlighted}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
   }
@@ -22115,9 +23124,51 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (match) return match[1] + `<span class="grammar-blank">___</span>` + match[3];
         return `<span class="grammar-blank">___</span>`;
       }
-      return w;
+      // Feature 6: Gloss non-target words based on vocab FSRS mastery
+      return this._glossGrammarWord(w);
     }).join(" ");
     return `<div class="grammar-passage">${blanked}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
+  }
+
+  /**
+   * Feature 6: Gloss a single word in a grammar exercise passage.
+   * Returns HTML: plain text if mastered or not in dictionary,
+   * or a word-wrapper with hover tooltip if unmastered.
+   */
+  _glossGrammarWord(word) {
+    // Strip punctuation for lookup
+    const match = word.match(/^([.,;:!?()"""''„"]*)(.+?)([.,;:!?()"""''„"]*)$/);
+    const prefix = match ? match[1] : "";
+    const core = match ? match[2] : word;
+    const suffix = match ? match[3] : "";
+
+    const entry = this.lookupWord(core);
+    if (!entry) return word; // Not in dictionary — no gloss
+
+    // Check if mastered via vocab FSRS — if so, no gloss needed
+    if (this._isVocabMastered(core)) return word;
+
+    // Unmastered: wrap with hover tooltip
+    const escaped = core.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const glossEscaped = entry.gloss.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return `${prefix}<span class="word-wrapper grammar-gloss-word" style="position:relative;"><span class="word-text">${escaped}</span><span class="tooltip">${glossEscaped}</span></span>${suffix}`;
+  }
+
+  /**
+   * Feature 6: Check if a word is mastered via vocab FSRS.
+   * Returns true if any matching VOCAB item has state >= 2, retrievability >= 0.9.
+   */
+  _isVocabMastered(word) {
+    const lower = word.toLowerCase();
+    const vocabMatch = VOCAB.find(v => {
+      const vLower = v.german.toLowerCase();
+      return vLower === lower || vLower === (DICT[lower]?.lemma || lower);
+    });
+    if (!vocabMatch) return false;
+    const fsrsKey = `vocab_${vocabMatch.section}_${vocabMatch.num}`;
+    const card = FSRS.getCard(fsrsKey);
+    if (!card || card.state < 2 || !card.lastReview || card.reps <= 0) return false;
+    return FSRS.retrievability(card) >= 0.9;
   }
 
   renderParadigmTable(ex, correctKey) {
@@ -22200,14 +23251,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   bindGrammarEvents(ex) {
-    // Phase buttons
-    document.querySelectorAll(".grammar-phase-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        this.grammarPhase = btn.dataset.phase;
-        this.grammarParadigmVisible = false;
-        this.renderGrammarContent();
-      });
-    });
+    // Feature 3: Phase buttons are now read-only indicators (FSRS-determined).
+    // No click handlers needed.
 
     // Paradigm toggle
     const pToggle = document.getElementById("grammar-paradigm-toggle");
@@ -22460,6 +23505,19 @@ Lesson: ${ex.profile.description}`;
       this.save("grammarProgress", this.grammarProgress);
       this.renderGrammarSidebar();
     }
+    // Feed FSRS: one card per paradigm cell for paradigm exercises
+    if (ex.paradigmKey) {
+      const fsrsKey = `grammar_${ex.profile.pattern}_${ex.paradigmKey}`;
+      FSRS.review(fsrsKey, isCorrect ? 3 : 1);
+    }
+    // Feed FSRS: one card per thematic sentence
+    if (ex.sentenceId || (ex.sentence && ex.sentence.id)) {
+      const sid = ex.sentenceId || ex.sentence.id;
+      const fsrsKey = `grammar_${sid}`;
+      FSRS.review(fsrsKey, isCorrect ? 3 : 1);
+    }
+    // Feature 3: Track grammar tier failures for session demotion
+    this._recordGrammarTierFailure(this.grammarPhase, isCorrect);
   }
 
   renderGrammarComplete(container) {
@@ -24466,10 +25524,60 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
   openStats() {
     this._renderStatsContent();
     document.getElementById("stats-modal").classList.add("visible");
+    this._trapFocus("stats-modal");
   }
 
   closeStats() {
     document.getElementById("stats-modal").classList.remove("visible");
+    this._releaseFocusTrap("stats-modal");
+  }
+
+  // Feature 12: Modal focus trapping
+  _activeFocusTraps = {};
+
+  _trapFocus(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    // Store previously focused element to restore on close
+    this._activeFocusTraps[modalId] = { previousFocus: document.activeElement };
+    const focusable = modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first.focus();
+    const handler = (e) => {
+      if (e.key !== "Tab") return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    modal.addEventListener("keydown", handler);
+    this._activeFocusTraps[modalId].handler = handler;
+    // Also close on Escape
+    const escHandler = (e) => {
+      if (e.key === "Escape") {
+        if (modalId === "settings-modal") this.closeSettings();
+        else if (modalId === "sync-modal") this.closeSync();
+        else if (modalId === "import-modal") this.closeImport();
+        else if (modalId === "stats-modal") this.closeStats();
+      }
+    };
+    modal.addEventListener("keydown", escHandler);
+    this._activeFocusTraps[modalId].escHandler = escHandler;
+  }
+
+  _releaseFocusTrap(modalId) {
+    const modal = document.getElementById(modalId);
+    const trap = this._activeFocusTraps[modalId];
+    if (!modal || !trap) return;
+    if (trap.handler) modal.removeEventListener("keydown", trap.handler);
+    if (trap.escHandler) modal.removeEventListener("keydown", trap.escHandler);
+    if (trap.previousFocus && typeof trap.previousFocus.focus === "function") {
+      trap.previousFocus.focus();
+    }
+    delete this._activeFocusTraps[modalId];
   }
 
   _renderStatsContent() {
@@ -24704,6 +25812,62 @@ Assess this learner's current CEFR level for reading/translating academic German
 
 // Initialize
 window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
+
+// ============================================================
+// SERVICE WORKER REGISTRATION + UPDATE BANNER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      // Force update check on load
+      reg.update();
+
+      const showUpdateBanner = () => {
+        // Don't show if already showing
+        if (document.getElementById('sw-update-banner')) return;
+        const banner = document.createElement('div');
+        banner.id = 'sw-update-banner';
+        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#2c5282;color:#fff;padding:12px 16px;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;display:flex;align-items:center;justify-content:space-between;z-index:10000;box-shadow:0 -2px 8px rgba(0,0,0,0.15);';
+        banner.innerHTML = `
+          <span>A new version is available</span>
+          <span style="display:flex;gap:8px;align-items:center;">
+            <button id="sw-reload-btn" style="background:#fff;color:#2c5282;border:none;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Reload now</button>
+            <button id="sw-dismiss-btn" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 6px;opacity:0.8;">&times;</button>
+          </span>`;
+        document.body.appendChild(banner);
+        document.getElementById('sw-reload-btn').addEventListener('click', () => {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        });
+        document.getElementById('sw-dismiss-btn').addEventListener('click', () => banner.remove());
+      };
+
+      // Use !!reg.active guard for iOS compatibility
+      if (!!reg.active && reg.waiting) {
+        showUpdateBanner();
+      }
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          // Only show banner if there was a previous active SW (not first install)
+          if (newWorker.state === 'installed' && !!reg.active) {
+            showUpdateBanner();
+          }
+        });
+      });
+
+      // Reload page when new SW takes over
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    }).catch(err => console.warn('SW registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
