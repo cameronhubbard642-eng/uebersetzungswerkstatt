@@ -1219,6 +1219,28 @@ body.sidebar-open {
 }
 .progression-info p { margin-bottom: 6px; }
 .progression-info p:last-child { margin-bottom: 0; }
+.path-roadmap {
+  margin: 20px auto;
+  max-width: 700px;
+}
+.path-unit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.path-unit-row:hover { background: var(--sidebar-bg); }
+.path-unit-row.current { border-left-color: var(--accent); background: rgba(139,69,19,0.04); }
+.path-unit-row.completed { border-left-color: #287c3c; }
+.path-unit-pct { width: 40px; text-align: right; font-weight: 600; color: var(--text-muted); font-size: 11px; }
+.path-unit-name { flex: 1; color: var(--text); }
+.path-unit-lessons { color: var(--text-muted); font-size: 11px; }
 .grammar-active-selection {
   margin-bottom: 16px;
   padding: 8px 12px;
@@ -22899,17 +22921,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   renderGrammarContent() {
     const container = document.getElementById("grammar-content");
     if (!this.grammarSelectedProfile) {
-      container.innerHTML = `<div class="grammar-no-exercises">
-        <p>Select a morphological pattern from the sidebar to begin.</p>
-        <p style="margin-top:12px">Grammar exercises are generated from the German text corpus (Wittgenstein, Freud, Nietzsche) and test your ability to identify, select, and produce correct grammatical forms.</p>
-      </div>
-      <div class="progression-info">
-        <h2>How Progression Works</h2>
-        <p>Each grammar pattern offers three phases of increasing difficulty: <strong>Repetition</strong> (identify the correct form from labeled options), <strong>Cloze</strong> (fill in the blank from unlabeled options), and <strong>Production</strong> (type the correct form from memory). The sidebar displays your accuracy as correct/attempted for each category and pattern.</p>
-        <p>Exercises are drawn from the text corpus and shuffled each session. Up to 20 exercises are generated per pattern. Progress is recorded on your first attempt at each exercise within a session; retries on incorrect answers do not overwrite your initial result. You can revisit any pattern at any time to generate a fresh set of exercises.</p>
-        <p>The checkmark next to a pattern indicates that every exercise you have attempted for it was answered correctly. To clear your grammar progress entirely, use the Reset option in Settings.</p>
-      </div>`;
-      this.renderGrammarStats(container);
+      this._renderGrammarWelcome();
       return;
     }
 
@@ -23609,6 +23621,9 @@ Lesson: ${ex.profile.description}`;
   renderGrammarSidebar_new() {
   const container = document.getElementById("grammar-sidebar");
   if (!container) return;
+
+  const header = document.getElementById("sidebar-header");
+  if (header) header.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;"><div><h1>Grammar</h1><p>Lessons &amp; Practice</p></div></div>`;
 
   let html = '<div class="grammar-tabs">';
   html += `<button class="grammar-tab ${this.grammarView === "lessons" ? "active" : ""}" data-view="lessons">Lessons</button>`;
@@ -24946,15 +24961,102 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   _renderGrammarWelcome() {
     const el = document.getElementById("grammar-content");
     if (!el) return;
-    el.innerHTML = `<div class="lesson-view" style="padding:30px;">
-      <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
-      <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
-      <p style="margin-bottom:10px;">Each unit contains:</p>
-      <p style="margin-bottom:5px;"><strong>📖 Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
-      <p style="margin-bottom:5px;"><strong>📝 Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
-      <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
-      <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
-    </div>`;
+
+    // Compute progress across all units
+    let totalLessons = 0, totalMastered = 0;
+    const unitStats = [];
+    GRAMMAR_UNITS.forEach((unit, idx) => {
+      const unitId = `unit_${idx}`;
+      const progress = this.getUnitProgress(unitId);
+      const lt = unit.lessons ? unit.lessons.length : 0;
+      totalLessons += lt;
+      totalMastered += progress.lessonsComplete;
+      unitStats.push({ id: unitId, chapter: unit.chapter, title: unit.title,
+        lessonsTotal: lt, lessonsComplete: progress.lessonsComplete,
+        percentComplete: progress.percentComplete });
+    });
+    const firstIncomplete = unitStats.find(s => s.percentComplete < 100);
+    const overallPct = totalLessons > 0 ? Math.round((totalMastered / totalLessons) * 100) : 0;
+
+    let html = '<div class="lesson-view" style="padding:24px;">';
+
+    // Overall progress
+    html += `<div style="text-align:center;margin-bottom:24px;">`;
+    html += `<div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Overall Progress</div>`;
+    html += `<div style="font-size:28px;font-weight:700;color:var(--text);font-family:'Helvetica Neue',Arial,sans-serif;">${totalMastered} / ${totalLessons} <span style="font-size:14px;color:var(--text-muted);font-weight:400;">lessons mastered (${overallPct}%)</span></div>`;
+    html += `<div style="max-width:300px;margin:10px auto 0;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">`;
+    html += `<div style="height:100%;width:${overallPct}%;background:var(--accent);border-radius:3px;transition:width 0.3s;"></div></div>`;
+    html += `</div>`;
+
+    // How it works
+    html += `<div class="progression-info" style="max-width:700px;">`;
+    html += `<h4>How It Works</h4>`;
+    html += `<p>Each lesson has three tabs: <strong>Lesson</strong> (instructional content with paradigm tables, cross-linguistic comparisons, and historical context), <strong>Practice</strong> (exercises in three phases — Repetition, Cloze, Production), and <strong>Review</strong> (mixed exercises drawn from the current lesson and its prerequisites for spaced reinforcement).</p>`;
+    html += `<p>Work through units in order for a structured path, or jump to any topic. A lesson is marked <em>mastered</em> when you have completed exercises in all three practice phases correctly. Click any unit below to see its lessons.</p>`;
+    html += `</div>`;
+
+    // Unit roadmap
+    html += `<div class="path-roadmap">`;
+    unitStats.forEach(s => {
+      const pct = s.percentComplete;
+      const isComplete = pct === 100 && s.lessonsTotal > 0;
+      const isCurrent = firstIncomplete && s.id === firstIncomplete.id;
+      let cls = "path-unit-row";
+      if (isComplete) cls += " completed";
+      else if (isCurrent) cls += " current";
+      html += `<div class="${cls}" data-unitclick="${s.id}" role="button" tabindex="0">`;
+      html += `<span class="path-unit-pct">${pct}%</span>`;
+      html += `<span class="path-unit-name">Unit ${s.chapter}: ${s.title}</span>`;
+      html += `<span class="path-unit-lessons">${s.lessonsComplete}/${s.lessonsTotal} lessons</span>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+
+    // Continue button — first incomplete lesson in first incomplete unit
+    if (firstIncomplete) {
+      const uidx = parseInt(firstIncomplete.id.split('_')[1]);
+      const unit = GRAMMAR_UNITS[uidx];
+      const up = this.grammarUnitProgress[firstIncomplete.id] || {};
+      const nextLesson = unit && unit.lessons
+        ? unit.lessons.find((l, i) => !up.lessons || !up.lessons[`${uidx}_${i}`])
+        : null;
+      if (nextLesson) {
+        const lessonIdx = unit.lessons.indexOf(nextLesson);
+        const lessonItemId = `${uidx}_${lessonIdx}`;
+        html += `<div style="text-align:center;margin-top:20px;">`;
+        html += `<button class="action-btn" id="grammar-start-next" data-unit="${firstIncomplete.id}" data-lesson="${lessonItemId}" style="padding:10px 24px;background:var(--accent);color:white;">`;
+        html += `Continue: ${nextLesson.title} &rarr;</button></div>`;
+      }
+    }
+
+    html += '</div>';
+    el.innerHTML = html;
+
+    // Bind unit row clicks — expand unit in sidebar tree
+    el.querySelectorAll('[data-unitclick]').forEach(row => {
+      row.addEventListener('click', () => {
+        const uid = row.dataset.unitclick;
+        if (!this.grammarExpandedUnits) this.grammarExpandedUnits = {};
+        this.grammarExpandedUnits[uid] = true;
+        this.grammarView = 'lessons';
+        this.renderGrammarSidebar_new();
+      });
+    });
+
+    // Bind continue button
+    const startBtn = el.querySelector('#grammar-start-next');
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        const uid = startBtn.dataset.unit;
+        const lessonId = startBtn.dataset.lesson;
+        if (!this.grammarExpandedUnits) this.grammarExpandedUnits = {};
+        this.grammarExpandedUnits[uid] = true;
+        this.grammarView = 'lessons';
+        this.grammarActiveItem = { unitId: uid, type: 'lesson', itemId: lessonId };
+        this.renderGrammarSidebar_new();
+        this.renderGrammarLesson(uid, lessonId);
+      });
+    }
   }
 
   _sidebarHeaderHTML(title, subtitle) {
