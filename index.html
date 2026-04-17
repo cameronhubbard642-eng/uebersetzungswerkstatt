@@ -22435,6 +22435,28 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
   }
 
+  // Record a grammar unit exercise/review item result to FSRS.
+  // Keys: exercises → grammar_ux_<unitIdx>_<exerciseIdx>_<itemIdx>
+  //       reviews   → grammar_ur_<unitIdx>_<itemIdx>
+  // Guards against double-recording on retries via _fsrsRecorded flag.
+  _recordGrammarUnitItemFSRS(isCorrect) {
+    const state = this.grammarExerciseState;
+    if (!state) return;
+    const result = state.results[state.currentIdx];
+    if (!result || result._fsrsRecorded) return;
+    result._fsrsRecorded = true;
+    const unitIdx = parseInt(state.unitId.split('_')[1]);
+    const itemIdx = state.currentIdx;
+    let fsrsKey;
+    if (state.exerciseId === "review") {
+      fsrsKey = `grammar_ur_${unitIdx}_${itemIdx}`;
+    } else {
+      const exerciseIdx = parseInt(state.exerciseId.split('_')[1]);
+      fsrsKey = `grammar_ux_${unitIdx}_${exerciseIdx}_${itemIdx}`;
+    }
+    FSRS.review(fsrsKey, isCorrect ? 3 : 1);
+  }
+
   // ============================================================
   // Feature 5: CROSS-SESSION GLOSS PERSISTENCE
   // ============================================================
@@ -22606,11 +22628,83 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
    * Start a review session of overdue grammar items.
    */
   startGrammarReview() {
-    // Collect overdue grammar keys
     const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
     if (overdueKeys.length === 0) return;
-    // For now, show an alert with count — full review queue will be built by UX Implementer (Feature 3/4)
-    alert(`${overdueKeys.length} grammar item(s) due for review. Start a grammar practice session to review them.`);
+
+    // Separate unit-exercise keys (grammar_ux_ / grammar_ur_) from profile keys (grammar_<pattern>_*)
+    const unitKeys = overdueKeys.filter(k => k.startsWith("grammar_ux_") || k.startsWith("grammar_ur_"));
+    const profileKeys = overdueKeys.filter(k => !k.startsWith("grammar_ux_") && !k.startsWith("grammar_ur_"));
+
+    // Build review items from unit keys
+    const byUnit = {};
+    for (const key of unitKeys) {
+      let unitIdx, exerciseIdx, itemIdx, label, isReview;
+      if (key.startsWith("grammar_ux_")) {
+        const parts = key.slice("grammar_ux_".length).split('_').map(Number);
+        if (parts.length !== 3) continue;
+        [unitIdx, exerciseIdx, itemIdx] = parts;
+        const unit = GRAMMAR_UNITS[unitIdx];
+        const ex = unit && unit.exercises && unit.exercises[exerciseIdx];
+        if (!unit || !ex || !ex.items || !ex.items[itemIdx]) continue;
+        label = ex.title || `Exercise ${exerciseIdx + 1}`;
+        isReview = false;
+        if (!byUnit[unitIdx]) byUnit[unitIdx] = { unit, items: [] };
+        byUnit[unitIdx].items.push({ label, exerciseId: `${unitIdx}_${exerciseIdx}`, isReview, unitId: `unit_${unitIdx}` });
+      } else {
+        const parts = key.slice("grammar_ur_".length).split('_').map(Number);
+        if (parts.length !== 2) continue;
+        [unitIdx, itemIdx] = parts;
+        const unit = GRAMMAR_UNITS[unitIdx];
+        if (!unit || !unit.review || !unit.review.items || !unit.review.items[itemIdx]) continue;
+        if (!byUnit[unitIdx]) byUnit[unitIdx] = { unit, items: [] };
+        byUnit[unitIdx].items.push({ label: "Unit Review", exerciseId: "review", isReview: true, unitId: `unit_${unitIdx}` });
+      }
+    }
+
+    const container = document.getElementById("grammar-content");
+    if (!container) return;
+
+    // Deduplicate items per unit (same exercise may have multiple overdue items — just navigate once)
+    const seen = new Set();
+    let rowsHtml = "";
+    for (const [uidx, { unit, items }] of Object.entries(byUnit)) {
+      const deduped = items.filter(it => { const k = it.unitId + it.exerciseId; if (seen.has(k)) return false; seen.add(k); return true; });
+      deduped.forEach(it => {
+        rowsHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:13px;font-weight:600;font-family:'Helvetica Neue',sans-serif;">${unit.title}</div>
+            <div style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">${it.label}</div>
+          </div>
+          <button class="action-btn grammar-review-goto" data-unit-id="${it.unitId}" data-exercise-id="${it.exerciseId}" data-is-review="${it.isReview}"
+            style="font-size:11px;padding:4px 10px;">Practice →</button>
+        </div>`;
+      });
+    }
+
+    if (profileKeys.length > 0 && rowsHtml === "") {
+      rowsHtml = `<p style="font-size:13px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">
+        ${profileKeys.length} Quick Reference pattern(s) due. Open the Quick Reference tab to practice them.</p>`;
+    }
+
+    container.innerHTML = `<div style="padding:20px 4px;">
+      <h3 style="font-family:'Helvetica Neue',sans-serif;font-size:15px;margin-bottom:4px;">Review Queue</h3>
+      <p style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;margin-bottom:16px;">${overdueKeys.length} item(s) due for review</p>
+      ${rowsHtml || `<p style="font-size:13px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">No reviewable items found.</p>`}
+    </div>`;
+
+    container.querySelectorAll(".grammar-review-goto").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const unitId = btn.dataset.unitId;
+        const exerciseId = btn.dataset.exerciseId;
+        this.grammarExpandedUnits[unitId] = true;
+        this.renderGrammarSidebar_new();
+        if (btn.dataset.isReview === "true") {
+          this.renderGrammarReview(unitId);
+        } else {
+          this.renderGrammarExercise(unitId, exerciseId);
+        }
+      });
+    });
   }
 
   // ============================================================
@@ -23668,7 +23762,16 @@ Lesson: ${ex.profile.description}`;
   const treeContainer = document.getElementById("grammar-unit-tree");
   if (!treeContainer) return;
 
+  const _unitOverdue = FSRS.countOverdue("grammar_ux_") + FSRS.countOverdue("grammar_ur_");
   let html = '<div class="unit-tree">';
+  if (_unitOverdue > 0) {
+    html += `<div style="padding:6px 0 8px;">
+      <button id="grammar-unit-review-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        Review Past Concepts
+        <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${_unitOverdue}</span>
+      </button>
+    </div>`;
+  }
 
   GRAMMAR_UNITS.forEach((unit, unitIndex) => {
     const unitId = `unit_${unitIndex}`;
@@ -24630,6 +24733,7 @@ Lesson: ${ex.profile.description}`;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].correct = isCorrect;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].feedback =
         isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
+      this._recordGrammarUnitItemFSRS(isCorrect);
 
       e.target.closest(".exercise-options").querySelectorAll(".exercise-option-btn").forEach(opt => {
         opt.disabled = true;
@@ -24657,6 +24761,7 @@ Lesson: ${ex.profile.description}`;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].correct = isCorrect;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].feedback =
         isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
+      this._recordGrammarUnitItemFSRS(isCorrect);
 
       e.target.closest(".review-options").querySelectorAll(".review-option-btn").forEach(opt => {
         opt.disabled = true;
@@ -24694,6 +24799,7 @@ Lesson: ${ex.profile.description}`;
           this.grammarExerciseState.results[state.currentIdx].correct = true;
           this.grammarExerciseState.results[state.currentIdx].feedback = "Correct! Well done.";
           this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+          this._recordGrammarUnitItemFSRS(true);
           if (isReview) { this.renderGrammarReview(state.unitId); }
           else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
         } else if (this.apiKey && userAnswer.length > 0) {
@@ -24710,6 +24816,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
             this.grammarExerciseState.results[state.currentIdx].feedback =
               accepted ? "Correct! Your translation is acceptable." : "Incorrect. Try again.";
             this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+            this._recordGrammarUnitItemFSRS(accepted);
             if (isReview) { this.renderGrammarReview(state.unitId); }
             else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
           }).catch(() => {
@@ -24717,6 +24824,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
             this.grammarExerciseState.results[state.currentIdx].correct = false;
             this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
             this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+            this._recordGrammarUnitItemFSRS(false);
             if (isReview) { this.renderGrammarReview(state.unitId); }
             else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
           });
@@ -24725,6 +24833,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
           this.grammarExerciseState.results[state.currentIdx].correct = false;
           this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
           this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+          this._recordGrammarUnitItemFSRS(false);
           if (isReview) { this.renderGrammarReview(state.unitId); }
           else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
         }
@@ -24745,6 +24854,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         this.grammarExerciseState.results[state.currentIdx].feedback =
           isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
         this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
+        this._recordGrammarUnitItemFSRS(isCorrect);
 
         if (isReview) {
           this.renderGrammarReview(state.unitId);
@@ -24771,6 +24881,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         this.grammarExerciseState.results[state.currentIdx].correct = allCorrect;
         this.grammarExerciseState.results[state.currentIdx].feedback =
           allCorrect ? "Correct! All pairs matched." : "Incorrect. Some pairs don't match.";
+        this._recordGrammarUnitItemFSRS(allCorrect);
 
         if (isReview) {
           this.renderGrammarReview(state.unitId);
@@ -24888,6 +24999,9 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   bindGrammarUnitTreeEvents() {
   const treeContainer = document.getElementById("grammar-unit-tree");
   if (!treeContainer) return;
+
+  const reviewBtn = treeContainer.querySelector("#grammar-unit-review-btn");
+  if (reviewBtn) reviewBtn.addEventListener("click", () => this.startGrammarReview());
 
   // Toggle unit expansion
   treeContainer.querySelectorAll(".unit-toggle").forEach(toggle => {
