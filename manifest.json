@@ -1,6 +1,6 @@
 {
   "name": "Philosophische Übersetzungswerkstatt",
-  "short_name": "Übersetzungs",
+  "short_name": "Übersetzungswerkstatt",
   "description": "German philosophical translation practice",
   "start_url": "./index.html",
   "display": "standalone",

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Philosophische Übersetzungswerkstatt</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -38,7 +38,6 @@
   --pos-num: #1e3a5f;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { overflow-x: hidden; touch-action: manipulation; }
 /* Prevent iOS double-tap-to-zoom on all interactive elements */
 button, a, select, input, textarea, .exercise-item, .unit-header, .unit-item,
 .vocab-group-header, .text-tab, .mode-btn, .grammar-tab, .toggle-btn,
@@ -291,21 +290,10 @@ body.sidebar-open {
   max-width: 820px;
   margin: 0 auto;
 }
-/* German text display — sticky source passage (Feature 7) */
+/* German text display */
 #german-display {
   margin-bottom: 28px;
   line-height: 2.8;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  max-height: 40vh;
-  overflow-y: auto;
-  background: var(--bg);
-  padding: 12px 0 8px;
-  transition: box-shadow 0.2s;
-}
-#german-display.stuck {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 .word-wrapper {
   display: inline-block;
@@ -319,26 +307,25 @@ body.sidebar-open {
   border-radius: 3px;
   transition: background 0.15s;
 }
-/* Per-word tooltip hidden in translation tab — replaced by body-level portal (Feature 7) */
-/* Scoped to #german-display so grammar glossing tooltips (Feature 6) still work */
-#german-display .word-wrapper .tooltip {
-  display: none !important;
-}
-/* Body-level tooltip portal (Feature 7) */
-#passage-tooltip {
+.word-wrapper .tooltip {
   display: none;
-  position: fixed;
-  background: var(--text, #333);
-  color: var(--bg, #fff);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   white-space: nowrap;
-  z-index: 10000;
+  z-index: 100;
   pointer-events: none;
 }
-#passage-tooltip.visible { display: block; }
+.word-wrapper:hover .tooltip { display: block; }
+/* Touch devices: tap to show tooltip (added via JS class) */
+.word-wrapper.tooltip-active .tooltip { display: block; }
 .word-wrapper .first-gloss {
   display: block;
   font-size: 11px;
@@ -1219,28 +1206,6 @@ body.sidebar-open {
 }
 .progression-info p { margin-bottom: 6px; }
 .progression-info p:last-child { margin-bottom: 0; }
-.path-roadmap {
-  margin: 20px auto;
-  max-width: 700px;
-}
-.path-unit-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-left: 3px solid var(--border);
-  margin-bottom: 2px;
-  font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.path-unit-row:hover { background: var(--sidebar-bg); }
-.path-unit-row.current { border-left-color: var(--accent); background: rgba(139,69,19,0.04); }
-.path-unit-row.completed { border-left-color: #287c3c; }
-.path-unit-pct { width: 40px; text-align: right; font-weight: 600; color: var(--text-muted); font-size: 11px; }
-.path-unit-name { flex: 1; color: var(--text); }
-.path-unit-lessons { color: var(--text-muted); font-size: 11px; }
 .grammar-active-selection {
   margin-bottom: 16px;
   padding: 8px 12px;
@@ -1397,11 +1362,14 @@ body.sidebar-open {
     margin-bottom: 20px;
     overflow-wrap: break-word;
   }
-  /* Portal tooltip mobile adjustments (Feature 7) */
-  #passage-tooltip {
+  .word-wrapper .tooltip {
     font-size: 11px;
     max-width: 70vw;
     white-space: normal;
+    /* Prevent tooltip from going off-screen */
+    left: 0;
+    transform: none;
+    right: auto;
   }
 
   /* POS legend: stack items */
@@ -1708,13 +1676,11 @@ body.sidebar-open {
 .lesson-item { border-left-color: transparent; }
 .exercise-item { border-left-color: transparent; }
 .review-item { border-left-color: transparent; }
-.item-icon { font-size: 0.9rem; flex-shrink: 0; display: inline-flex; align-items: center; }
-.item-icon svg { width: 14px; height: 14px; vertical-align: middle; }
+.item-icon { font-size: 0.9rem; flex-shrink: 0; }
 .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item-checkmark { color: var(--success); font-weight: bold; flex-shrink: 0; }
 .item-score { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
-.item-lock { font-size: 0.75rem; flex-shrink: 0; display: inline-flex; align-items: center; }
-.item-lock svg { width: 12px; height: 12px; vertical-align: middle; }
+.item-lock { font-size: 0.75rem; flex-shrink: 0; }
 
 /* Grammar sub-tabs */
 .grammar-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 4px; }
@@ -3391,9 +3357,7 @@ body.sidebar-open {
 }
 .conv-scenario-item:hover { background: rgba(0,0,0,0.05); }
 .conv-scenario-item.active { background: var(--accent); color: #fff; }
-.conv-scenario-item .conv-icon { font-size: 16px; flex-shrink: 0; display: inline-flex; align-items: center; }
-.conv-scenario-item .conv-icon svg { width: 16px; height: 16px; vertical-align: middle; }
-.conv-chat-header h3 svg { width: 16px; height: 16px; vertical-align: middle; display: inline; }
+.conv-scenario-item .conv-icon { font-size: 16px; flex-shrink: 0; }
 .conv-scenario-item .conv-label { flex: 1; }
 .conv-scenario-item .conv-level {
   font-size: 9px;
@@ -3888,93 +3852,15 @@ select:focus-visible, a:focus-visible {
     --warning: #c4a020;
     --error: #c45050;
   }
-
-  /* Feature 11: Comprehensive dark mode coverage */
-
-  /* Conversation message boxes */
-  .conv-msg.assistant { background: var(--sidebar-bg); }
-  .conv-msg.user { color: #fff; } /* keep white on accent */
-  .conv-msg.system { background: rgba(196,160,32,0.12); color: var(--warning); }
-
-  /* Conversation end button */
-  .conv-end-btn { border-color: var(--error); color: var(--error); }
-  .conv-end-btn:hover { background: var(--error); color: #fff; }
-
-  /* Conversation hint button */
-  .conv-hint-btn { border-color: var(--border); color: var(--text-muted); }
-  .conv-hint-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Send button in conversation */
-  .conv-send-btn { color: #fff; }
-
-  /* Sidebar badges */
-  .badge-gray { background: #3d3830; color: var(--text-muted); }
-  .badge-yellow { background: rgba(196,160,32,0.2); color: var(--warning); }
-  .badge-green { background: rgba(74,154,74,0.2); color: var(--success); }
-
-  /* Grammar unit tree type-specific borders & icons */
-  .unit-item.lesson { border-left-color: #5b8def; }
-  .unit-item.exercise { border-left-color: #e06060; }
-  .unit-item.review { border-left-color: var(--warning); }
-  .unit-item.lesson .unit-item-icon { color: #5b8def; }
-  .unit-item.exercise .unit-item-icon { color: #e06060; }
-  .unit-item.review .unit-item-icon { color: var(--warning); }
-
-  /* Exercise hovers — use transparent accent instead of rgba(0,0,0,...) */
-  .exercise-item:hover { background: rgba(196,112,61,0.08); }
-  .vocab-group-header:hover { background: rgba(196,112,61,0.06); }
-  .vocab-section-header:hover { background: rgba(196,112,61,0.06); }
-  .unit-item:hover { background: rgba(196,112,61,0.06); }
-  .unit-header:hover { background: rgba(196,112,61,0.08); }
-
-  /* Comparison/reference blocks with hardcoded rgba(0,0,0,0.02) */
-  .exercise-translate .german-text,
-  .grammar-passage,
-  .comparison-block,
-  .exercise-identify,
-  .exercise-fill,
-  .exercise-produce { background: rgba(255,255,255,0.03); }
-
-  /* Stats close button */
-  .stats-close-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-  .stats-section-content { border-color: var(--border); }
-  .stats-metric-divider { border-color: var(--border); }
-
-  /* CEFR badges — slightly muted for dark */
-  .cefr-A1, .cefr-A2 { background: #1a8a3e; }
-  .cefr-B1, .cefr-B2 { background: #2058c0; }
-  .cefr-C1, .cefr-C2 { background: #6830b8; }
-
-  /* Modal overlay darker */
-  .modal-overlay { background: rgba(0,0,0,0.6); }
-  .modal { background: var(--sidebar-bg); color: var(--text); }
-  .modal input[type="text"],
-  .modal input[type="password"],
-  .modal select { background: var(--white); color: var(--text); border-color: var(--border); }
-
-  /* Inline code/pre blocks */
-  pre, code { background: var(--white); color: var(--text); }
-
-  /* Sticky passage shadow in dark mode */
-  #german-display.stuck { box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
-
-  /* Grammar paradigm note blocks */
-  .grammar-note-block { background: rgba(255,255,255,0.03); }
-
-  /* Review banner */
-  .review-banner { background: rgba(196,112,61,0.1); border-color: rgba(196,112,61,0.3); }
 }
 </style>
 </head>
 <body>
 
-<!-- Feature 7: Body-level tooltip portal -->
-<div id="passage-tooltip" role="tooltip" aria-hidden="true"></div>
-
 <button id="mobile-menu-btn" aria-label="Toggle menu">&#9776;</button>
-<div id="sidebar-overlay" aria-hidden="true"></div>
-<nav id="sidebar" aria-label="Sidebar navigation">
-  <div id="mode-switcher" class="mode-switcher" role="tablist" aria-label="Practice modes">
+<div id="sidebar-overlay"></div>
+<div id="sidebar">
+  <div id="mode-switcher" class="mode-switcher">
     <button class="mode-btn active" data-mode="translation" aria-label="Switch to translation mode">Translation</button>
     <button class="mode-btn" data-mode="vocabulary" aria-label="Switch to vocabulary mode">Vocabulary</button>
     <button class="mode-btn" data-mode="grammar" aria-label="Switch to grammar mode">Grammar</button>
@@ -3988,8 +3874,7 @@ select:focus-visible, a:focus-visible {
     <button class="text-tab active" data-text="tractatus" aria-label="Tractatus Logico-Philosophicus">TLP</button>
     <button class="text-tab" data-text="pu" aria-label="Philosophische Untersuchungen">PU</button>
     <button class="text-tab" data-text="unheimliche" aria-label="Freud — Das Unheimliche">Freud</button>
-    <button class="text-tab" data-text="nietzsche" aria-label="Nietzsche selections">Nietzsche</button>
-    <button class="text-tab" data-text="genealogie" aria-label="Zur Genealogie der Moral">Genealogie</button>
+    <button class="text-tab" data-text="nietzsche" aria-label="Zur Genealogie der Moral">Nietzsche</button>
   </div>
   <div id="exercise-list"></div>
   <div id="grammar-sidebar" style="display:none;"></div>
@@ -4003,9 +3888,9 @@ select:focus-visible, a:focus-visible {
     <button class="sidebar-btn" id="stats-btn" aria-label="Open statistics">&#9776; Statistics &amp; Assessment</button>
     <button class="sidebar-btn" id="settings-btn" aria-label="Open settings">&#9881; Settings</button>
   </div>
-</nav>
+</div>
 
-<main id="main">
+<div id="main">
   <div id="toolbar">
     <div id="toolbar-left">
       <span id="exercise-title"></span>
@@ -4020,7 +3905,7 @@ select:focus-visible, a:focus-visible {
   <div id="content-area">
     <div id="translation-content">
     <div id="translation-welcome" class="progression-info" style="margin-top:40px;">
-      <h2 style="font-size:inherit;font-weight:600;">About Translation Practice</h2>
+      <h4>About Translation Practice</h4>
       <p>This app focuses on translating complete philosophical texts and passages in their entirety. The individual exercises break longer works — the <em>Tractatus Logico-Philosophicus</em>, <em>Philosophische Untersuchungen</em>, <em>Das Unheimliche</em>, and <em>Zur Genealogie der Moral</em> — into manageable segments for systematic translation practice.</p>
       <p>Select an author from the tabs at the top of the sidebar, then choose a passage from the list to begin. Each passage displays the original German text — click any word to see its gloss and part of speech.</p>
       <p>Type your English translation in the input area, then click <strong>Evaluate</strong> for AI-powered feedback on accuracy and style. Use <strong>Get Hints</strong> to reveal contextual clues, or <strong>Show Reference</strong> to compare with a published translation.</p>
@@ -4045,7 +3930,7 @@ select:focus-visible, a:focus-visible {
     <div id="german-display"></div>
     <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">&#9654; Listen</button></div>
     <div id="translation-section">
-      <label for="translation-input">Your Translation</label>
+      <label>Your Translation</label>
       <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
     </div>
     <div id="action-row">
@@ -4055,7 +3940,7 @@ select:focus-visible, a:focus-visible {
       <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
     </div>
     <div id="evaluation-result" aria-live="polite">
-      <h2 style="font-size:inherit;font-weight:600;">Evaluation</h2>
+      <h4>Evaluation</h4>
       <div class="score" id="eval-score"></div>
       <div class="feedback" id="eval-feedback"></div>
     </div>
@@ -4074,37 +3959,37 @@ select:focus-visible, a:focus-visible {
     <div id="grammar-content" style="display:none;" aria-live="polite"></div>
     <div id="conversation-content" style="display:none;" aria-live="polite"></div>
   </div>
-</main>
+</div>
 
 <!-- Settings Modal -->
-<div class="modal-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
+<div class="modal-overlay" id="settings-modal">
   <div class="modal">
     <h2>Settings</h2>
-    <label for="api-provider-select">LLM Provider</label>
+    <label>LLM Provider</label>
     <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
       <option value="anthropic">Anthropic (Claude)</option>
       <option value="openai">OpenAI (GPT-4o-mini)</option>
       <option value="gemini">Google (Gemini)</option>
     </select>
-    <label for="api-key-input">API Key</label>
+    <label>API Key</label>
     <input type="password" id="api-key-input" placeholder="sk-ant-... / sk-... / AIza...">
     <p class="modal-note">When set, translations are evaluated using LLM. Without a key, client-side heuristics are used. Your key is stored only in this browser's localStorage.</p>
-    <label for="tts-api-key-input">OpenAI TTS API Key <span style="font-weight:400;font-size:11px;color:var(--text-muted)">(text-to-speech only)</span></label>
+    <label>OpenAI TTS API Key <span style="font-weight:400;font-size:11px;color:var(--text-muted)">(text-to-speech only)</span></label>
     <input type="password" id="tts-api-key-input" placeholder="sk-... (optional, for OpenAI neural TTS)">
     <p class="modal-note">Optional. When set, OpenAI's neural TTS is used for German audio regardless of your LLM provider above — so you can use Anthropic or Gemini for evaluation while still using OpenAI for speech. If blank, falls back to the OpenAI LLM key (when provider is OpenAI) or browser voices.</p>
-    <label for="voice-de-select">German Voice</label>
+    <label>German Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
       <select id="voice-de-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
-      <button id="voice-de-preview" class="modal-btn" style="white-space:nowrap;" aria-label="Preview German voice">Preview</button>
+      <button id="voice-de-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
     </div>
-    <label for="voice-en-select">English Voice</label>
+    <label>English Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
       <select id="voice-en-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
-      <button id="voice-en-preview" class="modal-btn" style="white-space:nowrap;" aria-label="Preview English voice">Preview</button>
+      <button id="voice-en-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
     </div>
     <p class="modal-note" style="margin-top:6px;">For better German TTS quality, download enhanced voices in System Preferences → Accessibility → Spoken Content (macOS) or Settings → Text-to-speech (Windows).</p>
     <label style="margin-top:14px;">App Icon</label>
@@ -4148,7 +4033,7 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Import Modal -->
-<div class="modal-overlay" id="import-modal" role="dialog" aria-modal="true" aria-label="Import Text">
+<div class="modal-overlay" id="import-modal">
   <div class="modal">
     <h2>Import Text</h2>
     <p class="modal-note" style="margin-top:0">Import a JSON file with additional exercises. Expected format:</p>
@@ -4178,7 +4063,7 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Statistics & Assessment Modal -->
-<div class="modal-overlay" id="stats-modal" role="dialog" aria-modal="true" aria-label="Statistics and Assessment">
+<div class="modal-overlay" id="stats-modal">
   <div class="modal stats-modal">
     <div class="stats-modal-header">
       <h2><span class="cefr-badge cefr-unknown" id="stats-cefr-badge">—</span> Statistics &amp; Assessment</h2>
@@ -4234,7 +4119,7 @@ select:focus-visible, a:focus-visible {
       <div class="stats-section">
         <div class="stats-section-title" id="stats-assess-toggle"><span class="section-arrow">&#9660;</span> LLM Assessment</div>
         <div class="stats-section-content" id="stats-assess-content">
-          <button class="stats-assess-btn" id="stats-assess-btn" aria-label="Generate LLM assessment of progress">Generate Assessment</button>
+          <button class="stats-assess-btn" id="stats-assess-btn">Generate Assessment</button>
           <div id="stats-assessment-area"></div>
         </div>
       </div>
@@ -4244,13 +4129,13 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <!-- Sync Progress Modal -->
-<div class="modal-overlay" id="sync-modal" role="dialog" aria-modal="true" aria-label="Sync Progress">
+<div class="modal-overlay" id="sync-modal">
   <div class="modal">
     <h2>Sync Progress Across Devices</h2>
     <p class="modal-note" style="margin-top:0">Progress is stored in this browser's localStorage and does not sync automatically. Use export/import to transfer your progress between browsers or devices.</p>
 
     <label style="margin-top:16px">Export</label>
-    <p class="modal-note">Download a JSON file containing your completion data and any imported custom texts. Transfer this file to another device and import it there.</p>
+    <p class="modal-note">Download a JSON file containing your completion data, API key, and any imported custom texts. Transfer this file to another device and import it there.</p>
     <button class="modal-btn primary" id="sync-export-btn" style="margin-top:8px;" aria-label="Export progress file">&#8615; Export Progress File</button>
 
     <label style="margin-top:20px">Import</label>
@@ -10483,365 +10368,6 @@ const TEXTS = {
   },
   nietzsche: {
     id: "nietzsche",
-    title: "Ausgewählte Aphorismen",
-    author: "Friedrich Nietzsche",
-    year: null,
-    exercises: [
-      {
-        id: "n1",
-        label: "JGB §146 — Abgrund",
-        german: "Wer mit Ungeheuern kämpft, mag zusehn, dass er nicht dabei zum Ungeheuer wird. Und wenn du lange in einen Abgrund blickst, blickt der Abgrund auch in dich hinein.",
-        reference: "Whoever fights with monsters should see to it that he does not thereby become a monster. And when you gaze long into an abyss, the abyss also gazes into you.",
-        source: "Jenseits von Gut und Böse, §146"
-      },
-      {
-        id: "n2",
-        label: "JGB §153 — Liebe",
-        german: "Was aus Liebe getan wird, geschieht immer jenseits von Gut und Böse.",
-        reference: "What is done out of love always takes place beyond good and evil.",
-        source: "Jenseits von Gut und Böse, §153"
-      },
-      {
-        id: "n3",
-        label: "FW §276 — Amor fati",
-        german: "Ich will immer mehr lernen, das Nothwendige an den Dingen als das Schöne sehen: — so werde ich Einer von Denen sein, welche die Dinge schön machen. Amor fati: das sei von nun an meine Liebe!",
-        reference: "I want to learn more and more to see what is necessary in things as what is beautiful in them — thus I will be one of those who make things beautiful. Amor fati: let that be my love from now on!",
-        source: "Die fröhliche Wissenschaft, §276"
-      },
-      {
-        id: "n4",
-        label: "FW §125 — Der tolle Mensch (Auszug)",
-        german: "Gott ist todt! Gott bleibt todt! Und wir haben ihn getödtet! Wie trösten wir uns, die Mörder aller Mörder?",
-        reference: "God is dead! God remains dead! And we have killed him! How shall we console ourselves, the murderers of all murderers?",
-        source: "Die fröhliche Wissenschaft, §125 (Auszug)"
-      },
-      {
-        id: "n5",
-        label: "GD — Sprüche §8",
-        german: "Aus der Kriegsschule des Lebens. — Was mich nicht umbringt, macht mich stärker.",
-        reference: "From the war-school of life (Kriegsschule). — What does not kill me makes me stronger.",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §8"
-      },
-      {
-        id: "n6",
-        label: "Za I — Vom Lesen",
-        german: "Von allem Geschriebenen liebe ich nur Das, was Einer mit seinem Blute schreibt. Schreibe mit Blut: und du wirst erfahren, dass Blut Geist ist.",
-        reference: "Of all that is written I love only what a man has written with his blood. Write with blood: and you will discover that blood is spirit.",
-        source: "Also sprach Zarathustra, I: Vom Lesen und Schreiben"
-      },
-      {
-        id: "n7",
-        label: "Za — Vorrede §5",
-        german: "Ich sage euch: man muß noch Chaos in sich haben, um einen tanzenden Stern gebären zu können.",
-        reference: "I say unto you: one must still have chaos in oneself to be able to give birth to a dancing star.",
-        source: "Also sprach Zarathustra, Vorrede §5"
-      },
-      {
-        id: "n8",
-        label: "MA I §483 — Feinde der Wahrheit",
-        german: "Überzeugungen sind gefährlichere Feinde der Wahrheit als Lügen.",
-        reference: "Convictions are more dangerous enemies of truth than lies.",
-        source: "Menschliches, Allzumenschliches I, §483"
-      }
-    ,
-      {
-        id: "n9",
-        label: "GD — Sprüche §1",
-        german: "Müssiggang ist aller Psychologie Anfang. Wie? wäre Psychologie ein— Laster?",
-        reference: "Idleness is the beginning of all psychology. What? Could psychology be — a vice?",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §1"
-      },
-      {
-        id: "n10",
-        label: "GD — Sprüche §3",
-        german: "Um allein zu leben, muss man ein Thier oder ein Gott sein — sagt Aristoteles. Fehlt der dritte Fall: man muss Beides sein — Philosoph…",
-        reference: "To live alone one must be an animal or a god — says Aristotle. The third case is missing: one must be both — a philosopher…",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §3"
-      },
-      {
-        id: "n11",
-        label: "GD — Sprüche §7",
-        german: "Wie? ist der Mensch nur ein Fehlgriff Gottes? Oder Gott nur ein Fehlgriff des Menschen? —",
-        reference: "What? Is man only a blunder of God? Or God only a blunder of man? —",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §7"
-      },
-      {
-        id: "n12",
-        label: "GD — Sprüche §12",
-        german: "Hat man sein warum? des Lebens, so verträgt man sich fast mit jedem wie? — Der Mensch strebt nicht nach Glück; nur der Engländer thut das.",
-        reference: "If one has one’s why? of life, one gets along with almost every how? — Man does not strive for happiness; only the Englishman does that.",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §12"
-      },
-      {
-        id: "n13",
-        label: "GD — Sprüche §23",
-        german: "„Deutscher Geist“: seit achtzehn Jahren eine contradictio in adjecto.",
-        reference: "\"German spirit\": for eighteen years a contradictio in adjecto.",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §23"
-      },
-      {
-        id: "n14",
-        label: "GD — Sprüche §26",
-        german: "Ich misstraue allen Systematikern und gehe ihnen aus dem Weg. Der Wille zum System ist ein Mangel an Rechtschaffenheit.",
-        reference: "I distrust all systematizers and avoid them. The will to a system is a lack of integrity.",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §26"
-      },
-      {
-        id: "n15",
-        label: "GD — Sprüche §33",
-        german: "Wie wenig gehört zum Glücke! Der Ton eines Dudelsacks. — Ohne Musik wäre das Leben ein Irrthum. Der Deutsche denkt sich selbst Gott liedersingend.",
-        reference: "How little is needed for happiness! The sound of a bagpipe. — Without music life would be an error. The German imagines even God singing songs.",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §33"
-      },
-      {
-        id: "n16",
-        label: "GD — Sprüche §44",
-        german: "Formel meines Glücks: ein Ja, ein Nein, eine gerade Linie, ein Ziel…",
-        reference: "Formula of my happiness: a Yes, a No, a straight line, a goal…",
-        source: "Götzen-Dämmerung, Sprüche und Pfeile §44"
-      },
-      {
-        id: "n17",
-        label: "GD — Wie die „wahre Welt“ zur Fabel wurde §1",
-        german: "1. Die wahre Welt erreichbar für den Weisen, den Frommen, den Tugendhaften, — er lebt in ihr, er ist sie. (Älteste Form der Idee, relativ klug, simpel, überzeugend. Umschreibung des Satzes „ich, Plato, bin die Wahrheit“.)",
-        reference: "1. The true world attainable for the wise, the pious, the virtuous — he lives in it, he is it. (Oldest form of the idea, relatively clever, simple, convincing. Paraphrase of the proposition \"I, Plato, am the truth.\")",
-        source: "Götzen-Dämmerung, Wie die „wahre Welt“ endlich zur Fabel wurde"
-      },
-      {
-        id: "n18",
-        label: "GD — Die „wahre Welt“ §5–6",
-        german: "5. Die „wahre Welt“ — eine Idee, die zu Nichts mehr nütz ist, nicht einmal mehr verpflichtend, — eine unnütz, eine überflüssig gewordene Idee, folglich eine widerlegte Idee: schaffen wir sie ab! (Heller Tag; Frühstück; Rückkehr des bon sens und der Heiterkeit; Schamröthe Plato’s; Teufelslärm aller freien Geister.) 6. Die wahre Welt haben wir abgeschafft: welche Welt blieb übrig? die scheinbare vielleicht?… Aber nein! mit der wahren Welt haben wir auch die scheinbare abgeschafft! (Mittag; Augenblick des kürzesten Schattens; Ende des längsten Irrthums; Höhepunkt der Menschheit; INCIPIT ZARATHUSTRA.)",
-        reference: "5. The \"true world\" — an idea no longer useful for anything, no longer even obligating — a useless, superfluous idea, consequently a refuted idea: let us abolish it! (Bright day; breakfast; return of bon sens and cheerfulness; Plato’s blush; pandemonium of all free spirits.) 6. We have abolished the true world: what world has remained? The apparent one perhaps?… But no! With the true world we have also abolished the apparent one! (Noon; moment of the shortest shadow; end of the longest error; highpoint of humanity; INCIPIT ZARATHUSTRA.)",
-        source: "Götzen-Dämmerung, Wie die „wahre Welt“ endlich zur Fabel wurde"
-      },
-      {
-        id: "n19",
-        label: "GD — Das Problem des Sokrates §1",
-        german: "Über das Leben haben zu allen Zeiten die Weisesten gleich geurtheilt: es taugt nichts… Immer und überall hat man aus ihrem Munde denselben Klang gehört, — einen Klang voll Zweifel, voll Schwermuth, voll Müdigkeit am Leben, voll Widerstand gegen das Leben. Selbst Sokrates sagte, als er starb: „leben — das heisst lange krank sein: ich bin dem Heilande Asklepios einen Hahn schuldig.“ Selbst Sokrates hatte es satt.",
-        reference: "At all times the wisest have judged alike about life: it is no good… Always and everywhere one has heard the same sound from their mouths — a sound full of doubt, full of melancholy, full of weariness of life, full of resistance against life. Even Socrates said as he died: \"to live — that means to be a long time sick: I owe the savior Asclepius a rooster.\" Even Socrates had had enough of it.",
-        source: "Götzen-Dämmerung, Das Problem des Sokrates §1"
-      },
-      {
-        id: "n20",
-        label: "FW §108 — Neue Kämpfe",
-        german: "Nachdem Buddha todt war, zeigte man noch Jahrhunderte lang seinen Schatten in einer Höhle, — einen ungeheuren schauerlichen Schatten. Gott ist todt: aber so wie die Art der Menschen ist, wird es vielleicht noch Jahrtausende lang Höhlen geben, in denen man seinen Schatten zeigt. — Und wir — wir müssen auch noch seinen Schatten besiegen!",
-        reference: "After Buddha was dead, his shadow was still shown for centuries in a cave — a tremendous, gruesome shadow. God is dead: but given the way people are, there may still be caves for thousands of years in which his shadow will be shown. — And we — we still have to vanquish his shadow too!",
-        source: "Die fröhliche Wissenschaft, §108"
-      },
-      {
-        id: "n21",
-        label: "FW §121 — Das Leben kein Argument",
-        german: "Wir haben uns eine Welt zurecht gemacht, in der wir leben können — mit der Annahme von Körpern, Linien, Flächen, Ursachen und Wirkungen, Bewegung und Ruhe, Gestalt und Inhalt: ohne diese Glaubensartikel hielte es jetzt Keiner aus zu leben! Aber damit sind sie noch nichts Bewiesenes. Das Leben ist kein Argument; unter den Bedingungen des Lebens könnte der Irrthum sein.",
-        reference: "We have arranged for ourselves a world in which we are able to live — by positing bodies, lines, planes, causes and effects, motion and rest, form and content: without these articles of faith no one could endure living now! But that does not mean they are anything proven. Life is no argument; the conditions of life might include error.",
-        source: "Die fröhliche Wissenschaft, §121"
-      },
-      {
-        id: "n22",
-        label: "FW §283 — Gefährlich leben!",
-        german: "Denn, glaubt es mir! — das Geheimniss, um die grösste Fruchtbarkeit und den grössten Genuss vom Dasein einzuernten, heisst: gefährlich leben! Baut eure Städte an den Vesuv! Schickt eure Schiffe in unerforschte Meere! Lebt im Kriege mit Euresgleichen und mit euch selber! Seid Räuber und Eroberer, so lange ihr nicht Herrscher und Besitzer sein könnt, ihr Erkennenden!",
-        reference: "For, believe me! — the secret of harvesting the greatest fruitfulness and the greatest enjoyment from existence is: to live dangerously! Build your cities on the slopes of Vesuvius! Send your ships into uncharted seas! Live in war with your peers and with yourselves! Be robbers and conquerors as long as you cannot be rulers and possessors, you seekers of knowledge!",
-        source: "Die fröhliche Wissenschaft, §283 (Auszug)"
-      },
-      {
-        id: "n23",
-        label: "FW §279 — Sternen-Freundschaft",
-        german: "Wir waren Freunde und sind uns fremd geworden. Aber das ist recht so und wir wollen’s uns nicht verhehlen und verdunkeln, als ob wir uns dessen zu schämen hätten. Wir sind zwei Schiffe, deren jedes sein Ziel und seine Bahn hat; wir können uns wohl kreuzen und ein Fest miteinander feiern, wie wir es gethan haben, — und dann lagen die braven Schiffe so ruhig in Einem Hafen und in Einer Sonne, dass es scheinen mochte, sie seien schon am Ziele und hätten Ein Ziel gehabt.",
-        reference: "We were friends and have become estranged from each other. But that is right, and we do not want to conceal and obscure it from ourselves, as if we had reason to be ashamed. We are two ships, each of which has its goal and its course; we may cross and celebrate a feast together, as we have done — and then the good ships lay so quietly in one harbor and in one sun that it may have seemed as if they had already reached their goal, as if they had had one goal.",
-        source: "Die fröhliche Wissenschaft, §279 (Auszug)"
-      },
-      {
-        id: "n24",
-        label: "FW §287 — Lust an der Blindheit",
-        german: "„Meine Gedanken, sagte der Wanderer zu seinem Schatten, sollen mir anzeigen, wo ich stehe: aber sie sollen mir nicht verrathen, wohin ich gehe. Ich liebe die Unwissenheit um die Zukunft und will nicht an der Ungeduld und dem Vorwegkosten verheissener Dinge zu Grunde gehen.“",
-        reference: "\"My thoughts,\" said the wanderer to his shadow, \"should show me where I stand: but they should not betray to me where I am going. I love my ignorance of the future and do not wish to perish of impatience and of tasting promised things in advance.\"",
-        source: "Die fröhliche Wissenschaft, §287"
-      },
-      {
-        id: "n25",
-        label: "FW §290 — Eins ist Noth",
-        german: "Seinem Charakter „Stil geben“ — eine grosse und seltene Kunst! Sie übt Der, welcher Alles übersieht, was seine Natur an Kräften und Schwächen bietet, und es dann einem künstlerischen Plane einfügt, bis ein Jedes als Kunst und Vernunft erscheint und auch die Schwäche noch das Auge entzückt.",
-        reference: "To \"give style\" to one’s character — a great and rare art! It is practiced by those who survey all the strengths and weaknesses that their nature has to offer and then fit them into an artistic plan until each appears as art and reason and even weakness delights the eye.",
-        source: "Die fröhliche Wissenschaft, §290 (Auszug)"
-      },
-      {
-        id: "n26",
-        label: "FW §343 — Tod Gottes und die Morgenröthe",
-        german: "In der That, wir Philosophen und „freien Geister“ fühlen uns bei der Nachricht, dass der „alte Gott todt“ ist, wie von einer neuen Morgenröthe angestrahlt; unser Herz strömt dabei über von Dankbarkeit, Erstaunen, Ahnung, Erwartung, — endlich erscheint uns der Horizont wieder frei, gesetzt selbst, dass er nicht hell ist, endlich dürfen unsre Schiffe wieder auslaufen, auf jede Gefahr hin auslaufen, jedes Wagniss des Erkennenden ist wieder erlaubt, das Meer, unser Meer liegt wieder offen da, vielleicht gab es noch niemals ein so „offnes Meer“. —",
-        reference: "Indeed, we philosophers and \"free spirits\" feel, at the news that the \"old God is dead,\" as if illuminated by a new dawn; our hearts overflow with gratitude, amazement, premonition, expectation — at last the horizon appears free to us again, even if it is not bright; at last our ships may set out again, set out to face any danger; every daring of the knower is permitted again; the sea, our sea, lies open again; perhaps there has never yet been such an \"open sea.\" —",
-        source: "Die fröhliche Wissenschaft, §343 (Auszug)"
-      },
-      {
-        id: "n27",
-        label: "Za II — Auf den glückseligen Inseln (Gott und Schaffen)",
-        german: "Einst sagte man Gott, wenn man auf ferne Meere blickte; nun aber lehrte ich euch sagen: Übermensch. Gott ist eine Muthmaassung; aber ich will, dass euer Muthmaassen nicht weiter reiche, als euer schaffender Wille. Könntet ihr einen Gott schaffen? — So schweigt mir doch von allen Göttern! Wohl aber könntet ihr den Übermenschen schaffen.",
-        reference: "Once one said God when one looked upon distant seas; but now I have taught you to say: overman. God is a conjecture; but I want your conjecturing to reach no further than your creative will. Could you create a god? — Then be silent about all gods! But you could well create the overman.",
-        source: "Also sprach Zarathustra II, Auf den glückseligen Inseln"
-      },
-      {
-        id: "n28",
-        label: "Za II — Auf den glückseligen Inseln (Schaffen)",
-        german: "Schaffen — das ist die grosse Erlösung vom Leiden, und des Lebens Leichtwerden. Aber dass der Schaffende sei, dazu selber thut Leid noth und viel Verwandelung. Ja, viel bitteres Sterben muss in eurem Leben sein, ihr Schaffenden! Also seid ihr Fürsprecher und Rechtfertiger aller Vergänglichkeit.",
-        reference: "Creating — that is the great redemption from suffering, and life’s growing light. But for the creator to be, suffering is needed and much transformation. Indeed, much bitter dying must be in your life, you creators! Thus you are advocates and justifiers of all impermanence.",
-        source: "Also sprach Zarathustra II, Auf den glückseligen Inseln"
-      },
-      {
-        id: "n29",
-        label: "Za II — Von den Mitleidigen",
-        german: "Das Schlimmste aber sind die kleinen Gedanken. Wahrlich, besser noch bös gethan, als klein gedacht! Zwar sagt ihr: „die Lust an kleinen Bosheiten erspart uns manche grosse böse That.“ Aber hier sollte man nicht sparen wollen.",
-        reference: "But the worst are the petty thoughts. Truly, better to have done evil than to have thought pettily! To be sure, you say: \"the delight in petty malice saves us many a great evil deed.\" But here one should not wish to be thrifty.",
-        source: "Also sprach Zarathustra II, Von den Mitleidigen"
-      },
-      {
-        id: "n30",
-        label: "Za II — Von der Selbst-Überwindung",
-        german: "Und diess Geheimniss redete das Leben selber zu mir. „Siehe, sprach es, ich bin das, was sich immer selber überwinden muss. Freilich, ihr heisst es Wille zur Zeugung oder Trieb zum Zwecke, zum Höheren, Ferneren, Vielfacheren: aber all diess ist Eins und Ein Geheimniss.“",
-        reference: "And life itself confided this secret to me. \"Behold,\" it said, \"I am that which must always overcome itself. To be sure, you call it will to procreation or drive toward a goal, toward something higher, more remote, more manifold: but all this is one and one secret.\"",
-        source: "Also sprach Zarathustra II, Von der Selbst-Überwindung"
-      },
-      {
-        id: "n31",
-        label: "Za II — Von den Taranteln",
-        german: "Dass Kampf und Ungleiches auch noch in der Schönheit sei und Krieg um Macht und Übermacht: das lehrt er uns hier im deutlichsten Gleichniss.",
-        reference: "That struggle and inequality are present even in beauty, and war for power and more power: that is what he teaches us here in the clearest parable.",
-        source: "Also sprach Zarathustra II, Von den Taranteln"
-      },
-      {
-        id: "n32",
-        label: "Za II — Das Nachtlied",
-        german: "Nacht ist es: nun reden lauter alle springenden Brunnen. Und auch meine Seele ist ein springender Brunnen. Nacht ist es: nun erst erwachen alle Lieder der Liebenden. Und auch meine Seele ist das Lied eines Liebenden.",
-        reference: "It is night: now all gushing fountains speak louder. And my soul too is a gushing fountain. It is night: only now do all songs of lovers awaken. And my soul too is the song of a lover.",
-        source: "Also sprach Zarathustra II, Das Nachtlied"
-      },
-      {
-        id: "n33",
-        label: "Za III — Der Wanderer (Gipfel)",
-        german: "Ich bin ein Wanderer und ein Bergsteiger, sagte er zu seinem Herzen, ich liebe die Ebenen nicht und es scheint, ich kann nicht lange still sitzen. Und was mir nun auch noch als Schicksal und Erlebniss komme, — ein Wandern wird darin sein und ein Bergsteigen: man erlebt endlich nur noch sich selber.",
-        reference: "I am a wanderer and a mountain climber, he said to his heart, I do not like the plains and it seems I cannot sit still for long. And whatever may yet come to me as fate and experience — it will include wandering and mountain climbing: in the end one experiences only oneself.",
-        source: "Also sprach Zarathustra III, Der Wanderer"
-      },
-      {
-        id: "n34",
-        label: "Za III — Der Wanderer (Aufstieg)",
-        german: "Und wenn dir nunmehr alle Leitern fehlen, so musst du verstehen, noch auf deinen eigenen Kopf zu steigen: wie wolltest du anders aufwärts steigen? Auf deinen eigenen Kopf und hinweg über dein eigenes Herz! Jetzt muss das Mildeste an dir noch zum Härtesten werden.",
-        reference: "And if henceforth you lack all ladders, then you must learn to climb on your own head: how else would you climb upward? On your own head and beyond your own heart! Now the gentlest thing in you must become the hardest.",
-        source: "Also sprach Zarathustra III, Der Wanderer"
-      },
-      {
-        id: "n35",
-        label: "Za III — Von Gesicht und Räthsel (Muth)",
-        german: "Muth nämlich ist der beste Todtschläger, — Muth, welcher angreift: denn in jedem Angriffe ist klingendes Spiel. Der Mensch aber ist das muthigste Thier: damit überwand er jedes Thier. Mit klingendem Spiele überwand er noch jeden Schmerz; Menschen-Schmerz aber ist der tiefste Schmerz.",
-        reference: "For courage is the best slayer — courage which attacks: for in every attack there is playing and brass. But man is the most courageous animal: thus he has overcome every animal. With playing and brass he has so far overcome even every pain; but human pain is the deepest pain.",
-        source: "Also sprach Zarathustra III, Von Gesicht und Räthsel §1"
-      },
-      {
-        id: "n36",
-        label: "Za III — Von Gesicht und Räthsel (Ewige Wiederkehr)",
-        german: "Siehe diesen Thorweg! Zwerg! sprach ich weiter: der hat zwei Gesichter. Zwei Wege kommen hier zusammen: die gieng noch Niemand zu Ende. Diese lange Gasse zurück: die währt eine Ewigkeit. Und jene lange Gasse hinaus — das ist eine andre Ewigkeit.",
-        reference: "Behold this gateway, dwarf! I continued: it has two faces. Two paths come together here: no one has yet walked them to the end. This long lane back: it lasts an eternity. And that long lane out there — that is another eternity.",
-        source: "Also sprach Zarathustra III, Von Gesicht und Räthsel §2"
-      },
-      {
-        id: "n37",
-        label: "Za III — Vor Sonnen-Aufgang",
-        german: "Das aber ist mein Segnen: über jedwedem Ding als sein eigener Himmel stehn, als sein rundes Dach, seine azurne Glocke und ewige Sicherheit: und selig ist, wer also segnet! Diese Freiheit und Himmels-Heiterkeit stellte ich gleich azurner Glocke über alle Dinge, als ich lehrte, dass über ihnen und durch sie kein „ewiger Wille“ — will.",
-        reference: "But this is my blessing: to stand over every thing as its own sky, its round roof, its azure bell and eternal security: and blessed is he who blesses thus! This freedom and celestial cheerfulness I placed like an azure bell over all things when I taught that over them and through them no \"eternal will\" — wills.",
-        source: "Also sprach Zarathustra III, Vor Sonnen-Aufgang"
-      },
-      {
-        id: "n38",
-        label: "Za III — Aus dem Tiefsten",
-        german: "Woher kommen die höchsten Berge? so fragte ich einst. Da lernte ich, dass sie aus dem Meere kommen. Diess Zeugniss ist in ihr Gestein geschrieben und in die Wände ihrer Gipfel. Aus dem Tiefsten muss das Höchste zu seiner Höhe kommen. —",
-        reference: "From where do the highest mountains come? I once asked. Then I learned that they come from the sea. This testimony is written in their rock and in the walls of their summits. From the deepest depth the highest must come to its height. —",
-        source: "Also sprach Zarathustra III, Der Wanderer"
-      },
-      {
-        id: "n39",
-        label: "JGB §4 — Falschheit eines Urtheils",
-        german: "Die Falschheit eines Urtheils ist uns noch kein Einwand gegen ein Urtheil; darin klingt unsre neue Sprache vielleicht am fremdesten. Die Frage ist, wie weit es lebenfördernd, lebenerhaltend, Art-erhaltend, vielleicht gar Art-züchtend ist; und wir sind grundsätzlich geneigt zu behaupten, dass die falschesten Urtheile (zu denen die synthetischen Urtheile a priori gehören) uns die unentbehrlichsten sind.",
-        reference: "The falseness of a judgment is to us not necessarily an objection to a judgment; in this our new language may sound strangest. The question is to what extent it is life-promoting, life-preserving, species-preserving, perhaps even species-cultivating; and we are fundamentally inclined to maintain that the falsest judgments (to which synthetic judgments a priori belong) are the most indispensable to us.",
-        source: "Jenseits von Gut und Böse, §4 (Auszug)"
-      },
-      {
-        id: "n40",
-        label: "JGB §39 — Niemand lügt so viel",
-        german: "Niemand lügt so viel als der Entrüstete.",
-        reference: "Nobody lies as much as the indignant man.",
-        source: "Jenseits von Gut und Böse, §39"
-      },
-      {
-        id: "n41",
-        label: "JGB §68 — Gedächtniss und Stolz",
-        german: "„Ich habe das gethan“ sagt mein Gedächtniss. „Ich kann das nicht gethan haben“ — sagt mein Stolz und bleibt unerbittlich. Endlich — giebt das Gedächtniss nach.",
-        reference: "\"I have done that,\" says my memory. \"I cannot have done that\" — says my pride and remains inexorable. Eventually — memory yields.",
-        source: "Jenseits von Gut und Böse, §68"
-      },
-      {
-        id: "n42",
-        label: "JGB §156 — Der Wahnsinn",
-        german: "Der Wahnsinn ist bei Einzelnen etwas Seltenes, — aber bei Gruppen, Parteien, Völkern, Zeiten die Regel.",
-        reference: "Madness is something rare in individuals — but in groups, parties, peoples, ages it is the rule.",
-        source: "Jenseits von Gut und Böse, §156"
-      },
-      {
-        id: "n43",
-        label: "JGB §188 — Moral als Tyrannei",
-        german: "Jede Moral ist, im Gegensatz zum laisser aller, ein Stück Tyrannei gegen die „Natur“, auch gegen die „Vernunft“: das ist aber noch kein Einwand gegen sie, man müsste denn schon wieder von irgend einer Moral aus decretiren, dass alle Art Tyrannei und Unvernunft unerlaubt sei. Das Wesentliche und Unschätzbare an jeder Moral ist, dass sie ein langer Zwang ist.",
-        reference: "Every morality is, as opposed to laisser aller, a piece of tyranny against \"nature,\" also against \"reason\": but that is no objection to it, unless one were to decree, from some morality or other, that all kinds of tyranny and unreason are impermissible. The essential and invaluable thing about every morality is that it is a long compulsion.",
-        source: "Jenseits von Gut und Böse, §188 (Auszug)"
-      },
-      {
-        id: "n44",
-        label: "JGB §259 — Ausbeutung",
-        german: "Das Leben selbst ist wesentlich Aneignung, Verletzung, Überwältigung des Fremden und Schwächeren, Unterdrückung, Härte, Aufzwängung eigner Formen, Einverleibung und mindestens, mildestens, Ausbeutung.",
-        reference: "Life itself is essentially appropriation, injury, overpowering of the alien and weaker, suppression, hardness, imposition of one’s own forms, incorporation and at the least, at the mildest, exploitation.",
-        source: "Jenseits von Gut und Böse, §259 (Auszug)"
-      },
-      {
-        id: "n45",
-        label: "JGB §270 — Das tiefe Leiden",
-        german: "Das tiefe Leiden macht vornehm; es trennt. — Eine der feinsten Verkleidungsformen ist der Epikureismus und eine gewisse fürderhin zur Schau getragene Tapferkeit des Geschmacks, welche das Leiden leichtfertig nimmt und sich gegen alles Traurige und Tiefe zur Wehre setzt.",
-        reference: "Profound suffering makes noble; it separates. — One of the finest disguises is Epicureanism and a certain ostentatious bravery of taste which takes suffering lightly and arms itself against everything sad and deep.",
-        source: "Jenseits von Gut und Böse, §270 (Auszug)"
-      },
-      {
-        id: "n46",
-        label: "JGB §284 — Geduld",
-        german: "Es kommt mir gar nicht darauf an, ob jetzt Einer mit mir überein läuft: ebenso wenig, ob Keiner. Dafür wird es vielleicht in fünfzig Jahren Einigen einleuchten, was ich gethan habe.",
-        reference: "It does not matter to me at all whether anyone now agrees with me: just as little whether no one does. Perhaps in fifty years it will dawn on some what I have done.",
-        source: "Jenseits von Gut und Böse, §284 (Auszug)"
-      },
-      {
-        id: "n47",
-        label: "GM I §13 — Adler und Lamm",
-        german: "Dass die Lämmer den grossen Raubvögeln gram sind, das befremdet nicht: nur liegt darin kein Grund, es den grossen Raubvögeln zu verargen, dass sie sich kleine Lämmer holen. Und wenn die Lämmer unter sich sagen „diese Raubvögel sind böse; und wer so wenig als möglich ein Raubvogel ist, vielmehr deren Gegenstück, ein Lamm, — sollte der nicht gut sein?“ so ist an dieser Aufrichtung eines Ideals Nichts auszusetzen, abgerechnet, dass die Raubvögel dazu ein wenig spöttisch blicken werden und sich vielleicht sagen: „wir sind ihnen gar nicht gram, diesen guten Lämmern, wir lieben sie sogar: nichts ist schmackhafter als ein zartes Lamm.“",
-        reference: "That lambs bear a grudge against great birds of prey does not surprise us: but that is no reason to hold it against great birds of prey that they snatch up little lambs. And if the lambs say among themselves, \"These birds of prey are evil; and whoever is least like a bird of prey and most like its opposite, a lamb — should he not be good?\" there is nothing to criticize in this setting up of an ideal, except that the birds of prey may look at it with a little mockery and perhaps say: \"we are not at all angry with these good lambs, we even love them: nothing is more delicious than a tender lamb.\"",
-        source: "Zur Genealogie der Moral, I §13 (Auszug)"
-      },
-      {
-        id: "n48",
-        label: "GM II §1 — Vergesslichkeit",
-        german: "Vergesslichkeit ist keine blosse vis inertiae, wie die Oberflächlichen glauben, sie ist vielmehr ein aktives, im strengsten Sinne positives Hemmungsvermögen, dem es zuzuschreiben ist, dass was nur von uns erlebt, erfahren, in uns hineingenommen wird, uns im Zustande der Verdauung ebenso wenig in’s Bewusstsein tritt, als der ganze tausendfältige Prozess, mit dem sich unsre leibliche Ernährung, die sogenannte „Einverleibung“ abspielt.",
-        reference: "Forgetting is no mere vis inertiae, as the superficial believe; rather, it is an active and, in the strictest sense, positive faculty of suppression, and is responsible for the fact that whatever we experience, learn, or take into ourselves enters our consciousness during the state of digestion as little as does the whole thousandfold process by which our bodily nourishment, so-called \"incorporation,\" takes place.",
-        source: "Zur Genealogie der Moral, II §1 (Auszug)"
-      },
-      {
-        id: "n49",
-        label: "GM III §12 — Perspektivismus",
-        german: "Es giebt nur ein perspektivisches Sehen, nur ein perspektivisches „Erkennen“; und je mehr Affekte wir über eine Sache zu Worte kommen lassen, je mehr Augen, verschiedne Augen wir uns für dieselbe Sache einzusetzen wissen, um so vollständiger wird unser „Begriff“ dieser Sache, unsre „Objektivität“ sein.",
-        reference: "There is only a perspectival seeing, only a perspectival \"knowing\"; and the more affects we allow to speak about a thing, the more eyes, various eyes we are able to use for the same thing, the more complete will be our \"concept\" of that thing, our \"objectivity.\"",
-        source: "Zur Genealogie der Moral, III §12 (Auszug)"
-      },
-      {
-        id: "n50",
-        label: "GM III §28 — Schluss",
-        german: "Lieber will noch der Mensch das Nichts wollen, als nicht wollen…",
-        reference: "Man would rather will nothingness than not will…",
-        source: "Zur Genealogie der Moral, III §28 (Schluss)"
-      }
-    ]
-  },
-  genealogie: {
-    id: "genealogie",
     title: "Zur Genealogie der Moral — Vorrede",
     author: "Friedrich Nietzsche",
     year: 1887,
@@ -19364,16 +18890,12 @@ const FSRS = (() => {
     return count;
   }
 
-  /** Persist to localStorage + IDB backup */
+  /** Persist to localStorage */
   function _save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(_cards));
     } catch(e) {
       console.warn("FSRS: localStorage save failed:", e);
-    }
-    // Fire-and-forget IDB backup (Feature 8 integration)
-    if (typeof WerkstattIDB !== 'undefined') {
-      WerkstattIDB.backup(STORAGE_KEY, _cards);
     }
   }
 
@@ -19406,102 +18928,6 @@ const FSRS = (() => {
     TARGET_RETENTION,
     _newCard  // exposed for import/export
   };
-})();
-
-
-// ============================================================
-// INDEXEDDB BACKUP MIRROR
-// ============================================================
-
-/**
- * WerkstattIDB: fire-and-forget IndexedDB backup of localStorage progress.
- * On init, restores any keys present in IDB but missing from localStorage.
- * API keys have extra guard so valid sessionStorage values aren't clobbered.
- */
-const WerkstattIDB = (() => {
-  const DB_NAME = 'werkstatt-backup';
-  const STORE_NAME = 'progress';
-  let _db = null;
-
-  function _open() {
-    return new Promise((resolve, reject) => {
-      if (_db) { resolve(_db); return; }
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      };
-      req.onsuccess = () => { _db = req.result; resolve(_db); };
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  /**
-   * Fire-and-forget write to IDB. Called after every this.save().
-   */
-  function backup(key, value) {
-    _open().then(db => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(value, key);
-    }).catch(() => {}); // silent fail
-  }
-
-  /**
-   * Restore from IDB: for each key in IDB where localStorage is null,
-   * write to localStorage and return the restored entries.
-   * API keys: only restore if sessionStorage also lacks the value.
-   */
-  async function restore() {
-    const restored = {};
-    try {
-      const db = await _open();
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const keys = await new Promise((res, rej) => {
-        const r = store.getAllKeys();
-        r.onsuccess = () => res(r.result);
-        r.onerror = () => rej(r.error);
-      });
-      for (const key of keys) {
-        const lsKey = "uw_" + key;
-        const lsVal = localStorage.getItem(lsKey);
-        if (lsVal !== null) continue; // already in localStorage, skip
-
-        // API key guard: don't clobber valid sessionStorage values
-        if (key === "apiKey" || key === "ttsApiKey") {
-          const ssVal = sessionStorage.getItem(lsKey);
-          if (ssVal !== null) continue;
-        }
-
-        const val = await new Promise((res, rej) => {
-          const r = store.get(key);
-          r.onsuccess = () => res(r.result);
-          r.onerror = () => rej(r.error);
-        });
-        if (val !== undefined && val !== null) {
-          try {
-            localStorage.setItem(lsKey, JSON.stringify(val));
-            restored[key] = val;
-          } catch(e) {} // quota exceeded — skip
-        }
-      }
-    } catch(e) {
-      console.warn("WerkstattIDB restore failed:", e);
-    }
-    return restored;
-  }
-
-  /** Clear all IDB backup data (for reset) */
-  function clear() {
-    _open().then(db => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).clear();
-    }).catch(() => {});
-  }
-
-  return { backup, restore, clear };
 })();
 
 
@@ -19577,14 +19003,6 @@ class App {
       }
     } catch(e) { console.warn("localStorage migration failed:", e); }
     this.vocabFlipped = false;
-
-    // FSRS-determined exercise tier state (Feature 3)
-    // Tiers: "recognition" (multiple-choice), "cloze" (fill-in with options), "production" (free-type)
-    this._vocabTierFailures = { recognition: 0, cloze: 0, production: 0 }; // consecutive failures per tier this session
-    this._vocabSessionDemotion = 0; // 0=no demotion, 1=demoted once, 2=demoted twice (floor)
-    this._grammarSessionDemotion = 0;
-    this._grammarTierFailures = { repetition: 0, cloze: 0, production: 0 };
-
     // Grammar mode state
     this.grammarPhase = "repetition"; // repetition | cloze | production
     this.grammarSelectedProfile = null;
@@ -19617,25 +19035,6 @@ class App {
     // Streak tracking
     this._streakData = this.load("streakData") || { current: 0, longest: 0, lastDate: null };
 
-    // Feature 5: Cross-session gloss persistence
-    this._glossSeen = this._loadGlossSeen();
-    this._glossSeenPending = {}; // words glossed this exercise, flushed on passage completion
-
-    // IDB restore: recover any keys lost from localStorage
-    this._idbRestorePromise = WerkstattIDB.restore().then(restored => {
-      if (Object.keys(restored).length > 0) {
-        // Re-load restored keys into in-memory state
-        if (restored.completed) this.completed = restored.completed;
-        if (restored.vocabProgress) this.vocabProgress = restored.vocabProgress;
-        if (restored.grammarProgress) this.grammarProgress = restored.grammarProgress;
-        if (restored.grammarUnitProgress) this.grammarUnitProgress = restored.grammarUnitProgress;
-        if (restored.translationHistory) this._translationHistory = restored.translationHistory;
-        if (restored.streakData) this._streakData = restored.streakData;
-        if (restored.activeTime) this._activeTimeData = restored.activeTime;
-        console.log("WerkstattIDB: restored keys:", Object.keys(restored).join(", "));
-      }
-    }).catch(() => {});
-
     this.init();
   }
 
@@ -19655,8 +19054,6 @@ class App {
         }
       }
     }
-    // Fire-and-forget IDB backup
-    WerkstattIDB.backup(key, val);
   }
   load(key) { try { return JSON.parse(localStorage.getItem("uw_" + key)); } catch(e) { return null; } }
 
@@ -19754,67 +19151,15 @@ class App {
       speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices());
     }
 
-    // Feature 7: Sticky shadow detection via scroll listener
-    const germanDisplay = document.getElementById("german-display");
-    const contentArea = germanDisplay.closest("#content-area") || germanDisplay.parentElement;
-    if (contentArea) {
-      contentArea.addEventListener("scroll", () => {
-        const rect = germanDisplay.getBoundingClientRect();
-        const parentRect = contentArea.getBoundingClientRect();
-        germanDisplay.classList.toggle("stuck", rect.top <= parentRect.top + 2);
-      }, { passive: true });
-    }
-
-    // Feature 7: Body-level tooltip portal — delegated hover
-    const passageTooltip = document.getElementById("passage-tooltip");
-    const positionTooltip = (wrapper) => {
-      const tooltipData = wrapper.querySelector(".tooltip");
-      if (!tooltipData) return;
-      passageTooltip.textContent = tooltipData.textContent;
-      passageTooltip.classList.add("visible");
-      passageTooltip.setAttribute("aria-hidden", "false");
-      const wordRect = wrapper.getBoundingClientRect();
-      const tipWidth = passageTooltip.offsetWidth;
-      const tipHeight = passageTooltip.offsetHeight;
-      let left = wordRect.left + (wordRect.width / 2) - (tipWidth / 2);
-      let top = wordRect.top - tipHeight - 4;
-      // Auto-flip below word if would overflow viewport top
-      if (top < 4) {
-        top = wordRect.bottom + 4;
-      }
-      // Clamp horizontal to viewport
-      if (left < 4) left = 4;
-      if (left + tipWidth > window.innerWidth - 4) left = window.innerWidth - tipWidth - 4;
-      passageTooltip.style.left = left + "px";
-      passageTooltip.style.top = top + "px";
-    };
-    const hideTooltip = () => {
-      passageTooltip.classList.remove("visible");
-      passageTooltip.setAttribute("aria-hidden", "true");
-    };
-
-    germanDisplay.addEventListener("mouseover", (e) => {
+    // Touch-friendly tooltips: tap to show/hide on touch devices
+    document.getElementById("german-display").addEventListener("click", (e) => {
       const wrapper = e.target.closest(".word-wrapper");
-      if (wrapper) positionTooltip(wrapper);
-    });
-    germanDisplay.addEventListener("mouseout", (e) => {
-      const wrapper = e.target.closest(".word-wrapper");
-      if (wrapper && !wrapper.contains(e.relatedTarget)) hideTooltip();
-    });
-
-    // Touch-friendly tooltips: tap to show/hide on touch devices (uses portal)
-    germanDisplay.addEventListener("click", (e) => {
-      const wrapper = e.target.closest(".word-wrapper");
-      if (!wrapper) { hideTooltip(); return; }
-      // Toggle: if already showing for this word, hide
-      if (wrapper.classList.contains("tooltip-active")) {
-        wrapper.classList.remove("tooltip-active");
-        hideTooltip();
-      } else {
-        document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => el.classList.remove("tooltip-active"));
-        wrapper.classList.add("tooltip-active");
-        positionTooltip(wrapper);
-      }
+      if (!wrapper) return;
+      // Clear any other active tooltip
+      document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => {
+        if (el !== wrapper) el.classList.remove("tooltip-active");
+      });
+      wrapper.classList.toggle("tooltip-active");
     });
 
     // Consolidated global click handler for delegated events
@@ -19842,55 +19187,13 @@ class App {
           this.handleTypedResponse();
         }
       }
-      // Dismiss tooltip portal when tapping outside (Feature 7)
+      // Dismiss tooltip when tapping outside
       if (!e.target.closest(".word-wrapper") && !e.target.closest("#german-display")) {
         document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => el.classList.remove("tooltip-active"));
-        const pt = document.getElementById("passage-tooltip");
-        if (pt) { pt.classList.remove("visible"); pt.setAttribute("aria-hidden", "true"); }
       }
     });
 
     this.render();
-
-    // Export reminder: show once per session if overdue
-    this._checkExportReminder();
-  }
-
-  _checkExportReminder() {
-    if (this._exportReminderShown) return;
-    const lastExport = this.load("lastExportDate");
-    const completedCount = Object.keys(this.completed).length;
-
-    let shouldRemind = false;
-    if (lastExport) {
-      const daysSince = (Date.now() - new Date(lastExport).getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSince >= 7) shouldRemind = true;
-    } else {
-      // Never exported — remind if >=5 completed passages
-      if (completedCount >= 5) shouldRemind = true;
-    }
-
-    if (!shouldRemind) return;
-    this._exportReminderShown = true;
-
-    const banner = document.createElement('div');
-    banner.id = 'export-reminder-banner';
-    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#8b4513;color:#fff;padding:12px 16px;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;display:flex;align-items:center;justify-content:space-between;z-index:10000;box-shadow:0 -2px 8px rgba(0,0,0,0.15);';
-    banner.innerHTML = `
-      <span>It's been a while since you backed up your progress. Export now?</span>
-      <span style="display:flex;gap:8px;align-items:center;">
-        <button id="export-reminder-btn" style="background:#fff;color:#8b4513;border:none;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Export</button>
-        <button id="export-reminder-dismiss" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 6px;opacity:0.8;">&times;</button>
-      </span>`;
-    document.body.appendChild(banner);
-
-    document.getElementById('export-reminder-btn').addEventListener('click', () => {
-      this.exportProgress();
-      banner.remove();
-    });
-    document.getElementById('export-reminder-dismiss').addEventListener('click', () => {
-      banner.remove();
-    });
   }
 
   get texts() { return this.allTexts; }
@@ -19899,7 +19202,6 @@ class App {
 
   switchText(textId) {
     if (!this.texts[textId]) return;
-    this._flushGlossSeen(); // Feature 5
     this._resetAllTTSState();
     // Save current position before leaving
     if (this.currentTextId) {
@@ -19981,12 +19283,6 @@ class App {
       if (ex.label.startsWith("Teil III")) return "Teil III";
       if (ex.label.startsWith("Teil II")) return "Teil II";
       return "Teil I";
-    } else if (textId === "nietzsche") {
-      // Group by work abbreviation
-      const abbrevMap = { "JGB": "Jenseits von Gut und Böse", "FW": "Die fröhliche Wissenschaft", "GD": "Götzen-Dämmerung", "GM": "Zur Genealogie der Moral", "Za": "Also sprach Zarathustra", "MA": "Menschliches, Allzumenschliches" };
-      const m = ex.label.match(/^(\S+)/);
-      if (m && abbrevMap[m[1]]) return abbrevMap[m[1]];
-      return ex.label.split("—")[0].trim();
     }
     // For custom/other texts, no grouping
     return null;
@@ -20340,20 +19636,16 @@ class App {
             tooltip.textContent = entry.gloss;
             wrapper.appendChild(tooltip);
 
-            // Inline gloss: first occurrence, not suppressed by cross-session persistence or FSRS mastery
-            // Feature 5: "Show All Glosses" overrides suppression; "Hide Glosses" suppresses all
+            // Inline gloss on first occurrence or when "All Glosses" is active
             if (!this.glossHideActive) {
               const lower = tok.text.toLowerCase();
               const isFirstTime = !seen[lower];
-              const suppressed = !this.glossAllActive && this._shouldSuppressGloss(tok.text);
-              if ((isFirstTime && !suppressed) || this.glossAllActive) {
+              if (isFirstTime || this.glossAllActive) {
                 const gloss = document.createElement("span");
                 gloss.className = "first-gloss";
                 gloss.textContent = entry.gloss;
                 wrapper.appendChild(gloss);
                 seen[lower] = true;
-                // Feature 5: Record this word as glossed for cross-session persistence
-                this._recordGlossSeen(tok.text);
               }
             }
           }
@@ -21371,8 +20663,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   nextExercise() {
-    // Feature 5: Flush pending glossed words to persistent storage
-    this._flushGlossSeen();
     if (this.currentExerciseIdx < this.currentText.exercises.length - 1) {
       this._resetAllTTSState();
       this.currentExerciseIdx++;
@@ -21402,7 +20692,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const iconRadio = document.querySelector(`#icon-picker input[value="${this.appIcon}"]`);
     if (iconRadio) iconRadio.checked = true;
     document.getElementById("settings-modal").classList.add("visible");
-    this._trapFocus("settings-modal");
     // Bind voice preview buttons
     const previewDe = document.getElementById("voice-de-preview");
     const previewEn = document.getElementById("voice-en-preview");
@@ -21412,7 +20701,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   closeSettings() {
     document.getElementById("settings-modal").classList.remove("visible");
-    this._releaseFocusTrap("settings-modal");
   }
 
   saveSettings() {
@@ -21462,7 +20750,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   resetProgress() {
-    if (confirm("Reset all progress? This clears vocabulary tracking, grammar tracking, FSRS spaced repetition state, and exercise completion.")) {
+    if (confirm("Reset all progress? This clears vocabulary tracking, grammar tracking, and exercise completion.")) {
       this.completed = {};
       this.save("completed", this.completed);
       this.grammarProgress = {};
@@ -21471,12 +20759,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.save("grammarProgress", this.grammarProgress);
       this.save("grammarUnitProgress", this.grammarUnitProgress);
       this.save("vocabProgress", this.vocabProgress);
-      FSRS.resetAll();
-      // Feature 5: Reset gloss persistence
-      this._glossSeen = {};
-      this._glossSeenPending = {};
-      this._saveGlossSeen();
-      WerkstattIDB.clear();
       this.render();
       this.closeSettings();
     }
@@ -21486,34 +20768,23 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     document.getElementById("sync-status").textContent = "";
     document.getElementById("sync-file-input").value = "";
     document.getElementById("sync-modal").classList.add("visible");
-    this._trapFocus("sync-modal");
   }
 
   closeSync() {
     document.getElementById("sync-modal").classList.remove("visible");
-    this._releaseFocusTrap("sync-modal");
   }
 
   exportProgress() {
     const payload = {
       _format: "uebersetzungswerkstatt-sync",
-      _version: 2,
+      _version: 1,
       exportedAt: new Date().toISOString(),
       completed: this.completed,
       customTexts: this.customTexts,
       grammarProgress: this.grammarProgress,
       grammarUnitProgress: this.grammarUnitProgress,
-      vocabProgress: this.vocabProgress,
-      fsrsState: FSRS.getAllCards(),
-      translationHistory: this._translationHistory || [],
-      glossSeen: this.load("glossSeen.v1") || {},
-      activeTime: this._activeTimeData || {},
-      streakData: this._streakData || {}
+      vocabProgress: this.vocabProgress
     };
-    // Also persist API keys to both sessionStorage and localStorage (iOS persistence fix)
-    if (this.apiKey) {
-      try { sessionStorage.setItem("uw_apiKey", this.apiKey); } catch(e) {}
-    }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -21523,8 +20794,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    // Record export date for export reminder (Feature 9)
-    this.save("lastExportDate", new Date().toISOString());
     const status = document.getElementById("sync-status");
     status.textContent = "Progress file exported.";
     status.style.color = "var(--success)";
@@ -21547,9 +20816,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           status.style.color = "var(--error)";
           return;
         }
-        const parts = [];
-
-        // Merge completed — set union
+        // Merge completed — union of both sets
         let merged = 0;
         if (data.completed && typeof data.completed === "object") {
           for (const [key, val] of Object.entries(data.completed)) {
@@ -21560,15 +20827,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           this.save("completed", this.completed);
         }
-        if (merged) parts.push(`${merged} completions`);
-
-        // Import API key only if not already set; store in both localStorage + sessionStorage
+        // Import API key only if not already set
         if (data.apiKey && !this.apiKey) {
           this.apiKey = data.apiKey;
           this.save("apiKey", this.apiKey);
-          try { sessionStorage.setItem("uw_apiKey", this.apiKey); } catch(e) {}
         }
-
         // Merge custom texts
         let textsAdded = 0;
         if (data.customTexts && typeof data.customTexts === "object") {
@@ -21581,25 +20844,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (textsAdded > 0) this.save("customTexts", this.customTexts);
         }
-        if (textsAdded) parts.push(`${textsAdded} custom text(s)`);
-
-        // Merge grammar progress — per-key, keep higher correct count
+        // Merge grammar progress
         let grammarMerged = 0;
         if (data.grammarProgress && typeof data.grammarProgress === "object") {
           for (const [key, val] of Object.entries(data.grammarProgress)) {
-            const existing = this.grammarProgress[key];
-            if (!existing) {
-              this.grammarProgress[key] = val;
-              grammarMerged++;
-            } else if (val.correct && !existing.correct) {
-              // Keep the one with correct=true (higher "correct count")
+            if (!this.grammarProgress[key]) {
               this.grammarProgress[key] = val;
               grammarMerged++;
             }
           }
           if (grammarMerged > 0) this.save("grammarProgress", this.grammarProgress);
         }
-
         // Merge grammar unit progress
         let unitsMerged = 0;
         if (data.grammarUnitProgress && typeof data.grammarUnitProgress === "object") {
@@ -21611,70 +20866,18 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (unitsMerged > 0) this.save("grammarUnitProgress", this.grammarUnitProgress);
         }
-        if (grammarMerged + unitsMerged) parts.push(`${grammarMerged + unitsMerged} grammar records`);
-
-        // Merge vocab progress — per-key, keep higher correct count (true > false/absent)
+        // Merge vocab progress
         let vocabMerged = 0;
         if (data.vocabProgress && typeof data.vocabProgress === "object") {
           for (const [key, val] of Object.entries(data.vocabProgress)) {
-            if (!this.vocabProgress[key] && val) {
+            if (!this.vocabProgress[key]) {
               this.vocabProgress[key] = val;
               vocabMerged++;
             }
           }
           if (vocabMerged > 0) this.save("vocabProgress", this.vocabProgress);
         }
-        if (vocabMerged) parts.push(`${vocabMerged} vocab records`);
-
-        // Merge FSRS state — per-card, keep more recent lastReview; if tied, higher reps
-        let fsrsMerged = 0;
-        if (data.fsrsState && typeof data.fsrsState === "object") {
-          fsrsMerged = FSRS.mergeCards(data.fsrsState);
-        }
-        if (fsrsMerged) parts.push(`${fsrsMerged} FSRS cards`);
-
-        // Merge translationHistory — dedup by composite key date|exerciseId, union
-        if (data.translationHistory && Array.isArray(data.translationHistory)) {
-          const existing = this._translationHistory || [];
-          const existingKeys = new Set(existing.map(e => (e.date || "") + "|" + (e.exerciseId || e.textId || "")));
-          let histAdded = 0;
-          for (const entry of data.translationHistory) {
-            const ck = (entry.date || "") + "|" + (entry.exerciseId || entry.textId || "");
-            if (!existingKeys.has(ck)) {
-              existing.push(entry);
-              existingKeys.add(ck);
-              histAdded++;
-            }
-          }
-          if (histAdded > 0) {
-            this._translationHistory = existing;
-            this.save("translationHistory", this._translationHistory);
-            parts.push(`${histAdded} translation records`);
-          }
-        }
-
-        // Merge glossSeen — set union
-        if (data.glossSeen && typeof data.glossSeen === "object") {
-          const current = this.load("glossSeen.v1") || { words: {} };
-          if (data.glossSeen.words) {
-            let glossAdded = 0;
-            for (const [word, val] of Object.entries(data.glossSeen.words)) {
-              if (!current.words[word]) {
-                current.words[word] = val;
-                glossAdded++;
-              }
-            }
-            if (glossAdded > 0) {
-              this.save("glossSeen.v1", current);
-              this._glossSeen = current.words; // Feature 5: sync in-memory state
-              parts.push(`${glossAdded} glossed words`);
-            }
-          }
-        }
-
-        status.textContent = parts.length > 0
-          ? "Imported: " + parts.join(", ") + "."
-          : "No new data to import — everything already present.";
+        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + ".";
         status.style.color = "var(--success)";
         this.render();
       } catch (err) {
@@ -21689,12 +20892,10 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     document.getElementById("import-status").textContent = "";
     document.getElementById("file-input").value = "";
     document.getElementById("import-modal").classList.add("visible");
-    this._trapFocus("import-modal");
   }
 
   closeImport() {
     document.getElementById("import-modal").classList.remove("visible");
-    this._releaseFocusTrap("import-modal");
   }
 
   doImport() {
@@ -21770,15 +20971,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderVocabSidebar();
       vocabContent.style.display = "";
       if (!this.vocabActiveBatch && this.vocabActiveBatch !== 0) {
-        // Feature 4: Show review banner if overdue items exist
-        let bannerHtml = this._renderReviewBanner("vocab");
-        vocabContent.innerHTML = bannerHtml + `<div class="progression-info" style="margin-top:40px;">
+        vocabContent.innerHTML = `<div class="progression-info" style="margin-top:40px;">
           <h2>How Progression Works</h2>
           <p>Vocabulary items are organized into batches of up to 25 words, grouped by part of speech (nouns, verbs, adjectives, etc.) and by author-specific terminology. Select a batch from the sidebar to begin practice.</p>
-          <p>Exercise difficulty adapts automatically based on your mastery: new words start with <strong>Multiple Choice</strong> (recognition), then advance to <strong>Typed Response</strong> (production) as you improve. If you struggle, the app will temporarily ease the difficulty.</p>
+          <p>Three exercise types are available: <strong>Flashcard</strong> (self-assessed recall — click the card to reveal the answer, then mark whether you knew it), <strong>Multiple Choice</strong> (select the correct English translation from four options), and <strong>Typed Response</strong> (type the English translation from memory). You can switch exercise types at any time using the dropdown above the batch list.</p>
           <p>The sidebar tracks your progress as completed/total for each batch and category. An item is marked complete when you answer it correctly. Your progress persists across sessions. Selecting a batch you have already completed will let you practice it again. To clear all vocabulary progress, use the Reset option in Settings.</p>
         </div>`;
-        this._bindReviewBanner("vocab", vocabContent);
       }
     } else if (mode === "grammar") {
       document.getElementById("exercise-list").style.display = "none";
@@ -21788,8 +20986,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this.renderGrammarSidebar_new();
       grammarContent.style.display = "";
       if (!this.grammarActiveItem) {
-        // Feature 4: Show review banner if overdue grammar items exist
-        this._renderGrammarWelcomeWithBanner();
+        this._renderGrammarWelcome();
       }
     } else {
       // Translation mode — restore sidebar
@@ -21862,23 +21059,15 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const batches = this.buildVocabBatches();
     const vocabProgress = this.load("vocabProgress") || {};
 
-    // FSRS overdue count for "Review Past" button
-    const vocabOverdueCount = FSRS.countOverdue("vocab_");
-
-    // Review Past button at top (shown when there are overdue items)
-    let html = "";
-    if (vocabOverdueCount > 0) {
-      html += `<div style="padding:6px 0 4px;">
-        <button id="vocab-review-past-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-          Review Past
-          <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${vocabOverdueCount}</span>
-        </button>
-      </div>`;
-    }
-
-    // Feature 3: Exercise type is now FSRS-determined, no manual selector.
-    // Show a small info line instead.
-    html += `<div style="padding:4px 0 6px;font-size:10px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;font-style:italic;">Exercise difficulty adapts to your mastery level.</div>`;
+    // Exercise type selector at top
+    let html = `<div class="vocab-exercise-type" style="padding:6px 0 8px;">
+      <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);display:block;margin-bottom:4px;">Exercise Type</label>
+      <select id="vocab-exercise-select" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:'Helvetica Neue',sans-serif;background:var(--white);">
+        <option value="flashcard"${this.vocabExerciseType === "flashcard" ? " selected" : ""}>Flashcard</option>
+        <option value="multiple-choice"${this.vocabExerciseType === "multiple-choice" ? " selected" : ""}>Multiple Choice</option>
+        <option value="typed"${this.vocabExerciseType === "typed" ? " selected" : ""}>Typed Response</option>
+      </select>
+    </div>`;
 
     // Build groups with collapsible headers
     if (!this.vocabExpandedGroups) this.vocabExpandedGroups = {};
@@ -21963,20 +21152,14 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     exerciseList.innerHTML = html;
 
-    // Feature 3: Exercise type is now FSRS-determined; no dropdown listener needed.
-
-    // Review Past button handler
-    const reviewPastBtn = exerciseList.querySelector("#vocab-review-past-btn");
-    if (reviewPastBtn) {
-      reviewPastBtn.addEventListener("click", () => {
-        this.startVocabReview();
-        if (window.innerWidth <= 768) {
-          const sb = document.getElementById("sidebar");
-          const ol = document.getElementById("sidebar-overlay");
-          if (sb) sb.classList.remove("open");
-          if (ol) ol.classList.remove("visible");
-          document.documentElement.classList.remove("sidebar-open");
-          document.body.classList.remove("sidebar-open");
+    // Exercise type dropdown — update immediately when changed (no need to restart batch)
+    const exerciseTypeSelect = exerciseList.querySelector("#vocab-exercise-select");
+    if (exerciseTypeSelect) {
+      exerciseTypeSelect.addEventListener("change", () => {
+        this.vocabExerciseType = exerciseTypeSelect.value;
+        if (this.vocabActiveBatch !== null && this.vocabActiveBatch !== undefined && this.vocabItems.length > 0) {
+          this.vocabFlipped = false;
+          this.renderVocabExercise();
         }
       });
     }
@@ -22027,7 +21210,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!batch) return;
 
     this.vocabActiveBatch = batchIdx;
-    // Feature 3: Exercise type now determined per-item by FSRS; no dropdown
+    this.vocabExerciseType = document.getElementById("vocab-exercise-select").value;
     this.vocabItems = this._shuffleArray([...batch.items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
@@ -22062,16 +21245,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         <button class="vocab-back-btn" id="vocab-back-practice">Back to Batches</button>
       </div>`;
 
-    // Feature 3: FSRS-determined exercise tier (replaces manual selector)
-    const vocabTier = this._getVocabTier(item);
-    const effectiveType = this._vocabTierToExerciseType(vocabTier);
-    this.vocabExerciseType = effectiveType; // sync for recording purposes
-
-    if (effectiveType === "flashcard") {
+    if (this.vocabExerciseType === "flashcard") {
       html += this.renderFlashcard(item);
-    } else if (effectiveType === "multiple-choice") {
+    } else if (this.vocabExerciseType === "multiple-choice") {
       html += this.renderMultipleChoice(item);
-    } else if (effectiveType === "typed") {
+    } else if (this.vocabExerciseType === "typed") {
       html += this.renderTypedResponse(item);
     }
 
@@ -22345,247 +21523,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   _recordVocabFSRS(item, rating) {
     const fsrsKey = `vocab_${item.section}_${item.num}`;
     FSRS.review(fsrsKey, rating);
-
-    // Feature 3: Track consecutive failures for session demotion
-    const tier = this._getVocabTier(item);
-    if (rating === 1) {
-      this._vocabTierFailures[tier] = (this._vocabTierFailures[tier] || 0) + 1;
-      if (this._vocabTierFailures[tier] >= 2) {
-        // Demote: cap so we don't go below recognition
-        this._vocabSessionDemotion = Math.min(this._vocabSessionDemotion + 1, 2);
-        this._vocabTierFailures[tier] = 0; // reset after demotion
-      }
-    } else {
-      this._vocabTierFailures[tier] = 0; // reset on success
-    }
-  }
-
-  /**
-   * Feature 3: Determine vocab exercise tier based on FSRS card state.
-   * Returns: "recognition" (multiple-choice), "cloze" (fill-in), or "production" (typed)
-   * Applies session demotion if triggered.
-   */
-  _getVocabTier(item) {
-    const fsrsKey = `vocab_${item.section}_${item.num}`;
-    const card = FSRS.getCard(fsrsKey);
-    let tier;
-    if (!card || card.state <= 1 || card.reps <= 1) {
-      tier = "recognition"; // New/learning → multiple-choice
-    } else if (card.stability < 7) {
-      tier = "cloze"; // Review with low stability → fill-in
-    } else {
-      tier = "production"; // Mature → free-type
-    }
-    // Apply session demotion
-    const tiers = ["recognition", "cloze", "production"];
-    const idx = tiers.indexOf(tier);
-    const demotedIdx = Math.max(idx - this._vocabSessionDemotion, 0);
-    return tiers[demotedIdx];
-  }
-
-  /**
-   * Feature 3: Map vocab tier to exercise type for rendering.
-   */
-  _vocabTierToExerciseType(tier) {
-    switch (tier) {
-      case "recognition": return "multiple-choice";
-      case "cloze": return "multiple-choice"; // cloze uses MC with unlabeled options
-      case "production": return "typed";
-      default: return "multiple-choice";
-    }
-  }
-
-  /**
-   * Feature 3: Determine grammar exercise phase based on FSRS card state.
-   * Returns: "repetition", "cloze", or "production"
-   */
-  _getEffectiveGrammarPhase(ex) {
-    let fsrsKey = null;
-    if (ex.paradigmKey) {
-      fsrsKey = `grammar_${ex.profile.pattern}_${ex.paradigmKey}`;
-    } else if (ex.sentenceId || (ex.sentence && ex.sentence.id)) {
-      fsrsKey = `grammar_${ex.sentenceId || ex.sentence.id}`;
-    }
-    if (!fsrsKey) return this.grammarPhase; // fallback to manual
-
-    const card = FSRS.getCard(fsrsKey);
-    let phase;
-    if (!card || card.state <= 1 || card.reps <= 1) {
-      phase = "repetition";
-    } else if (card.stability < 7) {
-      phase = "cloze";
-    } else {
-      phase = "production";
-    }
-    // Apply session demotion
-    const phases = ["repetition", "cloze", "production"];
-    const idx = phases.indexOf(phase);
-    const demotedIdx = Math.max(idx - this._grammarSessionDemotion, 0);
-    return phases[demotedIdx];
-  }
-
-  /**
-   * Feature 3: Record grammar tier failure for session demotion.
-   */
-  _recordGrammarTierFailure(phase, isCorrect) {
-    if (!isCorrect) {
-      this._grammarTierFailures[phase] = (this._grammarTierFailures[phase] || 0) + 1;
-      if (this._grammarTierFailures[phase] >= 2) {
-        this._grammarSessionDemotion = Math.min(this._grammarSessionDemotion + 1, 2);
-        this._grammarTierFailures[phase] = 0;
-      }
-    } else {
-      this._grammarTierFailures[phase] = 0;
-    }
-  }
-
-  // Record a grammar unit exercise/review item result to FSRS.
-  // Keys: exercises → grammar_ux_<unitIdx>_<exerciseIdx>_<itemIdx>
-  //       reviews   → grammar_ur_<unitIdx>_<itemIdx>
-  // Guards against double-recording on retries via _fsrsRecorded flag.
-  _recordGrammarUnitItemFSRS(isCorrect) {
-    const state = this.grammarExerciseState;
-    if (!state) return;
-    const result = state.results[state.currentIdx];
-    if (!result || result._fsrsRecorded) return;
-    result._fsrsRecorded = true;
-    const unitIdx = parseInt(state.unitId.split('_')[1]);
-    const itemIdx = state.currentIdx;
-    let fsrsKey;
-    if (state.exerciseId === "review") {
-      fsrsKey = `grammar_ur_${unitIdx}_${itemIdx}`;
-    } else {
-      const exerciseIdx = parseInt(state.exerciseId.split('_')[1]);
-      fsrsKey = `grammar_ux_${unitIdx}_${exerciseIdx}_${itemIdx}`;
-    }
-    FSRS.review(fsrsKey, isCorrect ? 3 : 1);
-  }
-
-  // ============================================================
-  // Feature 5: CROSS-SESSION GLOSS PERSISTENCE
-  // ============================================================
-
-  _loadGlossSeen() {
-    // Uses uw_ prefix via this.load() for consistency with export/import
-    const data = this.load("glossSeen.v1");
-    if (data && data.words) return data.words;
-    return {};
-  }
-
-  _saveGlossSeen() {
-    this.save("glossSeen.v1", { words: this._glossSeen });
-  }
-
-  /**
-   * Feature 5: Check if a word's gloss should be suppressed.
-   * Returns true if the word should NOT show an inline gloss.
-   * Two suppression paths:
-   * 1. Word already in glossSeen → suppress
-   * 2. Word mastered via Vocab FSRS (state >= 2, retrievability >= 0.9, reps > 0, lastReview != null) → suppress
-   */
-  _shouldSuppressGloss(word) {
-    const lower = word.toLowerCase();
-    const entry = DICT[lower];
-    const seenKey = (entry && entry.lemma) ? entry.lemma : lower;
-
-    // Path 1: Already seen in a previous session
-    if (this._glossSeen[seenKey]) return true;
-
-    // Path 2: Mastered via vocab FSRS
-    // Check if any VOCAB item matches this word and is mastered
-    const vocabMatch = VOCAB.find(v => {
-      const vLower = v.german.toLowerCase();
-      return vLower === lower || vLower === seenKey;
-    });
-    if (vocabMatch) {
-      const fsrsKey = `vocab_${vocabMatch.section}_${vocabMatch.num}`;
-      const card = FSRS.getCard(fsrsKey);
-      if (card && card.state >= 2 && card.reps > 0 && card.lastReview) {
-        const r = FSRS.retrievability(card);
-        if (r >= 0.9) return true;
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Feature 5: Record a word as glossed (pending flush).
-   */
-  _recordGlossSeen(word) {
-    const lower = word.toLowerCase();
-    const entry = DICT[lower];
-    const seenKey = (entry && entry.lemma) ? entry.lemma : lower;
-    this._glossSeenPending[seenKey] = true;
-  }
-
-  /**
-   * Feature 5: Flush pending glossed words to persistent storage.
-   * Called on passage completion/next exercise.
-   */
-  _flushGlossSeen() {
-    let dirty = false;
-    for (const key in this._glossSeenPending) {
-      if (!this._glossSeen[key]) {
-        this._glossSeen[key] = true;
-        dirty = true;
-      }
-    }
-    this._glossSeenPending = {};
-    if (dirty) this._saveGlossSeen();
-  }
-
-  // ============================================================
-  // Feature 4: INLINE REVIEW BANNER
-  // ============================================================
-
-  /**
-   * Feature 4: Render an inline review banner HTML string.
-   * Returns empty string if no overdue items or already in review mode.
-   */
-  _renderReviewBanner(tabType) {
-    if (this._vocabReviewMode || this._grammarReviewMode) return "";
-    const prefix = tabType === "vocab" ? "vocab_" : "grammar_";
-    const count = FSRS.countOverdue(prefix);
-    if (count === 0) return "";
-    const label = tabType === "vocab" ? "vocabulary" : "grammar";
-    return `<div class="review-banner" id="${tabType}-review-banner" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin:0 0 12px;background:var(--accent-light, #f0e6d3);border:1px solid var(--accent, #8b6914);border-radius:6px;font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;">
-      <span><strong>${count}</strong> ${label} item${count !== 1 ? "s" : ""} due for review</span>
-      <span style="display:flex;gap:8px;align-items:center;">
-        <button class="review-banner-btn" data-action="review" style="padding:4px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;font-family:'Helvetica Neue',sans-serif;">Review now</button>
-        <button class="review-banner-dismiss" data-action="dismiss" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-muted);line-height:1;">&times;</button>
-      </span>
-    </div>`;
-  }
-
-  /**
-   * Feature 4: Bind review banner events within a container.
-   */
-  _bindReviewBanner(tabType, container) {
-    const banner = container.querySelector(`#${tabType}-review-banner`);
-    if (!banner) return;
-    banner.querySelector('[data-action="review"]')?.addEventListener("click", () => {
-      if (tabType === "vocab") this.startVocabReview();
-      else this.startGrammarReview();
-      banner.remove();
-    });
-    banner.querySelector('[data-action="dismiss"]')?.addEventListener("click", () => {
-      banner.remove();
-    });
-  }
-
-  /**
-   * Feature 4: Grammar welcome screen with review banner prepended.
-   */
-  _renderGrammarWelcomeWithBanner() {
-    this._renderGrammarWelcome();
-    const container = document.getElementById("grammar-content");
-    if (!container) return;
-    const bannerHtml = this._renderReviewBanner("grammar");
-    if (bannerHtml) {
-      container.insertAdjacentHTML("afterbegin", bannerHtml);
-      this._bindReviewBanner("grammar", container);
-    }
   }
 
   /**
@@ -22615,7 +21552,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this._resetAllTTSState();
     this.vocabActiveBatch = null;
     this._vocabReviewMode = true;
-    // Feature 3: Exercise type determined per-item by FSRS tier
+    this.vocabExerciseType = document.getElementById("vocab-exercise-select")?.value || this.vocabExerciseType || "flashcard";
     this.vocabItems = this._shuffleArray([...items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
@@ -22632,83 +21569,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
    * Start a review session of overdue grammar items.
    */
   startGrammarReview() {
+    // Collect overdue grammar keys
     const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
     if (overdueKeys.length === 0) return;
-
-    // Separate unit-exercise keys (grammar_ux_ / grammar_ur_) from profile keys (grammar_<pattern>_*)
-    const unitKeys = overdueKeys.filter(k => k.startsWith("grammar_ux_") || k.startsWith("grammar_ur_"));
-    const profileKeys = overdueKeys.filter(k => !k.startsWith("grammar_ux_") && !k.startsWith("grammar_ur_"));
-
-    // Build review items from unit keys
-    const byUnit = {};
-    for (const key of unitKeys) {
-      let unitIdx, exerciseIdx, itemIdx, label, isReview;
-      if (key.startsWith("grammar_ux_")) {
-        const parts = key.slice("grammar_ux_".length).split('_').map(Number);
-        if (parts.length !== 3) continue;
-        [unitIdx, exerciseIdx, itemIdx] = parts;
-        const unit = GRAMMAR_UNITS[unitIdx];
-        const ex = unit && unit.exercises && unit.exercises[exerciseIdx];
-        if (!unit || !ex || !ex.items || !ex.items[itemIdx]) continue;
-        label = ex.title || `Exercise ${exerciseIdx + 1}`;
-        isReview = false;
-        if (!byUnit[unitIdx]) byUnit[unitIdx] = { unit, items: [] };
-        byUnit[unitIdx].items.push({ label, exerciseId: `${unitIdx}_${exerciseIdx}`, isReview, unitId: `unit_${unitIdx}` });
-      } else {
-        const parts = key.slice("grammar_ur_".length).split('_').map(Number);
-        if (parts.length !== 2) continue;
-        [unitIdx, itemIdx] = parts;
-        const unit = GRAMMAR_UNITS[unitIdx];
-        if (!unit || !unit.review || !unit.review.items || !unit.review.items[itemIdx]) continue;
-        if (!byUnit[unitIdx]) byUnit[unitIdx] = { unit, items: [] };
-        byUnit[unitIdx].items.push({ label: "Unit Review", exerciseId: "review", isReview: true, unitId: `unit_${unitIdx}` });
-      }
-    }
-
-    const container = document.getElementById("grammar-content");
-    if (!container) return;
-
-    // Deduplicate items per unit (same exercise may have multiple overdue items — just navigate once)
-    const seen = new Set();
-    let rowsHtml = "";
-    for (const [uidx, { unit, items }] of Object.entries(byUnit)) {
-      const deduped = items.filter(it => { const k = it.unitId + it.exerciseId; if (seen.has(k)) return false; seen.add(k); return true; });
-      deduped.forEach(it => {
-        rowsHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-size:13px;font-weight:600;font-family:'Helvetica Neue',sans-serif;">${unit.title}</div>
-            <div style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">${it.label}</div>
-          </div>
-          <button class="action-btn grammar-review-goto" data-unit-id="${it.unitId}" data-exercise-id="${it.exerciseId}" data-is-review="${it.isReview}"
-            style="font-size:11px;padding:4px 10px;">Practice →</button>
-        </div>`;
-      });
-    }
-
-    if (profileKeys.length > 0 && rowsHtml === "") {
-      rowsHtml = `<p style="font-size:13px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">
-        ${profileKeys.length} Quick Reference pattern(s) due. Open the Quick Reference tab to practice them.</p>`;
-    }
-
-    container.innerHTML = `<div style="padding:20px 4px;">
-      <h3 style="font-family:'Helvetica Neue',sans-serif;font-size:15px;margin-bottom:4px;">Review Queue</h3>
-      <p style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;margin-bottom:16px;">${overdueKeys.length} item(s) due for review</p>
-      ${rowsHtml || `<p style="font-size:13px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">No reviewable items found.</p>`}
-    </div>`;
-
-    container.querySelectorAll(".grammar-review-goto").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const unitId = btn.dataset.unitId;
-        const exerciseId = btn.dataset.exerciseId;
-        this.grammarExpandedUnits[unitId] = true;
-        this.renderGrammarSidebar_new();
-        if (btn.dataset.isReview === "true") {
-          this.renderGrammarReview(unitId);
-        } else {
-          this.renderGrammarExercise(unitId, exerciseId);
-        }
-      });
-    });
+    // For now, show an alert with count — full review queue will be built by UX Implementer (Feature 3/4)
+    alert(`${overdueKeys.length} grammar item(s) due for review. Start a grammar practice session to review them.`);
   }
 
   // ============================================================
@@ -22724,19 +21589,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const exerciseList = targetContainer || document.getElementById("grammar-profile-list") || document.getElementById("exercise-list");
     if (!exerciseList) return;
     exerciseList.innerHTML = "";
-
-    // FSRS overdue count for grammar "Review Past" button
-    const grammarOverdueCount = FSRS.countOverdue("grammar_");
-    if (grammarOverdueCount > 0) {
-      const reviewDiv = document.createElement("div");
-      reviewDiv.style.cssText = "padding:6px 0 4px;";
-      reviewDiv.innerHTML = `<button id="grammar-review-past-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-        Review Past
-        <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${grammarOverdueCount}</span>
-      </button>`;
-      exerciseList.appendChild(reviewDiv);
-      reviewDiv.querySelector("#grammar-review-past-btn").addEventListener("click", () => this.startGrammarReview());
-    }
 
     const categories = {};
     GRAMMAR_PROFILES.forEach(p => {
@@ -23019,7 +21871,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   renderGrammarContent() {
     const container = document.getElementById("grammar-content");
     if (!this.grammarSelectedProfile) {
-      this._renderGrammarWelcome();
+      container.innerHTML = `<div class="grammar-no-exercises">
+        <p>Select a morphological pattern from the sidebar to begin.</p>
+        <p style="margin-top:12px">Grammar exercises are generated from the German text corpus (Wittgenstein, Freud, Nietzsche) and test your ability to identify, select, and produce correct grammatical forms.</p>
+      </div>
+      <div class="progression-info">
+        <h2>How Progression Works</h2>
+        <p>Each grammar pattern offers three phases of increasing difficulty: <strong>Repetition</strong> (identify the correct form from labeled options), <strong>Cloze</strong> (fill in the blank from unlabeled options), and <strong>Production</strong> (type the correct form from memory). The sidebar displays your accuracy as correct/attempted for each category and pattern.</p>
+        <p>Exercises are drawn from the text corpus and shuffled each session. Up to 20 exercises are generated per pattern. Progress is recorded on your first attempt at each exercise within a session; retries on incorrect answers do not overwrite your initial result. You can revisit any pattern at any time to generate a fresh set of exercises.</p>
+        <p>The checkmark next to a pattern indicates that every exercise you have attempted for it was answered correctly. To clear your grammar progress entirely, use the Reset option in Settings.</p>
+      </div>`;
+      this.renderGrammarStats(container);
       return;
     }
 
@@ -23048,23 +21910,18 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     // Active selection indicator
     html += `<div class="grammar-active-selection"><strong>${this.grammarSelectedProfile.description}</strong> — Exercise ${this.grammarCurrentIdx + 1} of ${this.grammarExercises.length}</div>`;
 
-    // Feature 3: FSRS-determined grammar phase (replaces manual phase selector)
-    const effectivePhase = this._getEffectiveGrammarPhase(ex);
-    this.grammarPhase = effectivePhase; // sync for recording
-
-    // Show phase indicator (read-only, not selectable)
-    const phaseLabels = { repetition: "Recognition", cloze: "Cloze", production: "Production" };
+    // Phase selector
     html += `<div class="grammar-phase-selector">`;
     for (const phase of ["repetition","cloze","production"]) {
-      html += `<button class="grammar-phase-btn${effectivePhase === phase ? " active" : ""}" data-phase="${phase}" disabled style="opacity:${effectivePhase === phase ? "1" : "0.4"};cursor:default;">${phaseLabels[phase]}</button>`;
+      const label = phase.charAt(0).toUpperCase() + phase.slice(1);
+      html += `<button class="grammar-phase-btn${this.grammarPhase === phase ? " active" : ""}" data-phase="${phase}">${label}</button>`;
     }
     html += `</div>`;
-    html += `<div style="font-size:10px;color:var(--text-muted);font-style:italic;margin:-6px 0 8px;font-family:'Helvetica Neue',sans-serif;">Phase adapts to your mastery level.</div>`;
 
     // Render phase-specific content
-    if (effectivePhase === "repetition") {
+    if (this.grammarPhase === "repetition") {
       html += this.renderRepetitionPhase(ex);
-    } else if (effectivePhase === "cloze") {
+    } else if (this.grammarPhase === "cloze") {
       html += this.renderClozePhase(ex);
     } else {
       html += this.renderProductionPhase(ex);
@@ -23225,8 +22082,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const words = ex.passage.german.split(/\s+/);
     const highlighted = words.map((w, i) => {
       if (i === ex.wordIndex) return `<span class="grammar-highlight">${w}</span>`;
-      // Feature 6: Gloss non-target words based on vocab FSRS mastery
-      return this._glossGrammarWord(w);
+      return w;
     }).join(" ");
     return `<div class="grammar-passage">${highlighted}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
   }
@@ -23240,51 +22096,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (match) return match[1] + `<span class="grammar-blank">___</span>` + match[3];
         return `<span class="grammar-blank">___</span>`;
       }
-      // Feature 6: Gloss non-target words based on vocab FSRS mastery
-      return this._glossGrammarWord(w);
+      return w;
     }).join(" ");
     return `<div class="grammar-passage">${blanked}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
-  }
-
-  /**
-   * Feature 6: Gloss a single word in a grammar exercise passage.
-   * Returns HTML: plain text if mastered or not in dictionary,
-   * or a word-wrapper with hover tooltip if unmastered.
-   */
-  _glossGrammarWord(word) {
-    // Strip punctuation for lookup
-    const match = word.match(/^([.,;:!?()"""''„"]*)(.+?)([.,;:!?()"""''„"]*)$/);
-    const prefix = match ? match[1] : "";
-    const core = match ? match[2] : word;
-    const suffix = match ? match[3] : "";
-
-    const entry = this.lookupWord(core);
-    if (!entry) return word; // Not in dictionary — no gloss
-
-    // Check if mastered via vocab FSRS — if so, no gloss needed
-    if (this._isVocabMastered(core)) return word;
-
-    // Unmastered: wrap with hover tooltip
-    const escaped = core.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const glossEscaped = entry.gloss.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    return `${prefix}<span class="word-wrapper grammar-gloss-word" style="position:relative;"><span class="word-text">${escaped}</span><span class="tooltip">${glossEscaped}</span></span>${suffix}`;
-  }
-
-  /**
-   * Feature 6: Check if a word is mastered via vocab FSRS.
-   * Returns true if any matching VOCAB item has state >= 2, retrievability >= 0.9.
-   */
-  _isVocabMastered(word) {
-    const lower = word.toLowerCase();
-    const vocabMatch = VOCAB.find(v => {
-      const vLower = v.german.toLowerCase();
-      return vLower === lower || vLower === (DICT[lower]?.lemma || lower);
-    });
-    if (!vocabMatch) return false;
-    const fsrsKey = `vocab_${vocabMatch.section}_${vocabMatch.num}`;
-    const card = FSRS.getCard(fsrsKey);
-    if (!card || card.state < 2 || !card.lastReview || card.reps <= 0) return false;
-    return FSRS.retrievability(card) >= 0.9;
   }
 
   renderParadigmTable(ex, correctKey) {
@@ -23367,8 +22181,14 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   bindGrammarEvents(ex) {
-    // Feature 3: Phase buttons are now read-only indicators (FSRS-determined).
-    // No click handlers needed.
+    // Phase buttons
+    document.querySelectorAll(".grammar-phase-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        this.grammarPhase = btn.dataset.phase;
+        this.grammarParadigmVisible = false;
+        this.renderGrammarContent();
+      });
+    });
 
     // Paradigm toggle
     const pToggle = document.getElementById("grammar-paradigm-toggle");
@@ -23632,8 +22452,6 @@ Lesson: ${ex.profile.description}`;
       const fsrsKey = `grammar_${sid}`;
       FSRS.review(fsrsKey, isCorrect ? 3 : 1);
     }
-    // Feature 3: Track grammar tier failures for session demotion
-    this._recordGrammarTierFailure(this.grammarPhase, isCorrect);
   }
 
   renderGrammarComplete(container) {
@@ -23720,9 +22538,6 @@ Lesson: ${ex.profile.description}`;
   const container = document.getElementById("grammar-sidebar");
   if (!container) return;
 
-  const header = document.getElementById("sidebar-header");
-  if (header) header.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;"><div><h1>Grammar</h1><p>Lessons &amp; Practice</p></div></div>`;
-
   let html = '<div class="grammar-tabs">';
   html += `<button class="grammar-tab ${this.grammarView === "lessons" ? "active" : ""}" data-view="lessons">Lessons</button>`;
   html += `<button class="grammar-tab ${this.grammarView === "reference" ? "active" : ""}" data-view="reference">Quick Reference</button>`;
@@ -23766,16 +22581,7 @@ Lesson: ${ex.profile.description}`;
   const treeContainer = document.getElementById("grammar-unit-tree");
   if (!treeContainer) return;
 
-  const _unitOverdue = FSRS.countOverdue("grammar_ux_") + FSRS.countOverdue("grammar_ur_");
   let html = '<div class="unit-tree">';
-  if (_unitOverdue > 0) {
-    html += `<div style="padding:6px 0 8px;">
-      <button id="grammar-unit-review-btn" style="width:100%;padding:8px 12px;background:var(--accent);color:white;border:none;border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-        Review Past Concepts
-        <span style="background:rgba(255,255,255,0.25);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">${_unitOverdue}</span>
-      </button>
-    </div>`;
-  }
 
   GRAMMAR_UNITS.forEach((unit, unitIndex) => {
     const unitId = `unit_${unitIndex}`;
@@ -23812,7 +22618,7 @@ Lesson: ${ex.profile.description}`;
                                  this.grammarActiveItem?.itemId === lessonId;
 
           html += `<div class="unit-item lesson-item ${isLessonActive ? "active" : ""}" data-type="lesson" data-unit-id="${unitId}" data-item-id="${lessonId}">`;
-          html += '<span class="item-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5h4.5a2 2 0 0 1 2 2v9a1.5 1.5 0 0 0-1.5-1.5H2z"/><path d="M14 2.5H9.5a2 2 0 0 0-2 2v9a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg></span>';
+          html += '<span class="item-icon">📖</span>';
           html += `<span class="item-title">${lesson.title}</span>`;
           if (isLessonComplete) html += '<span class="item-checkmark">✓</span>';
           html += `</div>`;
@@ -23829,7 +22635,7 @@ Lesson: ${ex.profile.description}`;
                                    this.grammarActiveItem?.itemId === exerciseId;
 
           html += `<div class="unit-item exercise-item ${isExerciseActive ? "active" : ""}" data-type="exercise" data-unit-id="${unitId}" data-item-id="${exerciseId}">`;
-          html += '<span class="item-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.2 1.5l3.3 3.3-9.2 9.2H2v-3.3z"/><path d="M9.5 3.2l3.3 3.3"/></svg></span>';
+          html += '<span class="item-icon">📝</span>';
           html += `<span class="item-title">${exercise.title || ("Exercise " + (exerciseIndex + 1))}</span>`;
           if (exerciseData) {
             html += `<span class="item-score">${exerciseData.correct}/${exerciseData.total}</span>`;
@@ -23847,10 +22653,10 @@ Lesson: ${ex.profile.description}`;
                               this.grammarActiveItem?.type === "review";
 
         html += `<div class="unit-item review-item ${isReviewLocked ? "locked" : ""} ${isReviewActive ? "active" : ""}" data-type="review" data-unit-id="${unitId}" data-item-id="${reviewId}">`;
-        html += '<span class="item-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 7a6.5 6.5 0 0 1 11.3-4.3"/><path d="M12.8 1v3h-3"/><path d="M14.5 9a6.5 6.5 0 0 1-11.3 4.3"/><path d="M3.2 15v-3h3"/></svg></span>';
+        html += '<span class="item-icon">🔄</span>';
         html += `<span class="item-title">Unit Review</span>`;
         if (isReviewLocked) {
-          html += '<span class="item-lock"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg></span>';
+          html += '<span class="item-lock">🔒</span>';
         } else if (reviewData?.completed) {
           html += `<span class="item-score">${reviewData.score}/${reviewData.total}</span>`;
         }
@@ -24737,7 +23543,6 @@ Lesson: ${ex.profile.description}`;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].correct = isCorrect;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].feedback =
         isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
-      this._recordGrammarUnitItemFSRS(isCorrect);
 
       e.target.closest(".exercise-options").querySelectorAll(".exercise-option-btn").forEach(opt => {
         opt.disabled = true;
@@ -24765,7 +23570,6 @@ Lesson: ${ex.profile.description}`;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].correct = isCorrect;
       this.grammarExerciseState.results[this.grammarExerciseState.currentIdx].feedback =
         isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
-      this._recordGrammarUnitItemFSRS(isCorrect);
 
       e.target.closest(".review-options").querySelectorAll(".review-option-btn").forEach(opt => {
         opt.disabled = true;
@@ -24803,7 +23607,6 @@ Lesson: ${ex.profile.description}`;
           this.grammarExerciseState.results[state.currentIdx].correct = true;
           this.grammarExerciseState.results[state.currentIdx].feedback = "Correct! Well done.";
           this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-          this._recordGrammarUnitItemFSRS(true);
           if (isReview) { this.renderGrammarReview(state.unitId); }
           else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
         } else if (this.apiKey && userAnswer.length > 0) {
@@ -24820,7 +23623,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
             this.grammarExerciseState.results[state.currentIdx].feedback =
               accepted ? "Correct! Your translation is acceptable." : "Incorrect. Try again.";
             this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-            this._recordGrammarUnitItemFSRS(accepted);
             if (isReview) { this.renderGrammarReview(state.unitId); }
             else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
           }).catch(() => {
@@ -24828,7 +23630,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
             this.grammarExerciseState.results[state.currentIdx].correct = false;
             this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
             this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-            this._recordGrammarUnitItemFSRS(false);
             if (isReview) { this.renderGrammarReview(state.unitId); }
             else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
           });
@@ -24837,7 +23638,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
           this.grammarExerciseState.results[state.currentIdx].correct = false;
           this.grammarExerciseState.results[state.currentIdx].feedback = "Incorrect. Try again.";
           this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-          this._recordGrammarUnitItemFSRS(false);
           if (isReview) { this.renderGrammarReview(state.unitId); }
           else { this.renderGrammarExercise(state.unitId, state.exerciseId); }
         }
@@ -24858,7 +23658,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         this.grammarExerciseState.results[state.currentIdx].feedback =
           isCorrect ? "Correct! Well done." : "Incorrect. Try again.";
         this.grammarExerciseState.results[state.currentIdx].correctAnswer = expectedAnswer;
-        this._recordGrammarUnitItemFSRS(isCorrect);
 
         if (isReview) {
           this.renderGrammarReview(state.unitId);
@@ -24885,7 +23684,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         this.grammarExerciseState.results[state.currentIdx].correct = allCorrect;
         this.grammarExerciseState.results[state.currentIdx].feedback =
           allCorrect ? "Correct! All pairs matched." : "Incorrect. Some pairs don't match.";
-        this._recordGrammarUnitItemFSRS(allCorrect);
 
         if (isReview) {
           this.renderGrammarReview(state.unitId);
@@ -25004,9 +23802,6 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   const treeContainer = document.getElementById("grammar-unit-tree");
   if (!treeContainer) return;
 
-  const reviewBtn = treeContainer.querySelector("#grammar-unit-review-btn");
-  if (reviewBtn) reviewBtn.addEventListener("click", () => this.startGrammarReview());
-
   // Toggle unit expansion
   treeContainer.querySelectorAll(".unit-toggle").forEach(toggle => {
     toggle.addEventListener("click", (e) => {
@@ -25079,114 +23874,15 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   _renderGrammarWelcome() {
     const el = document.getElementById("grammar-content");
     if (!el) return;
-
-    // Compute progress across all units
-    let totalLessons = 0, totalMastered = 0;
-    const unitStats = [];
-    GRAMMAR_UNITS.forEach((unit, idx) => {
-      const unitId = `unit_${idx}`;
-      const progress = this.getUnitProgress(unitId);
-      const lt = unit.lessons ? unit.lessons.length : 0;
-      totalLessons += lt;
-      totalMastered += progress.lessonsComplete;
-      unitStats.push({ id: unitId, chapter: unit.chapter, title: unit.title,
-        lessonsTotal: lt, lessonsComplete: progress.lessonsComplete,
-        percentComplete: progress.percentComplete });
-    });
-    const firstIncomplete = unitStats.find(s => s.percentComplete < 100);
-    const overallPct = totalLessons > 0 ? Math.round((totalMastered / totalLessons) * 100) : 0;
-
-    let html = '<div class="lesson-view" style="padding:24px;">';
-
-    // Overall progress
-    html += `<div style="text-align:center;margin-bottom:24px;">`;
-    html += `<div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Overall Progress</div>`;
-    html += `<div style="font-size:28px;font-weight:700;color:var(--text);font-family:'Helvetica Neue',Arial,sans-serif;">${totalMastered} / ${totalLessons} <span style="font-size:14px;color:var(--text-muted);font-weight:400;">lessons mastered (${overallPct}%)</span></div>`;
-    html += `<div style="max-width:300px;margin:10px auto 0;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">`;
-    html += `<div style="height:100%;width:${overallPct}%;background:var(--accent);border-radius:3px;transition:width 0.3s;"></div></div>`;
-    html += `</div>`;
-
-    // How it works
-    html += `<div class="progression-info" style="max-width:700px;">`;
-    html += `<h4>How It Works</h4>`;
-    html += `<p>Each lesson has three tabs: <strong>Lesson</strong> (instructional content with paradigm tables, cross-linguistic comparisons, and historical context), <strong>Practice</strong> (exercises in three phases — Repetition, Cloze, Production), and <strong>Review</strong> (mixed exercises drawn from the current lesson and its prerequisites for spaced reinforcement).</p>`;
-    html += `<p>Work through units in order for a structured path, or jump to any topic. A lesson is marked <em>mastered</em> when you have completed exercises in all three practice phases correctly. Click any unit below to see its lessons.</p>`;
-    html += `</div>`;
-
-    // Unit roadmap
-    html += `<div class="path-roadmap">`;
-    unitStats.forEach(s => {
-      const pct = s.percentComplete;
-      const isComplete = pct === 100 && s.lessonsTotal > 0;
-      const isCurrent = firstIncomplete && s.id === firstIncomplete.id;
-      let cls = "path-unit-row";
-      if (isComplete) cls += " completed";
-      else if (isCurrent) cls += " current";
-      html += `<div class="${cls}" data-unitclick="${s.id}" role="button" tabindex="0">`;
-      html += `<span class="path-unit-pct">${pct}%</span>`;
-      html += `<span class="path-unit-name">Unit ${s.chapter}: ${s.title}</span>`;
-      html += `<span class="path-unit-lessons">${s.lessonsComplete}/${s.lessonsTotal} lessons</span>`;
-      html += `</div>`;
-    });
-    html += `</div>`;
-
-    // Continue button — first incomplete lesson in first incomplete unit
-    if (firstIncomplete) {
-      const uidx = parseInt(firstIncomplete.id.split('_')[1]);
-      const unit = GRAMMAR_UNITS[uidx];
-      const up = this.grammarUnitProgress[firstIncomplete.id] || {};
-      const nextLesson = unit && unit.lessons
-        ? unit.lessons.find((l, i) => !up.lessons || !up.lessons[`${uidx}_${i}`])
-        : null;
-      if (nextLesson) {
-        const lessonIdx = unit.lessons.indexOf(nextLesson);
-        const lessonItemId = `${uidx}_${lessonIdx}`;
-        html += `<div style="text-align:center;margin-top:20px;">`;
-        html += `<button class="action-btn" id="grammar-start-next" data-unit="${firstIncomplete.id}" data-lesson="${lessonItemId}" style="padding:10px 24px;background:var(--accent);color:white;">`;
-        html += `Continue: ${nextLesson.title} &rarr;</button></div>`;
-      }
-    }
-
-    html += '</div>';
-    el.innerHTML = html;
-
-    // Bind unit row clicks — expand unit in sidebar and open first incomplete lesson
-    el.querySelectorAll('[data-unitclick]').forEach(row => {
-      row.addEventListener('click', () => {
-        const uid = row.dataset.unitclick;
-        const uidx = parseInt(uid.split('_')[1]);
-        const unit = GRAMMAR_UNITS[uidx];
-        if (!this.grammarExpandedUnits) this.grammarExpandedUnits = {};
-        this.grammarExpandedUnits[uid] = true;
-        this.grammarView = 'lessons';
-        if (unit && unit.lessons && unit.lessons.length > 0) {
-          const up = this.grammarUnitProgress[uid] || {};
-          const targetLesson = unit.lessons.find((l, i) => !up.lessons || !up.lessons[`${uidx}_${i}`]) || unit.lessons[0];
-          const lessonIdx = unit.lessons.indexOf(targetLesson);
-          const lessonItemId = `${uidx}_${lessonIdx}`;
-          this.grammarActiveItem = { unitId: uid, type: 'lesson', itemId: lessonItemId };
-          this.renderGrammarSidebar_new();
-          this.renderGrammarLesson(uid, lessonItemId);
-        } else {
-          this.renderGrammarSidebar_new();
-        }
-      });
-    });
-
-    // Bind continue button
-    const startBtn = el.querySelector('#grammar-start-next');
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        const uid = startBtn.dataset.unit;
-        const lessonId = startBtn.dataset.lesson;
-        if (!this.grammarExpandedUnits) this.grammarExpandedUnits = {};
-        this.grammarExpandedUnits[uid] = true;
-        this.grammarView = 'lessons';
-        this.grammarActiveItem = { unitId: uid, type: 'lesson', itemId: lessonId };
-        this.renderGrammarSidebar_new();
-        this.renderGrammarLesson(uid, lessonId);
-      });
-    }
+    el.innerHTML = `<div class="lesson-view" style="padding:30px;">
+      <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
+      <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
+      <p style="margin-bottom:10px;">Each unit contains:</p>
+      <p style="margin-bottom:5px;"><strong>📖 Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
+      <p style="margin-bottom:5px;"><strong>📝 Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
+      <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
+      <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
+    </div>`;
   }
 
   _sidebarHeaderHTML(title, subtitle) {
@@ -25210,42 +23906,42 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   _getConversationScenarios() {
     return [
       // ── Beginner ─────────────────────────────────────────────
-      { id: "biergarten_order", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1"/><path d="M11 6h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2"/><path d="M5.5 6v5M8.5 6v5"/></svg>', label: "Ordering at a Biergarten", level: "A2",
+      { id: "biergarten_order", cat: "Beginner", icon: "🍺", label: "Ordering at a Biergarten", level: "A2",
         setup: "You are at a traditional Biergarten in Munich. The server approaches. Order a beer and a meal, ask about the specials, and request the bill.",
         vocab: ["die Speisekarte", "Was empfehlen Sie?", "Ich hätte gerne…", "Die Rechnung, bitte", "ohne / mit", "Ist der Service inbegriffen?"],
         keyPhrases: ["Ich hätte gerne ein Helles, bitte.", "Was empfehlen Sie heute?", "Die Rechnung, bitte."],
         opening: "Grüß Gott! Haben Sie schon gewählt?",
         sysPrompt: "You are a friendly server at a traditional Biergarten in Munich. Speak in warm, natural German — a little Bavarian flavour is welcome. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end in this exact format: [Korrektur: «X» → «Y»]. Start by greeting the guest and asking if they are ready to order." },
 
-      { id: "directions_berlin", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5a4.5 4.5 0 0 1 4.5 4.5c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5z"/><circle cx="8" cy="6" r="1.5"/></svg>', label: "Asking directions in Berlin", level: "A2",
+      { id: "directions_berlin", cat: "Beginner", icon: "🗺️", label: "Asking directions in Berlin", level: "A2",
         setup: "You are lost in Berlin-Mitte and need to find the Brandenburger Tor. Stop a local and ask for directions.",
         vocab: ["Entschuldigung", "Wie komme ich zum…?", "geradeaus", "rechts / links abbiegen", "überqueren", "die Ecke", "ungefähr… Minuten"],
         keyPhrases: ["Entschuldigung, wo ist das Brandenburger Tor?", "Ist es weit?", "Vielen Dank, sehr freundlich!"],
         opening: "Guten Morgen! Kann ich Ihnen helfen?",
         sysPrompt: "You are a helpful Berliner giving directions to the Brandenburger Tor. Speak in clear, natural German. Give simple directions using landmarks and walking time. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by responding warmly when approached." },
 
-      { id: "wochenmarkt", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1h2l1.6 8h7.8l2-6H4"/><circle cx="6" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>', label: "Shopping at the Wochenmarkt", level: "A2",
+      { id: "wochenmarkt", cat: "Beginner", icon: "🛒", label: "Shopping at the Wochenmarkt", level: "A2",
         setup: "You are at an open-air market (Wochenmarkt) in Hamburg. Browse, ask about prices, and buy some fruit and vegetables.",
         vocab: ["Was kostet das?", "das Kilo", "Haben Sie…?", "günstiger", "mitnehmen", "das Wechselgeld", "frisch"],
         keyPhrases: ["Was kosten die Tomaten?", "Ein Kilo, bitte.", "Haben Sie etwas Günstigeres?"],
         opening: "Hereinspaziert! Frisches Gemüse, frisches Obst — schauen Sie mal rein!",
         sysPrompt: "You are a cheerful vendor at a Wochenmarkt in Hamburg. Speak in natural German. Suggest produce, quote prices, be friendly. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by calling out to the passing customer." },
 
-      { id: "introductions_berlin", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="3"/><path d="M2.5 14.5a5.5 5.5 0 0 1 11 0"/></svg>', label: "Introductions", level: "A2",
+      { id: "introductions_berlin", cat: "Beginner", icon: "👋", label: "Introductions", level: "A2",
         setup: "You are at a language exchange meetup in Berlin. Introduce yourself, ask where people are from, and talk about why you're learning German.",
         vocab: ["Freut mich", "Schön, Sie kennenzulernen", "Woher kommen Sie?", "Ich bin von Beruf…", "Ich lerne Deutsch, weil…", "Was machen Sie beruflich?", "die Sprache"],
         keyPhrases: ["Ich heiße… und komme aus…", "Ich lerne Deutsch, weil…", "Und Sie, was machen Sie?"],
         opening: "Hallo! Willkommen beim Sprachaustausch. Sind Sie zum ersten Mal hier?",
         sysPrompt: "You are a friendly German speaker at a language exchange in Berlin. Speak in clear, natural German. Ask about the other person's name, origin, job, and reasons for learning German. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by welcoming them to the event." },
 
-      { id: "daily_routines", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="3"/><path d="M8 1v1M8 10v1M3.5 6H2.5M13.5 6h-1M4.7 3l-.7-.7M12 3l.7-.7M4.7 9l-.7.7M12 9l.7.7"/><path d="M1 13h14"/></svg>', label: "Daily routines", level: "A2",
+      { id: "daily_routines", cat: "Beginner", icon: "🌅", label: "Daily routines", level: "A2",
         setup: "A new friend asks about your typical day. Describe your morning routine, work or study schedule, and what you do in the evenings.",
         vocab: ["aufstehen", "frühstücken", "zur Arbeit / zur Uni gehen", "zu Mittag essen", "am Nachmittag", "sich entspannen", "schlafen gehen", "meistens"],
         keyPhrases: ["Normalerweise stehe ich um… Uhr auf.", "Zum Frühstück esse ich meistens…", "Abends gehe ich gerne…"],
         opening: "Sag mal, wie sieht bei dir ein normaler Tag aus? Erzähl mal!",
         sysPrompt: "You are a curious German-speaking friend chatting over coffee. Speak in natural, friendly German. Ask follow-up questions about the other person's routine — when they get up, what they eat, how they get to work, what they do after. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking about their typical day." },
 
-      { id: "arzt", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v8M4 8h8"/><circle cx="8" cy="8" r="6.5"/></svg>', label: "Doctor visit", level: "A2",
+      { id: "arzt", cat: "Beginner", icon: "🏥", label: "Doctor visit", level: "A2",
         setup: "You have a headache and a sore throat. Visit a doctor at a clinic in Germany and describe your symptoms.",
         vocab: ["mir tut … weh", "der Hals", "der Kopf", "das Fieber", "seit … Tagen", "der Arzt / die Ärztin", "das Rezept", "Tabletten nehmen"],
         keyPhrases: ["Mir tut der Hals seit zwei Tagen weh.", "Ich habe leichtes Fieber.", "Was empfehlen Sie?"],
@@ -25253,56 +23949,56 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         sysPrompt: "You are a kind doctor at a medical practice in Germany. Speak in clear, natural German. Ask about the patient's symptoms, duration, and any other relevant details. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what brings the patient in today." },
 
       // ── Intermediate ──────────────────────────────────────────
-      { id: "interrail_trip", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="2"/><path d="M2 8h12"/><path d="M5 12v2M11 12v2M6 5.5h4"/></svg>', label: "Planning an Interrail trip", level: "B1",
+      { id: "interrail_trip", cat: "Intermediate", icon: "🚂", label: "Planning an Interrail trip", level: "B1",
         setup: "You and a friend are planning an Interrail trip through Germany, Austria, and Switzerland. Discuss destinations, budget, activities, and logistics.",
         vocab: ["der Reiseplan", "das Budget", "übernachten", "der Anschlusszug", "ein Muss", "im Freien", "frühmorgens", "ausnutzen"],
         keyPhrases: ["Was hältst du davon, wenn wir in München anfangen?", "Man sollte die Unterkünfte im Voraus buchen.", "Was wird das wohl kosten?"],
         opening: "Ich freue mich so auf die Reise! Wo sollen wir eigentlich anfangen?",
         sysPrompt: "You are an enthusiastic friend planning an Interrail trip through German-speaking Europe. Speak in natural German. Suggest destinations (München, Wien, Zürich, Salzburg, Heidelberg), discuss budget and logistics, debate priorities. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by expressing excitement and asking where to begin." },
 
-      { id: "buch_diskussion", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5h4.5a2 2 0 0 1 2 2v9a1.5 1.5 0 0 0-1.5-1.5H2z"/><path d="M14 2.5H9.5a2 2 0 0 0-2 2v9a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>', label: "Book discussion", level: "B1",
+      { id: "buch_diskussion", cat: "Intermediate", icon: "📖", label: "Book discussion", level: "B1",
         setup: "You have both just finished a German novel. Discuss the plot, characters, and what you thought of the ending.",
         vocab: ["der Protagonist", "die Handlung", "das Ende", "Ich fand es…", "die Ich-Erzählung", "die Wendung", "bewegend", "vorhersehbar"],
         keyPhrases: ["Was mir am besten gefallen hat, war…", "Ich habe die Stelle nicht ganz verstanden, wo…", "Glaubst du, das Ende macht Sinn?"],
         opening: "Gestern Nacht hab ich's endlich fertig gelesen. Ich bin gespannt, was du denkst! Wie fandst du's?",
         sysPrompt: "You are a reader who just finished a German novel and wants to discuss it. Invent a plausible book called 'Das verschwundene Haus' about a family mystery in postwar Germany. Speak in natural German. Share opinions, ask for the other person's views, and explore themes and characters. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what the other person thought." },
 
-      { id: "wohnungssuche_berlin", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l6-6 6 6"/><path d="M3.5 9v5.5h3.5v-4h2v4h3.5V9"/></svg>', label: "Wohnungssuche in Berlin", level: "B1",
+      { id: "wohnungssuche_berlin", cat: "Intermediate", icon: "🏠", label: "Wohnungssuche in Berlin", level: "B1",
         setup: "You are calling about an apartment listing in Berlin. Ask about rent, utilities, the neighbourhood, and arrange a viewing.",
         vocab: ["die Miete", "die Nebenkosten", "die Kaution", "der Mietvertrag", "möbliert", "das Viertel", "besichtigen", "verfügbar"],
         keyPhrases: ["Sind die Nebenkosten inklusive?", "Wann könnte ich die Wohnung besichtigen?", "Sind Haustiere erlaubt?"],
         opening: "Guten Tag, hier Müller. Rufen Sie wegen der Wohnung in der Kastanienallee an?",
         sysPrompt: "You are the landlord of an apartment in Berlin Prenzlauer Berg. Speak in natural German. The apartment has 2 rooms, costs 950€ Kaltmiete, Nebenkosten not included (~150€), and is available from next month. Answer questions naturally and try to arrange a viewing. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by confirming they're calling about the apartment." },
 
-      { id: "wetter_plaene", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a3.5 3.5 0 0 0-1-6.9A5 5 0 0 0 1.5 6a3.5 3.5 0 0 0 .5 7h10z"/><path d="M6 14v2M10 13v2"/></svg>', label: "Weather & weekend plans", level: "B1",
+      { id: "wetter_plaene", cat: "Intermediate", icon: "🌦️", label: "Weather & weekend plans", level: "B1",
         setup: "Chat with a friend about the weekend weather forecast and make plans that depend on it — outdoor vs indoor options.",
         vocab: ["die Wettervorhersage", "es wird regnen / sonnig sein", "falls es schlechtes Wetter gibt", "wenn es schön ist", "der Schauer", "absagen / verschieben", "eine Alternative", "das macht nichts"],
         keyPhrases: ["Man sagt, am Samstag soll es regnen.", "In dem Fall könnten wir ins Museum gehen.", "Wenn es schön ist, gehe ich lieber in den Park."],
         opening: "Hast du schon das Wetter für das Wochenende gesehen? Sieht nach Regen aus…",
         sysPrompt: "You are a friend making weekend plans. Speak in natural, conversational German. The forecast is rain Saturday, sunny Sunday. Suggest contingency plans and react to the other person's ideas. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by mentioning the forecast." },
 
-      { id: "brot_kultur", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="8" cy="8" rx="6" ry="4"/><path d="M5 6.5v3M8 6v4M11 6.5v3"/></svg>', label: "Food & Brot culture", level: "B1",
+      { id: "brot_kultur", cat: "Intermediate", icon: "🥖", label: "Food & Brot culture", level: "B1",
         setup: "Discuss German food traditions — especially Brot culture, regional specialties, and Kaffee und Kuchen — with someone who loves cooking.",
         vocab: ["die Gastronomie", "die Zutat", "das Rezept", "würzen", "lecker", "der Geschmack", "typisch aus der Region", "berühmt für"],
         keyPhrases: ["In Deutschland ist es typisch, abends Brot zu essen.", "Was ist dein Lieblingsgericht?", "Dieses Rezept braucht… und man macht es so…"],
         opening: "Ich liebe die deutsche Küche — allein schon die Brotvielfalt ist unglaublich. Was kennst du so?",
         sysPrompt: "You are a passionate home cook who loves German and Austrian cuisine. Speak in natural German. Discuss dishes from different German-speaking regions (Brezel, Sauerbraten, Wiener Schnitzel, Schwarzwälder Kirschtorte, regional breads), ask about the other person's favorites, share recipes and traditions. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what dishes they know." },
 
-      { id: "vorstellungsgespraech", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="13" height="9" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><path d="M1.5 9h13"/></svg>', label: "Job interview", level: "B2",
+      { id: "vorstellungsgespraech", cat: "Intermediate", icon: "💼", label: "Job interview", level: "B2",
         setup: "You are interviewing for a position at a company in Frankfurt. Answer questions and ask about the role. The formal Sie register is required.",
         vocab: ["die Stelle / Position", "die Berufserfahrung", "die Anforderungen", "das Unternehmen", "meine Stärken", "im Team arbeiten", "die Ziele", "langfristig"],
         keyPhrases: ["Ich habe Erfahrung in…", "Meine größte Stärke ist…", "Welche Entwicklungsmöglichkeiten gibt es?"],
         opening: "Guten Tag, nehmen Sie bitte Platz. Hatten Sie eine gute Anreise?",
         sysPrompt: "You are an HR manager at a German company in Frankfurt interviewing for a marketing role. Speak in formal but natural German using Sie throughout. Ask about experience, skills, why they want the role, and where they see themselves in five years. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by welcoming them." },
 
-      { id: "wiedersehen", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7.5a6 6 0 0 1-6 6h-3l-3 2v-2a6 6 0 1 1 12-6z"/><path d="M5.5 7h.01M10.5 7h.01"/><path d="M6 9.5a2.5 2.5 0 0 0 4 0"/></svg>', label: "Catching up with a friend", level: "B1",
+      { id: "wiedersehen", cat: "Intermediate", icon: "😊", label: "Catching up with a friend", level: "B1",
         setup: "You haven't seen a good friend in six months. Catch up on what's been happening in your lives — work, relationships, travel, plans.",
         vocab: ["Was hast du so getrieben?", "schon lange nicht mehr…", "die Neuigkeit", "so viel ist passiert", "was … betrifft", "übrigens", "Erzähl!"],
         keyPhrases: ["Lange nicht gesehen! Wie geht's dir?", "Also, weißt du was passiert ist…", "Und du? Was gibt's Neues bei dir?"],
         opening: "Na endlich! Wie lange haben wir uns nicht gesehen! Du siehst super aus. Wie geht's?",
         sysPrompt: "You are a close friend who hasn't seen the other person in six months. Speak in warm, natural German. Share some news (new job, a trip you took, a relationship update — you can invent details) and ask about their life. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by expressing excitement at seeing them." },
 
-      { id: "deutsche_bahn", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="8" rx="2"/><path d="M1 9h14"/><circle cx="4.5" cy="14" r="1"/><circle cx="11.5" cy="14" r="1"/><path d="M4 6.5h3"/></svg>', label: "Deutsche Bahn — buying a ticket", level: "B1",
+      { id: "deutsche_bahn", cat: "Intermediate", icon: "🚄", label: "Deutsche Bahn — buying a ticket", level: "B1",
         setup: "You are at a train station trying to buy a ticket to Hamburg. The next ICE is nearly full. Navigate the ticket counter — and the famous Verspätung.",
         vocab: ["der Bahnsteig", "die Hin- und Rückfahrkarte", "der Fahrplan", "einen Sitzplatz reservieren", "erste / zweite Klasse", "Ankunft / Abfahrt", "die Verspätung", "gültig"],
         keyPhrases: ["Ich hätte gerne eine Fahrkarte nach Hamburg.", "Wann fährt der nächste Zug?", "Gibt es noch freie Plätze?"],
@@ -25310,49 +24006,49 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         sysPrompt: "You are a ticket agent at a German train station. Speak in natural German. The next ICE to Hamburg departs at 14:32 and has only 2 seats left in second class. There is also a regional train (slower, no reservation needed) at 15:05. Help the customer buy a ticket. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by greeting the customer." },
 
       // ── Advanced ──────────────────────────────────────────────
-      { id: "goethe_schiller", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1.5h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H3"/><path d="M3 1.5v13"/><path d="M6 5h4M6 8h3"/></svg>', label: "Literary debate: Goethe vs. Schiller", level: "C1",
+      { id: "goethe_schiller", cat: "Advanced", icon: "📚", label: "Literary debate: Goethe vs. Schiller", level: "C1",
         setup: "Debate the literary merits of Goethe versus Schiller with a fellow reader. Defend a position on whose work is more significant for German culture.",
         vocab: ["die Klassik", "das Erhabene", "die Tragödie", "die Weltliteratur", "das Menschenbild", "die Prosa", "das literarische Erbe", "beeinflussen"],
         keyPhrases: ["Meiner Meinung nach überragt Goethe Schiller, was … betrifft.", "Dennoch muss man zugeben, dass…", "Was sie voneinander unterscheidet, ist…"],
         opening: "Ich habe gerade 'Die Leiden des jungen Werthers' nochmal gelesen und frage mich, ob Goethe wirklich bedeutender ist als Schiller. Was meinst du?",
         sysPrompt: "You are a well-read literary critic who passionately prefers Schiller over Goethe. Speak in educated, natural German. Defend Schiller's dramatic power, moral idealism, and political courage; acknowledge Goethe's breadth but argue Schiller resonates more deeply with the human condition. Engage seriously with counterarguments. Keep responses 2–4 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by framing the debate." },
 
-      { id: "energiewende", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M2 6h12M2 10h12"/><ellipse cx="8" cy="8" rx="3" ry="6.5"/></svg>', label: "Energiewende & climate responsibility", level: "B2",
+      { id: "energiewende", cat: "Advanced", icon: "🌍", label: "Energiewende & climate responsibility", level: "B2",
         setup: "Debate who bears more responsibility for the climate crisis — individuals, corporations, or governments — and discuss Germany's Energiewende as a case study.",
         vocab: ["die Mitverantwortung", "der CO2-Ausstoß", "die Energiewende", "der Konsum", "nachhaltig", "die Klimapolitik", "das Greenwashing", "auf globaler Ebene"],
         keyPhrases: ["Es ist ein strukturelles Problem, das über den Einzelnen hinausgeht.", "Dennoch spielt das kollektive Verhalten eine Rolle.", "Die Politik muss den Wandel fördern."],
         opening: "Glaubst du, dass individuelle Verhaltensänderungen beim Klimaschutz wirklich etwas bringen, oder liegt alles an der Politik?",
         sysPrompt: "You are an engaged German citizen debating climate responsibility and the Energiewende. Speak in natural German. Argue that systemic change matters more than individual action, but acknowledge nuance. Reference German energy policy concretely. Challenge the other person's points and ask follow-up questions. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by posing the debate question." },
 
-      { id: "freier_wille", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l3 2"/></svg>', label: "Free will & determinism", level: "C1",
+      { id: "freier_wille", cat: "Advanced", icon: "🧠", label: "Free will & determinism", level: "C1",
         setup: "Discuss whether humans truly have free will, or whether our choices are determined by biology, upbringing, and circumstance — in the German philosophical tradition.",
         vocab: ["der freie Wille", "der Determinismus", "der Kompatibilismus", "das Bewusstsein", "bedingt durch", "die moralische Verantwortung", "der Zufall", "die Illusion der Kontrolle"],
         keyPhrases: ["Wenn alles determiniert ist, hat Verantwortung dann noch einen Sinn?", "Der Kompatibilismus behauptet, dass…", "Ich glaube, Freiheit ist eine Frage des Grades."],
         opening: "Ich grübele seit Wochen über eine Frage nach: Treffen wir wirklich freie Entscheidungen, oder sind wir das unvermeidliche Ergebnis unserer Geschichte?",
         sysPrompt: "You are a philosophy enthusiast in the German tradition who leans toward compatibilism. Speak in educated, natural German. Explore the question seriously, draw on ideas from Kant, Schopenhauer, and Nietzsche (without naming them explicitly), and push back thoughtfully. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by posing the question." },
 
-      { id: "kulturelle_identitaet", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="6" r="3"/><circle cx="10.5" cy="6" r="3"/><path d="M3 13a4 4 0 0 1 5-3.8A4 4 0 0 1 13 13"/></svg>', label: "Cultural identity & migration", level: "C1",
+      { id: "kulturelle_identitaet", cat: "Advanced", icon: "🌐", label: "Cultural identity & migration", level: "C1",
         setup: "Discuss how living abroad, the Gastarbeiter history, or globalization affects cultural identity — does it dilute it, enrich it, or create something new?",
         vocab: ["die kulturelle Identität", "die Verwurzelung", "die Diaspora", "das Zusammenleben", "die Akkulturation", "dazugehören", "die Wurzeln", "der Kulturschock", "hybrid"],
         keyPhrases: ["Im Ausland zu leben lässt dich deine eigene Kultur mit anderen Augen sehen.", "Manche sagen, die Globalisierung macht alles gleich.", "Für mich ist Identität nichts Festes, sondern etwas Fließendes."],
         opening: "Glaubst du, dass jemand, der auswandert und sich anpasst, etwas Wesentliches von sich selbst verliert — oder eher gewinnt?",
         sysPrompt: "You are someone who has lived in Germany and one other country and thinks deeply about identity, referencing the Gastarbeiter history and contemporary migration. Speak in natural, thoughtful German. Share personal anecdotes (you can invent them), explore the tension between Verwurzelung and Anpassung, and ask probing questions. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by framing the question." },
 
-      { id: "beuys_kunst", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5a6.5 6.5 0 0 0-1 12.9v-2.4a2 2 0 1 1 2 0v2.4a6.5 6.5 0 0 0-1-12.9z"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="5" r="1" fill="currentColor"/><circle cx="11" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="9" r="1" fill="currentColor"/></svg>', label: "Art criticism: Beuys & German art", level: "C1",
+      { id: "beuys_kunst", cat: "Advanced", icon: "🎨", label: "Art criticism: Beuys & German art", level: "C1",
         setup: "Debate the purpose of art with a critic — Does art need to be beautiful? Political? Accessible? Discuss German artists like Joseph Beuys or the Neue Sachlichkeit.",
         vocab: ["die Ästhetik", "das Kunstwerk", "der engagierte Künstler", "das Erhabene", "die Provokation", "die Konzeptkunst", "vermitteln / hervorrufen", "die Interpretation"],
         keyPhrases: ["Kunst muss nicht schön sein, um wertvoll zu sein.", "Dieses Werk erzeugt bei mir eine Unbehaglichkeit, die ich für beabsichtigt halte.", "Kann Kunst wirklich unpolitisch sein?"],
         opening: "Ich war gestern auf einer Ausstellung mit Konzeptkunst und bin ehrlich gesagt ziemlich verwirrt rausgegangen. Wozu ist Kunst gut, wenn sie niemand versteht?",
         sysPrompt: "You are a passionate German art critic who believes art must provoke and challenge, not merely please. Reference Joseph Beuys, Neue Sachlichkeit, or Caspar David Friedrich as examples. Speak in articulate, natural German. Defend conceptual and political art, engage with the other person's aesthetics, ask what they want art to do. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by responding to their confusion." },
 
-      { id: "ki_gesellschaft", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11v3"/></svg>', label: "AI & society", level: "B2",
+      { id: "ki_gesellschaft", cat: "Advanced", icon: "💻", label: "AI & society", level: "B2",
         setup: "Debate the social effects of AI and automation — on work, creativity, human connection, and what it means to be human.",
         vocab: ["die künstliche Intelligenz", "die Automatisierung", "der Arbeitsplatzverlust", "die Kreativität", "der algorithmische Bias", "die Überwachung", "die Technikethik", "auf lange Sicht"],
         keyPhrases: ["KI kann menschliche Kreativität ergänzen, nicht nur ersetzen.", "Das Problem ist nicht die Technologie selbst, sondern wer sie kontrolliert.", "Was bleibt von uns Menschen, wenn Maschinen alles erledigen?"],
         opening: "Mit all dem KI-Hype frage ich mich, ob in zehn Jahren überhaupt noch jemand Arbeit haben wird. Was glaubst du?",
         sysPrompt: "You are a thoughtful German tech professional with mixed feelings about AI. Speak in natural German. Argue that the key issue is governance and equity, not technology itself; but genuinely engage with fears about work and meaning. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by acknowledging the concern and complicating it." },
 
-      { id: "oktoberfest", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h10"/><path d="M4 14V8M12 14V8"/><path d="M2 8h12l-1-6H3z"/><path d="M8 2v6"/></svg>', label: "Oktoberfest small talk", level: "A2",
+      { id: "oktoberfest", cat: "Beginner", icon: "🎪", label: "Oktoberfest small talk", level: "A2",
         setup: "You are at the Oktoberfest in Munich. Chat with someone at your table in a tent — introduce yourself, talk about where you're from, and discuss the festival.",
         vocab: ["Prost!", "das Zelt", "die Tracht", "woher kommen Sie?", "zum ersten Mal", "die Stimmung", "laut / fröhlich"],
         keyPhrases: ["Prost! Auf das Oktoberfest!", "Sind Sie zum ersten Mal hier?", "Die Stimmung hier ist fantastisch!"],
@@ -25762,60 +24458,10 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
   openStats() {
     this._renderStatsContent();
     document.getElementById("stats-modal").classList.add("visible");
-    this._trapFocus("stats-modal");
   }
 
   closeStats() {
     document.getElementById("stats-modal").classList.remove("visible");
-    this._releaseFocusTrap("stats-modal");
-  }
-
-  // Feature 12: Modal focus trapping
-  _activeFocusTraps = {};
-
-  _trapFocus(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    // Store previously focused element to restore on close
-    this._activeFocusTraps[modalId] = { previousFocus: document.activeElement };
-    const focusable = modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
-    if (focusable.length === 0) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    first.focus();
-    const handler = (e) => {
-      if (e.key !== "Tab") return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-    };
-    modal.addEventListener("keydown", handler);
-    this._activeFocusTraps[modalId].handler = handler;
-    // Also close on Escape
-    const escHandler = (e) => {
-      if (e.key === "Escape") {
-        if (modalId === "settings-modal") this.closeSettings();
-        else if (modalId === "sync-modal") this.closeSync();
-        else if (modalId === "import-modal") this.closeImport();
-        else if (modalId === "stats-modal") this.closeStats();
-      }
-    };
-    modal.addEventListener("keydown", escHandler);
-    this._activeFocusTraps[modalId].escHandler = escHandler;
-  }
-
-  _releaseFocusTrap(modalId) {
-    const modal = document.getElementById(modalId);
-    const trap = this._activeFocusTraps[modalId];
-    if (!modal || !trap) return;
-    if (trap.handler) modal.removeEventListener("keydown", trap.handler);
-    if (trap.escHandler) modal.removeEventListener("keydown", trap.escHandler);
-    if (trap.previousFocus && typeof trap.previousFocus.focus === "function") {
-      trap.previousFocus.focus();
-    }
-    delete this._activeFocusTraps[modalId];
   }
 
   _renderStatsContent() {
@@ -26050,71 +24696,6 @@ Assess this learner's current CEFR level for reading/translating academic German
 
 // Initialize
 window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
-
-// ============================================================
-// SERVICE WORKER REGISTRATION + UPDATE BANNER
-// ============================================================
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
-      // Force update check on load
-      reg.update();
-
-      const showUpdateBanner = () => {
-        // Don't show if already showing
-        if (document.getElementById('sw-update-banner')) return;
-        const banner = document.createElement('div');
-        banner.id = 'sw-update-banner';
-        banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#8b4513;color:#fff;padding:12px 16px;font-size:13px;font-family:"Helvetica Neue",Arial,sans-serif;display:flex;align-items:center;justify-content:space-between;z-index:10000;box-shadow:0 -2px 8px rgba(0,0,0,0.15);';
-        banner.innerHTML = `
-          <span>A new version is available</span>
-          <span style="display:flex;gap:8px;align-items:center;">
-            <button id="sw-reload-btn" style="background:#fff;color:#8b4513;border:none;padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">Reload now</button>
-            <button id="sw-dismiss-btn" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:2px 6px;opacity:0.8;">&times;</button>
-          </span>`;
-        document.body.appendChild(banner);
-        document.getElementById('sw-reload-btn').addEventListener('click', () => {
-          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        });
-        document.getElementById('sw-dismiss-btn').addEventListener('click', () => banner.remove());
-      };
-
-      // Use !!reg.active guard for iOS compatibility
-      if (!!reg.active && reg.waiting) {
-        showUpdateBanner();
-      }
-
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener('statechange', () => {
-          // Only show banner if there was a previous active SW (not first install)
-          if (newWorker.state === 'installed' && !!reg.active) {
-            showUpdateBanner();
-          }
-        });
-      });
-
-      // Reload page when new SW takes over
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
-    }).catch(err => console.warn('SW registration failed:', err));
-  });
-}
-
-// Prevent pinch-zoom on iOS (Safari ignores user-scalable=no since iOS 10)
-document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
-document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
-document.addEventListener('gestureend', function(e) { e.preventDefault(); }, { passive: false });
-// Block multi-touch zoom
-document.addEventListener('touchmove', function(e) {
-  if (e.touches.length > 1) { e.preventDefault(); }
-}, { passive: false });
 </script>
 </body>
 </html>
