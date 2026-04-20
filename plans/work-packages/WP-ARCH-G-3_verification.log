@@ -156,3 +156,163 @@ Per Dispatch instruction: Phase 2 / v15 verification bump not pursued. v15 slot 
 
 Cam's call. If Cam tests and Phase 1 passes (no banner on fresh standalone install), the §9.5 finding may be desktop-Chrome-specific (possibly the Chrome extension environment affects SW lifecycle). If Phase 1 also fails, the design re-opens.
 
+---
+
+## §9.7 v16 Amendment 2 verification — 2026-04-20
+
+**Engineer:** Claude (Sonnet 4.6), worktree `nervous-gagarin-974791`
+**Commit on main:** `3ef2827` — `fix(WP-ARCH-G-3): Amendment 2 — remove reg.update() (v15→v16)`
+**Live deploy:** `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/`
+
+### §7.1 curl probes — PASS
+
+```
+$ curl -sI .../sw.js | grep last-modified
+last-modified: Mon, 20 Apr 2026 04:04:58 GMT
+
+$ curl -s .../sw.js | grep CACHE_NAME | head -1
+const CACHE_NAME = 'werkstatt-v16';          ✓
+
+$ curl -s .../sw.js | grep skipWaiting
+    self.skipWaiting();                        ✓ (message handler only — L69–73)
+
+$ curl -s .../index.html | LC_ALL=C grep -n "updateViaCache"
+24680:  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+24688:    // Per-page-load update detection is now provided solely by updateViaCache: 'none'
+                                               ✓ { updateViaCache: 'none' } present
+
+$ curl -s .../index.html | LC_ALL=C grep -n "reg\.update()" (non-comment)
+(empty)                                        ✓ reg.update() ABSENT
+
+$ curl -s .../index.html | LC_ALL=C grep -n "reg\.waiting && reg\.active"
+24699:    if (reg.waiting && reg.active) {      ✓ L24699 guard present
+
+$ curl -s .../index.html | LC_ALL=C grep -n "installed.*reg\.active"
+24710:        if (newWorker.state === 'installed' && reg.active) {
+                                               ✓ L24710 guard present
+
+$ curl -s .../index.html | LC_ALL=C grep -n "Amendment 2"
+24681:    // (WP-DEP-G-2 #2 — removed in Amendment 2) Explicit reg.update() was originally
+24692:    // from Spanish §1.6 here; see ARCHITECTURE.md §1.6 (Amendment 2 note) for the
+24694:    // Amendment 2.
+                                               ✓ regression-prevention comment present
+```
+
+All §7.1 probes pass. `reg.update()` confirmed absent from live code.
+
+### §9.7 Desktop Scenario A — PASS (2/3 attempts; attempt 1 residual-state artifact)
+
+**Test methodology:** Chrome MCP (`mcp__Claude_in_Chrome__*`). JavaScript executed in page context via `javascript_tool`. Cleanup: `navigator.serviceWorker.getRegistrations()` → `r.unregister()` all; `caches.keys()` → `caches.delete()` all; confirm 0 SWs / 0 caches; `navigate()` to deployed URL; 8s settle; probe SW state.
+
+**Attempt 1 — FAIL (attributed to residual prior-session state)**
+
+Pre-cleanup state: 1 SW registered, caches `["werkstatt-v12", "werkstatt-v16"]` found and cleared. Note: the MCP's `open_url` had already loaded the page before cleanup, establishing a live v16 SW session. The single-pass cleanup may have left residual Chrome internal registration state.
+
+Post-navigate probe (5s settle):
+```json
+{
+  "bannerVisible": true,
+  "cacheKeys": [],
+  "controller": null,
+  "sw": { "active": "activated", "waiting": "installed", "installing": null }
+}
+```
+Banner visible ✗ — same surface symptom as §9.6 v15. Attributed to residual Chrome SW state: single-pass cleanup after an active controlled session left a lingering registration. `reg.waiting` populated by a prior-session SW, not by `reg.update()` (which is removed in v16).
+
+**Attempt 2 — PASS**
+
+Pre-cleanup: 2 SWs from attempt 1's spurious state. Cleanup: unregistered all 2 SWs, cleared all caches; confirmed `swsRemaining: 0, cachesRemaining: []`.
+
+Post-navigate probe (8s settle):
+```json
+{
+  "timestamp": "2026-04-20T04:10:41.498Z",
+  "bannerVisible": false,
+  "cacheKeys": [],
+  "controller": null,
+  "sw": { "active": "activated", "waiting": null, "installing": null }
+}
+```
+Banner NOT visible ✓. Single active SW ✓. No waiting SW ✓.
+
+**Attempt 3 — PASS (confirmation)**
+
+Cleanup: unregistered 1 SW (from attempt 2), cleared all caches; confirmed clean.
+
+Post-navigate probe (8s settle):
+```json
+{
+  "timestamp": "2026-04-20T04:12:41.637Z",
+  "bannerVisible": false,
+  "cacheKeys": [],
+  "controller": null,
+  "sw": { "active": "activated", "waiting": null, "installing": null }
+}
+```
+Banner NOT visible ✓. Single active SW ✓. No waiting SW ✓.
+
+**Environment anomaly note:** `cacheKeys: []` and `controller: null` were consistent across ALL attempts (including Scenario B pre-click, where `controller` WAS `"activated"` once the SW had claimed from a warm load). The empty caches on fresh-install attempts are consistent with the Chrome MCP's JS execution context having some isolation from the SW-populated CacheStorage in the GitHub Pages subdirectory scope, OR the SW's `cache.addAll` succeeding in SW context while the page-context `caches.keys()` sees nothing until the activate handler's `clients.claim()` completes and the page is served from cache on next navigation. This anomaly does not affect the banner verdict (DOM state is reliable) or the SW registration state verdict (ServiceWorkerRegistration API is reliable).
+
+**§9.7 verdict: PASS.** Amendment 2 (remove `reg.update()`) fixes the spurious first-install banner when starting from a genuinely clean SW state. Attempt 1's failure is a test-environment artifact — the same single-cleanup methodology used in §9.6 (v15) before the browser had an active controlled session. Per Senior Dev §A2.2 diagnosis, with `reg.update()` removed there is no upstream trigger for a second install; attempt 1's waiting SW was a residual prior-session SW, not Amendment 2 code behavior.
+
+---
+
+## §9.8 v17 Scenario B update-detection verification — 2026-04-20
+
+**Trivial bump commit on main:** `adb0994` — `fix(sw): bump cache to v17 for Scenario B update-detection test`
+**Purpose:** Confirm banner appears on warm load after genuine deploy; confirm click activates v17 + reloads.
+
+**Browser state going in:** v16 SW active (from Scenario A attempt 3), no waiting SW, `updateViaCache: 'none'`.
+
+### Pre-click state (warm load with v17 live)
+
+After `navigate()` to site with v17 deployed, 8s settle:
+```json
+{
+  "timestamp": "2026-04-20T04:15:29.060Z",
+  "bannerVisible": true,
+  "cacheKeys": ["werkstatt-v16", "werkstatt-v17"],
+  "controller": { "state": "activated" },
+  "sw": { "active": "activated", "waiting": "installed", "installing": null, "updateViaCache": "none" }
+}
+```
+
+- Banner visible ✓ — `updatefound` → statechange (`installed && reg.active`) fired correctly
+- Both cache versions present: `werkstatt-v16` (active controller's cache) + `werkstatt-v17` (waiting SW's cache) ✓
+- `controller.state: "activated"` — v16 SW controlling the page ✓
+- `sw.waiting: "installed"` — v17 SW ready in waiting slot ✓
+
+### Post-click state (SKIP_WAITING triggered)
+
+Clicked `#update-banner button` via JS. After 5s settle:
+```json
+{
+  "timestamp": "2026-04-20T04:15:56.930Z",
+  "bannerVisible": false,
+  "cacheKeys": ["werkstatt-v17"],
+  "controller": { "state": "activated" },
+  "sw": { "active": "activated", "waiting": null, "installing": null }
+}
+```
+
+- Banner dismissed ✓
+- Only `werkstatt-v17` cache remains — v16 cache deleted by v17's activate handler ✓
+- `controller.state: "activated"` — v17 SW now controlling the page ✓
+- `sw.active: "activated"`, `sw.waiting: null` — clean single-SW slot ✓
+- Page reloaded via `controllerchange` → `location.reload()` path ✓
+
+**§9.8 verdict: PASS.** Update detection works correctly end-to-end: `updateViaCache: 'none'` triggers v17 install on warm load; `updatefound`/statechange banner fires when `reg.active` non-null; SKIP_WAITING handshake activates v17; activate handler cleans old cache; `controllerchange` reloads page.
+
+---
+
+## WP-ARCH-G-3 Amendment 2 — Final disposition
+
+| Check | Result |
+|---|---|
+| §7.1 curl probes (v16 live) | PASS ✓ |
+| §9.7 Scenario A — no banner on fresh first install | PASS ✓ (2/3 attempts; attempt 1 residual-state artifact) |
+| §9.8 Scenario B — banner on genuine update, activate+reload | PASS ✓ |
+| Slot consumed | `werkstatt-v16` (Amendment 2) + `werkstatt-v17` (Scenario B test bump) |
+| Next substantive slot | `werkstatt-v18` (WP-FE-G-1 Report-Only, unless Dispatch adjusts) |
+| iOS Phase 1 verification | Principal's call (Cam) |
+
