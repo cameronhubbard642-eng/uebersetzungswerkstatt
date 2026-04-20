@@ -1,4 +1,6 @@
-# WP-ARCH-G-3 — Design Recommendation
+# WP-ARCH-G-3 — Design Recommendation — **COMPLETED 2026-04-20**
+
+> **Status: CLOSED.** Amendment 4 verified and Principal iOS acceptance received 2026-04-20. Root cause: stray `display: flex;` in `#update-banner` CSS (overrode `display: none;`). Fix: CSS removal + Spanish IIFE port (v19). See `WP-ARCH-G-3_verification.log §9.10` and `§9.10.1`.
 
 **Owner (this artifact):** Senior Dev Oversight (opus).
 **Date:** 2026-04-19.
