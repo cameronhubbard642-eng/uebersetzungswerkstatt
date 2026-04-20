@@ -1,0 +1,158 @@
+# WP-ARCH-G-3 Verification Log
+**Date:** 2026-04-19
+**Engineer:** Claude (Sonnet 4.6), task-isolated worktree `hungry-keller-5a5552`
+**Commit:** `b1b1ebf` — `fix(sw): remove install-time skipWaiting; fold in iOS hardening; bump v14`
+**Branch pushed:** `feat/wp-arch-g-3-skipwaiting-fix` → FF-merged to `main`
+
+---
+
+## §7.1 curl probes — PASS
+
+### sw.js probe
+```
+$ curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js" | sed -n '4p;16,22p'
+
+const CACHE_NAME = 'werkstatt-v14';
+// Install: precache core assets and immediately take control
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS))
+  );
+});
+```
+
+**Result:** `werkstatt-v14` present ✓; `self.skipWaiting()` absent from install handler ✓.
+
+### index.html hardening probe
+```
+$ curl -s ".../index.html" | grep -n "updateViaCache\|reg\.update()\|reg\.waiting && reg\.active\|&& reg\.active"
+
+24680:  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+24683:    reg.update();
+24688:    if (reg.waiting && reg.active) {
+24699:        if (newWorker.state === 'installed' && reg.active) {
+```
+
+**Result:** All four hardening patterns present at expected lines ✓.
+
+---
+
+## §7.2 Desktop Scenario A — FAIL (§9.5 triggered)
+
+**Test methodology:** Chrome MCP tab; JavaScript-in-page `navigator.serviceWorker.getRegistrations()` → `r.unregister()` all; `caches.keys()` → `caches.delete()` all; `navigate` to deployed URL; 5-second settle; check state.
+
+**Run 1 result:**
+```json
+{
+  "sw": { "active": "activated", "waiting": "installed", "installing": null },
+  "controller": null,
+  "cacheKeys": [],
+  "bannerHasVisible": true
+}
+```
+
+**Run 2 (cleared origin again, fresh navigate):**
+```json
+{
+  "sw": { "active": "activated", "waiting": "installed", "installing": null },
+  "controller": null,
+  "cacheKeys": [],
+  "bannerHasVisible": true
+}
+```
+
+**All 7 precache URLs:** 200 OK (network is not the cause).
+
+**Expected (design §3 matrix row 1):** no banner, one active SW, no waiting SW, `werkstatt-v14` cache populated with 7 entries.
+
+**FAIL — §9.5: matrix row 1 violated.**
+
+---
+
+## §9.5 Root-cause analysis
+
+### Observed symptoms
+- Banner shown on fresh install
+- Two concurrent SW instances after first load: one `active`, one `waiting`
+- `controller: null` after 5s settle (page not claimed by active SW)
+- `cacheKeys: []` (no precache populated despite all URLs returning 200)
+
+### Hypothesised mechanism — `reg.update()` double-install race
+
+The registration block calls `reg.update()` immediately in the `.then(reg => {...})` callback. The `.then()` fires when the `ServiceWorkerRegistration` object is created, which may precede the browser setting `reg.installing` on the first SW. At that instant:
+
+```
+reg.active    = null
+reg.installing = null   ← may not be set yet
+reg.waiting   = null
+```
+
+Per the SW spec's `update` algorithm, "newest worker" selection is: active > installing > waiting. If all are null, the update algorithm treats the registration as having no established worker and initiates a fresh install — concurrent with the install already triggered by `register()`.
+
+**SW-1** (from `register()`): installs → activates (no competing controller) → `reg.active = SW-1`.
+
+**SW-2** (from `reg.update()`): installs → `statechange === 'installed'` fires. At this moment `reg.active = SW-1` (non-null) → the `&& reg.active` guard is true → **banner shown**.
+
+**Instrumented registration timeline** (JS test calling `register()` after page IIFE had already run): at the moment the instrumented `.then()` fired, `active: "activated"` and `waiting: "installed"` were already present — confirming the double-install had already completed before any callback ran.
+
+### Design tension acknowledged in design §3
+
+The design §3 matrix note reads: *"the strictest cross-browser idiom for 'is this an update or a first install?' is `&& navigator.serviceWorker.controller` at the `updatefound` callsite."* The design chose `reg.active` over `navigator.serviceWorker.controller` specifically to fix the iOS standalone first-launch null-`controller` race. However, in the double-install scenario `reg.active` is the first SW (genuinely activated from first install, non-null), so the guard does not suppress the banner.
+
+`navigator.serviceWorker.controller` would correctly return `null` here because `clients.claim()` has not completed (or the race prevented it), making `&& navigator.serviceWorker.controller` false → no banner.
+
+### Candidate fixes (for design authority, not implemented)
+
+1. **Guard `reg.update()` on existing active SW:** `if (reg.active) reg.update()` — prevents double-install on first load; however, `reg.update()` was added specifically to force detection on iOS standalone first launch (where `reg.active` would also be null on truly first install).
+
+2. **Defer `reg.update()` until SW has activated:** call `reg.update()` only after `navigator.serviceWorker.ready` resolves (which waits for an active SW). This avoids the race window while preserving the intent.
+
+3. **Use `navigator.serviceWorker.controller` in the `statechange` guard, not `reg.active`:** accepts the iOS null-`controller` race as a known limitation on first standalone launch, or combines both guards. This was the design's own "strictest idiom".
+
+---
+
+## §7.2 Desktop Scenario B — NOT TESTED
+
+Deferred: Scenario A did not pass; proceeding to Scenario B without a clean first-install baseline would produce inconclusive results.
+
+---
+
+## §7.3 iOS Safari in-browser — NOT TESTED
+
+Deferred: no iOS device available to task session.
+
+---
+
+## §7.4 iOS Standalone Phase 1 — NOT TESTED
+
+Deferred: no iOS device available to task session. Per brief §9.8, Phase 1 is Cam's acceptance call.
+
+---
+
+## §7.4 iOS Standalone Phase 2 — NOT PURSUED
+
+Per Dispatch instruction: Phase 2 / v15 verification bump not pursued. v15 slot reserved for WP-FE-G-1 Report-Only.
+
+---
+
+## §9 flags raised
+
+| § | Flag | Status |
+|---|---|---|
+| §9.10 | `plans/PARITY_GAP 2.md` (macOS duplicate artifact) — committed as `plans/PARITY_GAP.md` | Non-blocking; resolved by interpretation |
+| §9.10 | `plans/IMPLEMENTATION_PLAN.md` untracked — committed as new tracked file | Non-blocking |
+| §9.10 | Brief says `plans/SPEC.md` but file is at root `SPEC.md` — edited root file | Non-blocking |
+| **§9.5** | **Desktop Scenario A shows banner at first install — matrix row 1 violated** | **STOP — surfaces to Senior Dev** |
+
+---
+
+## Slot map note
+
+`werkstatt-v14` consumed by this WP. Per Dispatch instruction: next substantive slot is `werkstatt-v15` for WP-FE-G-1 Report-Only.
+
+---
+
+## Open: Phase 1 iOS Standalone
+
+Cam's call. If Cam tests and Phase 1 passes (no banner on fresh standalone install), the §9.5 finding may be desktop-Chrome-specific (possibly the Chrome extension environment affects SW lifecycle). If Phase 1 also fails, the design re-opens.
+
