@@ -24677,11 +24677,13 @@ window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    reg.update();
+    if (reg.waiting) document.getElementById('update-banner').classList.add('visible');
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+        if (newWorker.state === 'installed' && reg.active) {
           document.getElementById('update-banner').classList.add('visible');
         }
       });
