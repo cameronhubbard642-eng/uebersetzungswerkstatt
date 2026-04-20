@@ -773,15 +773,17 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 #### 8.3.1 Client-side update UX
 
-Service worker registration (L24678–24703, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded and calls `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })`, followed by explicit `reg.update()` and an immediate `reg.waiting`-at-registration banner-surface check (WP-DEP-G-2, commit `0b813ee`). The `statechange` handler uses `reg.active` in place of `navigator.serviceWorker.controller`, matching the Spanish `42e18fa` fix. Registration shape now matches the Spanish hardened baseline.
+Service worker registration (L24678–24701, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded and calls `navigator.serviceWorker.register('sw.js')` with **no options object**. Materially different from Spanish, which passes `{ updateViaCache: 'none' }`.
 
-**Update detection.** Two code paths:
+**Update detection.** One code path:
 
-1. `reg.addEventListener('updatefound', …)` fires when a new SW is detected mid-session. The installing worker's `statechange` is tracked; when it reaches `'installed' && reg.active` (L24686), the `#update-banner` is shown.
-2. At registration time, `if (reg.waiting)` (L24682) surfaces the banner immediately if a SW from a prior visit is already waiting on cold load.
+1. `reg.addEventListener('updatefound', …)` fires when a new SW is detected mid-session. The installing worker's `statechange` is tracked; when it reaches `'installed' && navigator.serviceWorker.controller` (i.e., an update, not a first install), the `#update-banner` is shown (L24681–24688).
 
-Still absent pending WP-ARCH-G-3 / Appendix B #B-4:
+Absent from the German registration path, relative to Spanish's hardened path:
 
+- **No `reg.waiting` check at registration time.** If a previous visit installed a new SW that has not yet activated, the German page will not show the banner against that worker until a fresh `updatefound` fires — which it will not, because the install has already completed. Result: the banner may fail to appear on a cold load that carries a waiting SW.
+- **No `reg.active` in place of `navigator.serviceWorker.controller`.** Spanish uses `reg.active` because `navigator.serviceWorker.controller` can be momentarily null during first launch of an iOS standalone PWA session (Spanish commit `42e18fa`). German uses `controller` directly (L24684), inheriting the race condition Spanish explicitly moved off of.
+- **No explicit `reg.update()` call after registration.** iOS standalone PWAs do not automatically poll for SW updates; without the explicit `reg.update()`, the only path to update-detection is an `updatefound` that the browser happens to fire on its own schedule — which is not reliable in PWA standalone mode.
 - **`self.skipWaiting()` is called unconditionally on install** (`sw.js` L21). Combined with the `skipWaiting` path behind the user-accepted `{ type: 'SKIP_WAITING' }` message (`sw.js` L69–73), this is effectively two activation paths. The install-time path bypasses the user's explicit accept; the message-triggered path honors it. Spanish deliberately removed the install-time path so that `skipWaiting` only fires on user consent. The commit message at `f79e45c` describes this as intentional ("with skipWaiting on install to force update") but Senior Dev flags it for confirmation in Appendix B #B-4.
 
 **User-facing update UX.**
