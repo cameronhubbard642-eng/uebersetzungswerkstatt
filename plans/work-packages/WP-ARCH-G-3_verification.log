@@ -409,3 +409,44 @@ False-positive suppression confirmed: even with a v18 waiting SW present and `la
 
 **WP-ARCH-G-3 Amendment 3 Chrome regression: PASS. WP closed.**
 
+
+---
+
+## §9.10 — Amendment 4 verification (v18→v19, Spanish IIFE port)
+
+**Deploy commit:** `ca58c69` on `main` (pushed 2026-04-19).
+**CACHE_NAME:** `werkstatt-v19`.
+**Status:** PENDING — Chrome Scenario A and B and iOS Principal acceptance required.
+
+### §7.1 curl probes
+_To run:_ `curl -sI https://<deploy-url>/sw.js | grep -i "cache\|etag\|last"`
+_Expected:_ sw.js served with `werkstatt-v19` (verify via source) and correct content-type.
+
+### Scenario A — no spurious banner on fresh install (v19 first visit)
+
+_Setup:_ Clear all site data, open app in Chrome. Expected: no update banner after first load.
+
+| Check | Result |
+|---|---|
+| Banner absent on first load | PENDING |
+| Banner absent after reload | PENDING |
+| Controller set to v19 | PENDING |
+
+### Scenario B — genuine-update detection (simulate v18→v19 upgrade)
+
+_Setup:_ From a session with v18 controller (prior to deploy), reload after v19 goes live. Expected: banner appears; click reloads to v19.
+
+| Check | Result |
+|---|---|
+| Banner visible after v19 install (reg.active guard) | PENDING |
+| Click `Aktualisieren` → SKIP_WAITING → reload | PENDING |
+| Dismiss `✕` → banner hides, no reload | PENDING |
+| v18 cache deleted after v19 activation | PENDING |
+| `uw_lastSeenCacheName` key absent (Amendment 3 machinery gone) | PENDING |
+
+### iOS Principal acceptance
+
+| Check | Result |
+|---|---|
+| No spurious banner on first load (iOS Safari standalone) | Principal's call (Cam) |
+| Banner on genuine update, tap reloads | Principal's call (Cam) |
