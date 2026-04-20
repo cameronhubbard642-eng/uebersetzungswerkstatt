@@ -778,7 +778,7 @@ Service worker registration (L24678–24712, IIFE at end of `<body>`). Registrat
 **Registration flow (current — WP-ARCH-G-3):**
 
 1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes.
-2. `reg.update()` is called explicitly after registration resolves — forces update detection without relying on the browser's polling schedule, which is unreliable in iOS standalone PWA mode.
+2. `if (reg.active) reg.update()` — calls `reg.update()` explicitly after registration resolves, but only when a prior SW is already active. This forces update detection without relying on the browser's polling schedule (unreliable in iOS standalone PWA mode), while avoiding a double-install race on first load where `reg.update()` with no established SW would trigger a second concurrent install (WP-ARCH-G-3 Amendment 1).
 3. Registration-time `if (reg.waiting && reg.active)` check — surfaces the `#update-banner` immediately if a SW is already in `waiting` from a prior session. The `&& reg.active` guard ensures a first-install (no prior controller) does not show the banner.
 4. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected. The installing worker's `statechange` is tracked; when it reaches `'installed' && reg.active` (Spanish commit `42e18fa` lesson: `reg.active` is stable on iOS PWA first-launch where `navigator.serviceWorker.controller` can be momentarily null), the `#update-banner` is shown.
 5. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js:69–73` handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → `location.reload()` → user sees the new version.

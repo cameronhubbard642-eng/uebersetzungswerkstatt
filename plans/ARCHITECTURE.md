@@ -351,6 +351,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 | 2026-04-19 | Initial issue, derived from `SPEC.md` and `plans/PARITY_GAP.md` as of 2026-04-19 integration. §1 includes 4 invariants in `enforced` status (1.1, 1.2, 1.4-pending-reconciliation, 1.5-current-only, 1.6-current-only, 2.1, 2.2, 2.3, 2.5, 2.6, 3.5), 4 invariants in `adopt-and-enforce` status (1.3 IDB mirror, 1.5 audio pipeline target, 1.6 update-detection hardening, 1.7 meta-CSP, 3.7 precache filename integrity), 1 invariant in `provisional (decline)` status (1.3a sessionStorage), and 1 standing decline (1.4 ReviewScheduler wrapper). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §3.7 promoted from `adopt-and-enforce` to `enforced` following WP-DEP-G-1 live verification (confirmed P0 G-15 hazard; hot-fix commit `b7e671c`). | DevOps |
 | 2026-04-19 | §1.6 promoted from provisional/adopt-and-enforce to enforced; install-time skipWaiting removed and four iOS-hardening changes folded in via WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope). | Senior Dev Oversight Engineer |
+| 2026-04-19 | §1.6 Amendment 1 (WP-ARCH-G-3): `reg.update()` guarded on `reg.active` to eliminate first-install double-install race surfaced in v14 verification (Scenario A banner regression). CACHE_NAME bumped to v15. B-4 disposition unchanged. PARITY_GAP §11.7 scores unchanged. | Senior Dev Oversight Engineer |
 
 ---
 

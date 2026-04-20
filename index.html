@@ -24679,8 +24679,9 @@ window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
     // (WP-DEP-G-2 #2) Trigger explicit update check; iOS standalone PWAs do not
-    // reliably auto-poll. Safe to call even on first install.
-    reg.update();
+    // reliably auto-poll. Guarded on reg.active so first-install (no prior SW)
+    // does not trigger a double-install race (WP-ARCH-G-3 Amendment 1).
+    if (reg.active) reg.update();
 
     // (WP-DEP-G-2 #3) Surface the update banner against a SW already in `waiting`
     // from a previous session — this can happen when the prior session ended
