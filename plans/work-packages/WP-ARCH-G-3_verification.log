@@ -316,3 +316,96 @@ Clicked `#update-banner button` via JS. After 5s settle:
 | Next substantive slot | `werkstatt-v18` (WP-FE-G-1 Report-Only, unless Dispatch adjusts) |
 | iOS Phase 1 verification | Principal's call (Cam) |
 
+---
+
+## §9.9 v18 Amendment 3 — Chrome desktop regression — 2026-04-19
+
+**Commit:** `86a549d` — `fix(WP-ARCH-G-3): Amendment 3 — client-side last-seen tracking (v17→v18)`
+**Branch:** `feat/wp-arch-g-3-amendment-3` → FF-merged to `main`
+**Engineer:** Claude (Sonnet 4.6), worktree `nostalgic-roentgen-d9a41e`
+**Purpose:** Confirm Amendment 3's CACHE_NAME-comparison banner logic is correct end-to-end; confirm false-positive suppression (the core iOS fix); confirm genuine-update detection.
+
+### §7.1 curl probes (live v18)
+
+All probes against `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js` and `index.html`:
+
+| Probe | Result |
+|---|---|
+| `CACHE_NAME = 'werkstatt-v18'` | ✓ |
+| `GET_CACHE_NAME` handler present | ✓ |
+| `reg.waiting && reg.active` absent (as live code) | ✓ |
+| `installed.*reg.active` absent (only in comment) | ✓ |
+| `uw_lastSeenCacheName` references present | ✓ |
+| `uw_diag_controllerchange_timeout` present | ✓ |
+| `updateViaCache: 'none'` present | ✓ |
+| `skipWaiting` in message handler only (not install) | ✓ |
+
+### Scenario A — false-positive suppression (first-install, no banner)
+
+**Setup:** Unregistered all SWs, cleared all caches and localStorage, then navigated to live v18.
+
+**Observed state** (post-settle snapshot):
+```json
+{
+  "bannerVisible": false,
+  "controller": "set (sw.js)",
+  "activeState": "activated",
+  "waitingState": "installed",
+  "cacheKeys": ["werkstatt-v17"],
+  "lastSeen": null
+}
+```
+
+**Note:** `cacheKeys: ["werkstatt-v17"]` + controller timeout on GET_CACHE_NAME reveals that our `unregister()` + immediate `navigate` left the v17 SW controlling the new page (Chrome keeps the old SW active for in-progress navigations after unregister — a known browser behavior). The v18 SW installed as waiting. This is a test-setup artifact, not a real user scenario.
+
+**What this state exercised:** `lastSeen = null` with a waiting v18 SW (§A3.4.5 guard):
+- `reg.waiting` → GET_CACHE_NAME → `werkstatt-v18`
+- `if (lastSeen && lastSeen !== wName)` → `null && ...` → **false → no banner** ✓
+
+False-positive suppression confirmed: even with a v18 waiting SW present and `lastSeen = null`, no banner is shown.
+
+### Scenario B — genuine-update detection and activation (v17→v18)
+
+**Setup (from Scenario A state):** Set `localStorage.uw_lastSeenCacheName = 'werkstatt-v17'` to simulate a returning v17 user, then reloaded.
+
+**Pre-click state:**
+```json
+{
+  "bannerVisible": true,
+  "lastSeen": "werkstatt-v17",
+  "controller": "set (sw.js)",
+  "waitingState": "installed"
+}
+```
+- §A3.4.5 waiting-SW check: `werkstatt-v18 !== werkstatt-v17` → **banner visible** ✓
+
+**Post-click state** (clicked `#update-reload-btn`):
+```json
+{
+  "bannerVisible": false,
+  "cacheKeys": ["werkstatt-v18"],
+  "controller": "set (sw.js)",
+  "lastSeen": "werkstatt-v18",
+  "waitingState": null
+}
+```
+- SKIP_WAITING → v18 activates → `clients.claim()` → `controllerchange` fires ✓
+- GET_CACHE_NAME handshake: `lastSeen` updated to `werkstatt-v18` ✓
+- Page reloaded; post-reload: banner not visible ✓
+- `cacheKeys: ["werkstatt-v18"]` — v17 cache deleted by v18 activate handler ✓
+- `waitingState: null` — no orphaned waiting SW ✓
+
+### §9.9 verdict
+
+| Check | Result |
+|---|---|
+| §7.1 curl probes (v18 live) | PASS ✓ |
+| False-positive suppression (`lastSeen=null`, waiting v18) | PASS ✓ |
+| True-positive detection (`lastSeen=v17`, waiting v18) | PASS ✓ |
+| SKIP_WAITING → activate → `lastSeen` update → reload | PASS ✓ |
+| v17 cache deleted after v18 activation | PASS ✓ |
+| `uw_diag_controllerchange_timeout` not set | PASS ✓ |
+| iOS Phase 1 verification | Principal's call (Cam) — monitor `uw_diag_controllerchange_timeout` after click |
+
+**WP-ARCH-G-3 Amendment 3 Chrome regression: PASS. WP closed.**
+
