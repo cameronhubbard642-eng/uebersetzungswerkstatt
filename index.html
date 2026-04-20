@@ -24678,10 +24678,20 @@ window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
-    // (WP-DEP-G-2 #2) Trigger explicit update check; iOS standalone PWAs do not
-    // reliably auto-poll. Guarded on reg.active so first-install (no prior SW)
-    // does not trigger a double-install race (WP-ARCH-G-3 Amendment 1).
-    if (reg.active) reg.update();
+    // (WP-DEP-G-2 #2 — removed in Amendment 2) Explicit reg.update() was originally
+    // intended to force update detection on iOS standalone PWA where the browser's
+    // auto-poll is unreliable. Verification (v14 §9.5, v15 §9.6) established that
+    // the call triggered a double-install race on Chrome: register() resolved with
+    // SW-1 already activated, the immediate reg.update() saw a registration with
+    // no installing worker and kicked off a second install, the second install
+    // entered waiting, and the L24688/L24699 banner-trigger paths fired spuriously.
+    // Per-page-load update detection is now provided solely by updateViaCache: 'none'
+    // (WP-DEP-G-2 #1, line above) — the browser fetches sw.js fresh on every
+    // navigation within scope and auto-installs on byte change. Mid-session update
+    // detection is acceptably lost for the principal-only audience. German diverges
+    // from Spanish §1.6 here; see ARCHITECTURE.md §1.6 (Amendment 2 note) for the
+    // recorded divergence rationale. See plans/work-packages/WP-ARCH-G-3_design.md
+    // Amendment 2.
 
     // (WP-DEP-G-2 #3) Surface the update banner against a SW already in `waiting`
     // from a previous session — this can happen when the prior session ended

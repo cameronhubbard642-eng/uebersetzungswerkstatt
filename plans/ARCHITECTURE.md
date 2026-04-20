@@ -112,14 +112,16 @@ Current state (`SPEC.md §8.3`, `§8.3.1`):
 
 - Cache-first for every precached asset (`PRECACHE_URLS` array in `sw.js` L6–14).
 - Network-first for `manifest.json` and any cross-origin or non-GET request (`sw.js` L38–51).
-- `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v14'`). Any change to a precached asset requires a `CACHE_NAME` bump.
+- `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v16'`). Any change to a precached asset requires a `CACHE_NAME` bump.
 - **Activation has a single path:** the user-accepted update banner posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`; the `sw.js:69–73` message handler calls `self.skipWaiting()`. This is the sole activation gate, aligned with Spanish §1.6. Install-time `self.skipWaiting()` was removed by WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope and closed SPEC Appendix B #B-4 by design).
 
-**Hardening — enforced.** The four Spanish §1.6 invariants the German app now honors (landed WP-ARCH-G-3):
+**Hardening — enforced.** The three Spanish §1.6 invariants the German app now honors (landed WP-ARCH-G-3; see German-specific divergence note below):
 
-- **`{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.** Registration at `index.html:24680` passes `{ updateViaCache: 'none' }`; `reg.update()` is called explicitly after registration resolves. iOS Safari standalone PWAs will no longer be served stale `sw.js` from the HTTP cache.
+- **`{ updateViaCache: 'none' }` at registration.** Registration at `index.html:24680` passes `{ updateViaCache: 'none' }`. iOS Safari standalone PWAs will no longer be served stale `sw.js` from the HTTP cache. Per-page-load update detection is provided by this option alone; the explicit `reg.update()` call was removed (see divergence note below).
 - **`reg.waiting && reg.active` checked at registration time.** Surfaces the update banner immediately on cold load if a SW is already in `waiting` from a prior session (the `&& reg.active` guard prevents a false positive on first install).
 - **`reg.active` in place of `navigator.serviceWorker.controller`** in the `updatefound` `statechange` handler (Spanish commit `42e18fa`). Avoids the iOS PWA race where `controller` is momentarily null on first standalone session launch.
+
+**German-specific divergence from Spanish §1.6 (recorded 2026-04-19, WP-ARCH-G-3 Amendment 2).** German omits the explicit `reg.update()` call from the registration block. Per-page-load update detection is provided solely by `updateViaCache: 'none'`. Mid-session update detection is intentionally not provided. Rationale: the explicit `reg.update()` triggered a double-install race on Chrome (verification §9.5 / §9.6); the principal-only audience's relaunch cadence makes per-page-load detection sufficient; preserving the call would re-introduce the regression. The divergence is recorded here as load-bearing — a future Spanish-parity-aligned change that adds `reg.update()` back must address the race first (e.g., via last-seen-cache-name tracking noted in WP-ARCH-G-3 design §A2.7).
 
 **Change conditions.** Switching any of the cache strategies (e.g., making `index.html` network-first) is a Senior Dev Oversight decision because it interacts with offline semantics and update detection. Adding a precache asset requires the `CACHE_NAME` bump.
 
@@ -250,7 +252,7 @@ Today the German app has no CSP, so this section has no force. Once §1.7 (`FE-G
 
 Once the §1.6 hardening lands:
 
-- SW registration is `{ updateViaCache: 'none' }` plus explicit `reg.update()`. Both are load-bearing for iOS Safari.
+- SW registration uses `{ updateViaCache: 'none' }` for per-page-load update detection. Explicit `reg.update()` was removed (WP-ARCH-G-3 Amendment 2 — it triggered a double-install race; see §1.6 divergence note).
 - The update banner is the sole user-facing surface that triggers reloads. Banner-click is the only activation gate (install-time `skipWaiting` removed by WP-ARCH-G-3; Appendix B #B-4 closed by design).
 - New deploy → existing user path goes through the `{ type: 'SKIP_WAITING' }` handshake (already in place at L24698 / `sw.js` L69–73).
 
@@ -352,6 +354,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 | 2026-04-19 | §3.7 promoted from `adopt-and-enforce` to `enforced` following WP-DEP-G-1 live verification (confirmed P0 G-15 hazard; hot-fix commit `b7e671c`). | DevOps |
 | 2026-04-19 | §1.6 promoted from provisional/adopt-and-enforce to enforced; install-time skipWaiting removed and four iOS-hardening changes folded in via WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §1.6 Amendment 1 (WP-ARCH-G-3): `reg.update()` guarded on `reg.active` to eliminate first-install double-install race surfaced in v14 verification (Scenario A banner regression). CACHE_NAME bumped to v15. B-4 disposition unchanged. PARITY_GAP §11.7 scores unchanged. | Senior Dev Oversight Engineer |
+| 2026-04-19 | §1.6 Amendment 2 (WP-ARCH-G-3): explicit `reg.update()` removed entirely — Chrome's `register()` Promise resolves after SW-1 has activated, so the `reg.active` guard from Amendment 1 still fires on first install, populating `reg.waiting` and triggering spurious banner. Per-page-load detection retained via `updateViaCache: 'none'`; mid-session detection intentionally not provided (principal-only audience). German diverges from Spanish §1.6; divergence recorded in §1.6 above. CACHE_NAME bumped to v16. PARITY_GAP §11.7 row 3 rescored MATCH→DIVERGENT (intentional, recorded). | Senior Dev Oversight Engineer |
 
 ---
 

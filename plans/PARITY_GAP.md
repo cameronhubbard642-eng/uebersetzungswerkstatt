@@ -21,9 +21,9 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | §11.4 Content | 3 | 6 | 8 | 4 | 1 | 22 |
 | §11.5 UI/UX | 1 | 4 | 1 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
-| §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
+| §11.7 Deployment | 3 | 0 | 3 | 1 | 0 | 7 |
 | §11.8 Configuration | 0 | 1 | 2 | 0 | 0 | 3 |
-| **Totals** | **19** | **25** | **24** | **6** | **1** | **75** |
+| **Totals** | **18** | **25** | **24** | **7** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -144,7 +144,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 |---|---|---|---|
 | 1 | GitHub Pages static hosting | **MATCH** | German served by GH Pages from `main` (single-branch); confirmed via `git ls-remote --heads origin`. |
 | 2 | Unified source+deploy repository (avoid the two-branch hand-commit ritual in Spanish) | **MATCH (parity exceeds Spanish baseline in the direction Spanish is trying to move)** | German has only `main`. No `gh-pages` branch on origin or locally. German does not inherit the Spanish two-branch ritual and has no migration debt. |
-| 3 | SW registered with `{ updateViaCache: 'none' }` and explicit `reg.update()` | **MATCH** | `index.html:24680` now passes `{ updateViaCache: 'none' }` as the second argument to `register()`; `reg.update()` is called explicitly in the `.then(reg => …)` block. Landed WP-ARCH-G-3 (absorbed WP-DEP-G-2 scope). |
+| 3 | SW registered with `{ updateViaCache: 'none' }` and explicit `reg.update()` | **DIVERGENT (intentional, recorded)** | `{ updateViaCache: 'none' }` is present (`index.html:24680`). Explicit `reg.update()` is **removed** (WP-ARCH-G-3 Amendment 2). *Intentional because:* explicit `reg.update()` triggered a double-install race on Chrome — `register()` resolved with SW-1 already activated, the immediate `reg.update()` kicked off a second install, and the `reg.waiting`-based banner-trigger paths fired spuriously on first install (verification §9.5 v14 / §9.6 v15). Per-page-load update detection is preserved by `updateViaCache: 'none'`; mid-session update detection is acceptably lost for the principal-only audience. Spanish ARCHITECTURE.md §1.6 retains `reg.update()`; German removes it per WP-ARCH-G-3 Amendment 2. Divergence recorded in `ARCHITECTURE.md §1.6`. |
 | 4 | `CACHE_NAME` as the de facto version stamp, bumped per content/code deploy | **MATCH** | `sw.js:4` `const CACHE_NAME = 'werkstatt-v10';`. Ten bumps across the traversable history; every content-bearing commit carries a bump. Discipline informal but currently functional. |
 | 5 | iOS Safari update-detection hardening (`reg.waiting` check at registration, `reg.active` instead of `controller`, `updatefound` handler) | **MATCH** | Registration-time `if (reg.waiting && reg.active)` check now surfaces the banner against an already-waiting SW (with `&& reg.active` guard so first installs do not see a banner). `reg.active` replaces `navigator.serviceWorker.controller` in the `updatefound` `statechange` handler, avoiding the iOS PWA first-launch null-controller race (Spanish commit `42e18fa`). `updatefound` handler retained. Landed WP-ARCH-G-3 (absorbed WP-DEP-G-2 scope). |
 | 6 | `{ type: 'SKIP_WAITING' }` client→SW handshake with in-app update banner | **MATCH** | L24698 posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`. `sw.js:69–73` listens and calls `self.skipWaiting()`. `#update-banner` markup at L24673–24676 (German copy). Banner lacks a dismiss control — minor UX divergence, not a parity failure at this row's granularity. |

@@ -773,19 +773,19 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 #### 8.3.1 Client-side update UX
 
-Service worker registration (L24678–24712, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19) aligned this block with Spanish §1.6 and landed the four WP-DEP-G-2 hardening changes. The registration now describes a **single activation path**: banner-click is the only gate.
+Service worker registration (L24678–24712, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19) aligned this block with Spanish §1.6 and landed three of the four WP-DEP-G-2 hardening changes (Amendment 2 removed `reg.update()` — see below). The registration describes a **single activation path**: banner-click is the only gate.
 
-**Registration flow (current — WP-ARCH-G-3):**
+**Registration flow (current — WP-ARCH-G-3 Amendment 2):**
 
-1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes.
-2. `if (reg.active) reg.update()` — calls `reg.update()` explicitly after registration resolves, but only when a prior SW is already active. This forces update detection without relying on the browser's polling schedule (unreliable in iOS standalone PWA mode), while avoiding a double-install race on first load where `reg.update()` with no established SW would trigger a second concurrent install (WP-ARCH-G-3 Amendment 1).
+1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes. Per-page-load update detection is provided by this option alone.
+2. ~~`if (reg.active) reg.update()`~~ — **removed in Amendment 2.** Verification (v14 §9.5, v15 §9.6) established that `register()` resolves after SW-1 has already activated, so the `reg.active` guard from Amendment 1 also fired on first install, populating `reg.waiting` via a second install and triggering the banner spuriously. `updateViaCache: 'none'` provides sufficient per-page-load detection for the principal-only audience; mid-session detection is intentionally not provided. See `ARCHITECTURE.md §1.6` for the recorded divergence from Spanish.
 3. Registration-time `if (reg.waiting && reg.active)` check — surfaces the `#update-banner` immediately if a SW is already in `waiting` from a prior session. The `&& reg.active` guard ensures a first-install (no prior controller) does not show the banner.
 4. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected. The installing worker's `statechange` is tracked; when it reaches `'installed' && reg.active` (Spanish commit `42e18fa` lesson: `reg.active` is stable on iOS PWA first-launch where `navigator.serviceWorker.controller` can be momentarily null), the `#update-banner` is shown.
 5. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js:69–73` handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → `location.reload()` → user sees the new version.
 
-**First-install path:** no banner. The new SW activates automatically (no prior controller to block it); at the `statechange === 'installed'` moment `reg.active` is null (the just-installing SW has not yet activated), so the `updatefound` guard correctly suppresses the banner.
+**First-install path:** no banner. SW-1 installs and activates with no competing controller; `reg.waiting` is null at `.then()` time, so the registration-time check (step 3) does not fire; the `updatefound` listener attaches but no further installing event occurs (no `reg.update()` call to trigger one). Banner correctly suppressed. ✓
 
-**Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` at `sw.js:21` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }` + `reg.update()`. `sw.js:69–73` remains the sole `skipWaiting` call site, gated on user accept.
+**Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` at `sw.js:21` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }`. `sw.js:69–73` remains the sole `skipWaiting` call site, gated on user accept.
 
 **User-facing update UX.**
 
