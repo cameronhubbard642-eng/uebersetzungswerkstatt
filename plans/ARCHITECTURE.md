@@ -106,23 +106,20 @@ The `AudioCache.sanitize()` rule is adopted verbatim from Spanish (`lowercase`, 
 
 **Change conditions.** Any change to `_speakGerman`'s fallback ordering or to `_openaiTTS`'s cache eviction policy is a Senior Dev decision. Once the audio pipeline lands, any change to `sanitize()` behavior invalidates the manifest — a renaming pass plus manifest regeneration plus `CACHE_NAME` bump must travel together.
 
-### 1.6 Service worker strategy — **enforced (with hardening pending)**
+### 1.6 Service worker strategy — **enforced**
 
 Current state (`SPEC.md §8.3`, `§8.3.1`):
 
 - Cache-first for every precached asset (`PRECACHE_URLS` array in `sw.js` L6–14).
 - Network-first for `manifest.json` and any cross-origin or non-GET request (`sw.js` L38–51).
-- `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v10'`). Any change to a precached asset requires a `CACHE_NAME` bump.
-- **Activation has two paths today**, intentional or otherwise: (a) `self.skipWaiting()` is called unconditionally on install (`sw.js` L21); (b) the user can also accept activation via the in-app update banner that posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`.
+- `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v14'`). Any change to a precached asset requires a `CACHE_NAME` bump.
+- **Activation has a single path:** the user-accepted update banner posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`; the `sw.js:69–73` message handler calls `self.skipWaiting()`. This is the sole activation gate, aligned with Spanish §1.6. Install-time `self.skipWaiting()` was removed by WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope and closed SPEC Appendix B #B-4 by design).
 
-**Hardening pending (adopt-and-enforce).** Two Spanish §1.6 invariants the German app does not yet honor:
+**Hardening — enforced.** The four Spanish §1.6 invariants the German app now honors (landed WP-ARCH-G-3):
 
-- **`{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.** Currently the German registration at L24680 passes no options object. iOS Safari standalone PWAs are critically affected by the absence of `updateViaCache: 'none'`; the SW HTTP cache may serve stale `sw.js` indefinitely. Adopt-and-enforce.
-- **`reg.waiting` checked at registration time, `reg.active` used in place of `navigator.serviceWorker.controller`** (Spanish commit `42e18fa`). Currently German checks `reg.waiting` only in the reload-button handler (L24698); banner may fail to surface for a SW already waiting on cold load. German uses `controller` directly at L24684, inheriting the iOS PWA race condition Spanish explicitly fixed. Adopt-and-enforce.
-
-Implementation pointer: a single Frontend WP, scoped to `index.html` L24678–24702.
-
-**Open architectural question (B-4).** Whether the install-time `self.skipWaiting()` (`sw.js` L21) is intentional or reactive needs Principal confirmation. If intentional ("force update on every release"), it becomes a recorded German-specific divergence from Spanish §1.6's user-accept-gates-activation invariant. If reactive (added to force a specific bad release), it is reverted before parity pass concludes. Until decided, this is `provisional`.
+- **`{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.** Registration at `index.html:24680` passes `{ updateViaCache: 'none' }`; `reg.update()` is called explicitly after registration resolves. iOS Safari standalone PWAs will no longer be served stale `sw.js` from the HTTP cache.
+- **`reg.waiting && reg.active` checked at registration time.** Surfaces the update banner immediately on cold load if a SW is already in `waiting` from a prior session (the `&& reg.active` guard prevents a false positive on first install).
+- **`reg.active` in place of `navigator.serviceWorker.controller`** in the `updatefound` `statechange` handler (Spanish commit `42e18fa`). Avoids the iOS PWA race where `controller` is momentarily null on first standalone session launch.
 
 **Change conditions.** Switching any of the cache strategies (e.g., making `index.html` network-first) is a Senior Dev Oversight decision because it interacts with offline semantics and update detection. Adding a precache asset requires the `CACHE_NAME` bump.
 
@@ -254,7 +251,7 @@ Today the German app has no CSP, so this section has no force. Once §1.7 (`FE-G
 Once the §1.6 hardening lands:
 
 - SW registration is `{ updateViaCache: 'none' }` plus explicit `reg.update()`. Both are load-bearing for iOS Safari.
-- The update banner is the user-facing surface that triggers reloads. Whether it is the *only* such surface depends on the §1.6 install-time `skipWaiting` decision (Appendix B #B-4).
+- The update banner is the sole user-facing surface that triggers reloads. Banner-click is the only activation gate (install-time `skipWaiting` removed by WP-ARCH-G-3; Appendix B #B-4 closed by design).
 - New deploy → existing user path goes through the `{ type: 'SKIP_WAITING' }` handshake (already in place at L24698 / `sw.js` L69–73).
 
 ### 3.7 Precache filename integrity — enforced
@@ -353,6 +350,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 |---|---|---|
 | 2026-04-19 | Initial issue, derived from `SPEC.md` and `plans/PARITY_GAP.md` as of 2026-04-19 integration. §1 includes 4 invariants in `enforced` status (1.1, 1.2, 1.4-pending-reconciliation, 1.5-current-only, 1.6-current-only, 2.1, 2.2, 2.3, 2.5, 2.6, 3.5), 4 invariants in `adopt-and-enforce` status (1.3 IDB mirror, 1.5 audio pipeline target, 1.6 update-detection hardening, 1.7 meta-CSP, 3.7 precache filename integrity), 1 invariant in `provisional (decline)` status (1.3a sessionStorage), and 1 standing decline (1.4 ReviewScheduler wrapper). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §3.7 promoted from `adopt-and-enforce` to `enforced` following WP-DEP-G-1 live verification (confirmed P0 G-15 hazard; hot-fix commit `b7e671c`). | DevOps |
+| 2026-04-19 | §1.6 promoted from provisional/adopt-and-enforce to enforced; install-time skipWaiting removed and four iOS-hardening changes folded in via WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope). | Senior Dev Oversight Engineer |
 
 ---
 

@@ -773,18 +773,19 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 #### 8.3.1 Client-side update UX
 
-Service worker registration (L24678–24701, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded and calls `navigator.serviceWorker.register('sw.js')` with **no options object**. Materially different from Spanish, which passes `{ updateViaCache: 'none' }`.
+Service worker registration (L24678–24712, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19) aligned this block with Spanish §1.6 and landed the four WP-DEP-G-2 hardening changes. The registration now describes a **single activation path**: banner-click is the only gate.
 
-**Update detection.** One code path:
+**Registration flow (current — WP-ARCH-G-3):**
 
-1. `reg.addEventListener('updatefound', …)` fires when a new SW is detected mid-session. The installing worker's `statechange` is tracked; when it reaches `'installed' && navigator.serviceWorker.controller` (i.e., an update, not a first install), the `#update-banner` is shown (L24681–24688).
+1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes.
+2. `reg.update()` is called explicitly after registration resolves — forces update detection without relying on the browser's polling schedule, which is unreliable in iOS standalone PWA mode.
+3. Registration-time `if (reg.waiting && reg.active)` check — surfaces the `#update-banner` immediately if a SW is already in `waiting` from a prior session. The `&& reg.active` guard ensures a first-install (no prior controller) does not show the banner.
+4. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected. The installing worker's `statechange` is tracked; when it reaches `'installed' && reg.active` (Spanish commit `42e18fa` lesson: `reg.active` is stable on iOS PWA first-launch where `navigator.serviceWorker.controller` can be momentarily null), the `#update-banner` is shown.
+5. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js:69–73` handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → `location.reload()` → user sees the new version.
 
-Absent from the German registration path, relative to Spanish's hardened path:
+**First-install path:** no banner. The new SW activates automatically (no prior controller to block it); at the `statechange === 'installed'` moment `reg.active` is null (the just-installing SW has not yet activated), so the `updatefound` guard correctly suppresses the banner.
 
-- **No `reg.waiting` check at registration time.** If a previous visit installed a new SW that has not yet activated, the German page will not show the banner against that worker until a fresh `updatefound` fires — which it will not, because the install has already completed. Result: the banner may fail to appear on a cold load that carries a waiting SW.
-- **No `reg.active` in place of `navigator.serviceWorker.controller`.** Spanish uses `reg.active` because `navigator.serviceWorker.controller` can be momentarily null during first launch of an iOS standalone PWA session (Spanish commit `42e18fa`). German uses `controller` directly (L24684), inheriting the race condition Spanish explicitly moved off of.
-- **No explicit `reg.update()` call after registration.** iOS standalone PWAs do not automatically poll for SW updates; without the explicit `reg.update()`, the only path to update-detection is an `updatefound` that the browser happens to fire on its own schedule — which is not reliable in PWA standalone mode.
-- **`self.skipWaiting()` is called unconditionally on install** (`sw.js` L21). Combined with the `skipWaiting` path behind the user-accepted `{ type: 'SKIP_WAITING' }` message (`sw.js` L69–73), this is effectively two activation paths. The install-time path bypasses the user's explicit accept; the message-triggered path honors it. Spanish deliberately removed the install-time path so that `skipWaiting` only fires on user consent. The commit message at `f79e45c` describes this as intentional ("with skipWaiting on install to force update") but Senior Dev flags it for confirmation in Appendix B #B-4.
+**Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` at `sw.js:21` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }` + `reg.update()`. `sw.js:69–73` remains the sole `skipWaiting` call site, gated on user accept.
 
 **User-facing update UX.**
 
@@ -1054,7 +1055,7 @@ Confirm the served URL. Default appears to be `https://cameronhubbard642-eng.git
 
 ### B-4. Install-time `skipWaiting` policy
 
-Is the German design intent to bypass the user-accept gate on SW activation, or was `sw.js:21` added reactively to force-update a specific bad release and never removed? Senior Dev decision. If intended, captured in `plans/ARCHITECTURE.md` as a German-specific invariant divergent from Spanish; if reactive, reverted before parity pass concludes. (DevOps Open Question #4.)
+**RESOLVED 2026-04-19** — design closed by WP-ARCH-G-3 selecting Option A. Install-time skipWaiting was reactive to the v9→v10 deploy detection problem; the proper fix is the WP-DEP-G-2 hardening (now folded in via this WP), and the install-time skipWaiting is removed accordingly. ARCHITECTURE.md §1.6 aligned with Spanish §1.6.
 
 ### B-5. IDB mirror inheritance
 

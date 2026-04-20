@@ -1,7 +1,7 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v13';
+const CACHE_NAME = 'werkstatt-v14';
 
 const PRECACHE_URLS = [
   'index.html',
@@ -18,7 +18,6 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS))
   );
-  self.skipWaiting();
 });
 
 // Activate: clean old caches

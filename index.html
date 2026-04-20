@@ -24677,11 +24677,26 @@ window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    // (WP-DEP-G-2 #2) Trigger explicit update check; iOS standalone PWAs do not
+    // reliably auto-poll. Safe to call even on first install.
+    reg.update();
+
+    // (WP-DEP-G-2 #3) Surface the update banner against a SW already in `waiting`
+    // from a previous session — this can happen when the prior session ended
+    // before the user accepted the update.
+    if (reg.waiting && reg.active) {
+      document.getElementById('update-banner').classList.add('visible');
+    }
+
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+        // (WP-DEP-G-2 #4) Use `reg.active` instead of `navigator.serviceWorker.controller`.
+        // `controller` can be momentarily null during first launch of an iOS standalone
+        // PWA session (Spanish commit 42e18fa). `reg.active` is the stable signal that
+        // distinguishes "this is an update to an existing SW" from "this is a first install."
+        if (newWorker.state === 'installed' && reg.active) {
           document.getElementById('update-banner').classList.add('visible');
         }
       });
