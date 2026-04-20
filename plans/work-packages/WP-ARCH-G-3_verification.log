@@ -135,6 +135,79 @@ Per Dispatch instruction: Phase 2 / v15 verification bump not pursued. v15 slot 
 
 ---
 
+## §9.6 Amendment 1 (v15) re-verification — FAIL (§9.5 persists)
+
+**Fix applied (commit `8a21979`):**
+- `reg.update()` → `if (reg.active) reg.update()` in `index.html`
+- `CACHE_NAME` bumped `werkstatt-v14` → `werkstatt-v15`
+
+**curl probes (v15):**
+- `sw.js` line 4: `werkstatt-v15` ✓
+- `index.html` grep: `if (reg.active) reg.update()` present ✓
+
+**Settle-state probe (Chrome MCP, incognito-equivalent via full SW + cache clear, fresh navigate):**
+```json
+{
+  "bannerHasVisible": true,
+  "cacheKeys": ["werkstatt-v15"],
+  "precacheCount": 7,
+  "controller": null,
+  "sw": { "active": "activated", "installing": null, "waiting": "installed" }
+}
+```
+
+**Positive:** `precacheCount: 7` — the `cacheKeys: []` anomaly from v14 is resolved. Cache populates correctly under v15.
+
+**Still failing:** banner shown, two SWs (active + waiting), `controller: null`. Matrix row 1 still violated.
+
+### New finding — `reg.active` is non-null at `.then()` time
+
+Instrumented timeline probe (JS: unregister all, clear all caches, `register()`, poll registration state every 50 ms):
+
+```json
+[
+  { "label": ".then() itself", "t": 1, "active": "activated", "waiting": "installed", "installing": null, "controller": null },
+  { "label": "+50ms cumulative", "t": 858, "active": "activated", "waiting": "installed", "installing": null, "controller": null },
+  { "label": "+100ms cumulative", ... (identical) },
+  { "label": "+150ms cumulative", ... (identical) },
+  { "label": "+200ms cumulative", ... (identical) }
+]
+```
+
+**Key:** at the moment the page IIFE's `.then(reg => {...})` callback fires (`t: 1ms`), `reg.active` is **already `"activated"`** and `reg.waiting` is **already `"installed"`**. The entire double-install completes **before** `.then()` delivers.
+
+### Amendment 1 failure mechanism
+
+Amendment 1 assumed `reg.active === null` at `.then()` time on a genuine first install. The probe falsifies this assumption:
+
+> Chrome's `register()` Promise resolves after the browser has already matched the existing registration. If a prior SW from an earlier test run (or a concurrent install from a parallel `reg.update()` call) reached `activated` before `.then()` fires, `reg.active` is already non-null.
+
+However, the more likely explanation is that `register()` on the **page's own first-load** IIFE — not a test-probe `register()` call on an already-loaded page — may or may not have `reg.active = null` at `.then()` time. The probe runs on a page whose IIFE has already completed the entire lifecycle; it is observing the _re-registration_ of an existing registration, not the true first-install `.then()` callback.
+
+**The probe methodology cannot directly observe what `reg.active` is when the page's own IIFE's `.then()` fires on first install.** Chrome resolves `register()` asynchronously; by the time any probe executes JavaScript in the tab, SW-1 from the IIFE may already have activated.
+
+### What the double-install race may still look like on v15
+
+Despite the guard, the banner persists. Possible explanations:
+
+1. **The page IIFE's `.then()` also fires with `reg.active` already set**, for the same reason the probe does — SW-1 activates fast enough that the Promise microtask resolves after activation. In that case `if (reg.active) reg.update()` evaluates to `true` → `reg.update()` fires → SW-2 installs. Amendment 1 does not help.
+
+2. **A cached v14 SW** from a prior test run persisted across the SW-clear operation (SW clear via `getRegistrations().unregister()` does not fire `activate` on the new registration until all clients close). If v14 was `active` and v15 became `waiting`, the guard fires on the prior registration's v14 active worker.
+
+3. **`reg.update()` is not the cause at all on v15.** The banner may now be triggered by the `if (reg.waiting && reg.active)` registration-time check (line `24688`), which would fire if a prior session's SW is already waiting.
+
+### Design authority required
+
+All three explanations require a design decision beyond the task scope:
+
+- Option 1a (corollary to Amendment 1): defer `reg.update()` until after `navigator.serviceWorker.ready` — guarantees SW-1 is active before update check fires.
+- Option 2: Remove `reg.update()` entirely and rely solely on the browser's background recheck.
+- Option 3: Accept that `controller === null` is the only reliable first-install signal for both guards, with an explicit iOS-standalone-first-launch note.
+
+**§9.5 remains open. This is §9.6 escalation. Surfaces to Dispatch / Senior Dev for third design pass.**
+
+---
+
 ## §9 flags raised
 
 | § | Flag | Status |
