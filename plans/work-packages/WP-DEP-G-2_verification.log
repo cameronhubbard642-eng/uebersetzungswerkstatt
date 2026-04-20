@@ -1,0 +1,104 @@
+# WP-DEP-G-2 Verification Log
+
+**WP:** WP-DEP-G-2 — SW iOS update-detection hardening
+**Commit 1:** 0b813ee (fix(sw): iOS update-detection hardening; bump cache to v12)
+**Date:** 2026-04-19
+**Verifier:** Claude (automated task session)
+
+---
+
+## §6.1 — curl evidence (post-deploy)
+
+### sw.js CACHE_NAME check
+
+```
+curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js" | sed -n '4p'
+```
+
+Result:
+```
+const CACHE_NAME = 'werkstatt-v12';
+```
+
+PASS: werkstatt-v12 confirmed live.
+
+### index.html four-pattern grep
+
+```
+curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html" | grep -n "updateViaCache\|reg\.update\|reg\.active\|reg\.waiting" | head -8
+```
+
+Result:
+```
+24680:  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+24681:    reg.update();
+24682:    if (reg.waiting) document.getElementById('update-banner').classList.add('visible');
+24686:        if (newWorker.state === 'installed' && reg.active) {
+24700:      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+```
+
+All four patterns confirmed at expected line numbers. PASS.
+
+---
+
+## §6.2 — Desktop browser verification
+
+**Browser:** Chrome (regular tab via Claude-in-Chrome MCP; Chrome MCP cannot open incognito windows — noted)
+**URL:** https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/
+
+**Results:**
+- SW active state: "activated" ✓
+- SW scope: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/ ✓
+- Cache name: werkstatt-v12 ✓
+- Cache entries: 9 (index.html, manifest.json, icon-192.png, root /, German Icon I–V.jpeg) ✓
+- Console errors: none ✓
+
+Note: brief §6.2 expects "seven entries"; 9 entries observed (brief omitted root `/` and `icon-192.png` from the entry list). No correctness impact — all precached URLs resolved and cached.
+
+Update-path simulation: skipped — no new deploy was in pipeline during this task session. Per brief §6.2: "If no update is in the pipeline and this is not feasible during this task, skip to §6.4 and note in the log."
+
+PASS (SW registers without console error; update-path simulation skipped per brief).
+
+---
+
+## §6.3 — iOS Safari standalone PWA
+
+**Status: PENDING — requires Cam's device.**
+
+No iOS device available to this task session. Per brief §9 surprise-flag #7 and per task-prompt dispatch instruction: "iOS Safari standalone smoke is Cam's acceptance — defer to him after deploy-verify is green."
+
+§6.1 curl evidence and §6.2 desktop verification are green. Deferring §6.3 to Cam.
+
+Test procedure (from brief §6.3):
+1. Ensure a v11 PWA is already installed as home-screen icon (pre-deploy install, or clear and reinstall now that v12 is live, then wait for v12 to become the "new" version on a subsequent cold launch).
+2. Cold-launch the home-screen PWA icon (not Safari — standalone mode).
+3. Expected: either (a) banner "Neue Version verfügbar" appears → click "Aktualisieren" → page reloads to v12; or (b) app auto-reloads without user action (install-time skipWaiting races the banner).
+4. Fail: banner appears but click does nothing → surface to Dispatch for WP-ARCH-G-3 / B-4.
+
+---
+
+## §6.4 — iOS Safari in-browser (non-standalone)
+
+**Status: PENDING — follows §6.3 on Cam's device.**
+
+---
+
+## Console warnings
+
+No console errors or exceptions found in §6.2 desktop test. A warning about install-time `skipWaiting` (sw.js:21, intentionally untouched per brief §3.3 / WP-ARCH-G-3 scope) would be acceptable per brief §6.2 point 4. None was observed.
+
+---
+
+## Infra note — PARITY_GAP.md git-tracking
+
+PARITY_GAP.md was previously untracked in git (only `plans/ARCHITECTURE.md` and `plans/work-packages/WP-DEP-G-1_verification.log` were tracked under `plans/`). This Commit 2 adds PARITY_GAP.md to git tracking, consistent with the pattern WP-DEP-G-1 used for ARCHITECTURE.md. Surfacing to Dispatch for confirmation.
+
+---
+
+## Brief diff-count note
+
+Brief §4.7 states "exactly 3 lines changed (-), 5 lines added (+)" for index.html. The actual diff produced 2 lines (-) and 4 lines (+), consistent with the four listed changes (2 modified + 2 inserted = net +2). The brief's own description of the four changes (2 modified lines + 2 new lines) is consistent with 2 (-) and 4 (+). Content matches §4.6 reference exactly. No additional modifications present.
+
+---
+
+**End of verification log. §6.3 iOS standalone and §6.4 iOS in-browser results to be appended by Cam after device test.**

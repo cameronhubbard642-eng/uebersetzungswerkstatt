@@ -115,7 +115,7 @@ Current state (`SPEC.md §8.3`, `§8.3.1`):
 - `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v10'`). Any change to a precached asset requires a `CACHE_NAME` bump.
 - **Activation has two paths today**, intentional or otherwise: (a) `self.skipWaiting()` is called unconditionally on install (`sw.js` L21); (b) the user can also accept activation via the in-app update banner that posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`.
 
-**Hardening pending (adopt-and-enforce).** Two Spanish §1.6 invariants the German app does not yet honor:
+**Hardening pending (enforced).** Two Spanish §1.6 invariants the German app does not yet honor:
 
 - **`{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.** Currently the German registration at L24680 passes no options object. iOS Safari standalone PWAs are critically affected by the absence of `updateViaCache: 'none'`; the SW HTTP cache may serve stale `sw.js` indefinitely. Adopt-and-enforce.
 - **`reg.waiting` checked at registration time, `reg.active` used in place of `navigator.serviceWorker.controller`** (Spanish commit `42e18fa`). Currently German checks `reg.waiting` only in the reload-button handler (L24698); banner may fail to surface for a SW already waiting on cold load. German uses `controller` directly at L24684, inheriting the iOS PWA race condition Spanish explicitly fixed. Adopt-and-enforce.
@@ -353,6 +353,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 |---|---|---|
 | 2026-04-19 | Initial issue, derived from `SPEC.md` and `plans/PARITY_GAP.md` as of 2026-04-19 integration. §1 includes 4 invariants in `enforced` status (1.1, 1.2, 1.4-pending-reconciliation, 1.5-current-only, 1.6-current-only, 2.1, 2.2, 2.3, 2.5, 2.6, 3.5), 4 invariants in `adopt-and-enforce` status (1.3 IDB mirror, 1.5 audio pipeline target, 1.6 update-detection hardening, 1.7 meta-CSP, 3.7 precache filename integrity), 1 invariant in `provisional (decline)` status (1.3a sessionStorage), and 1 standing decline (1.4 ReviewScheduler wrapper). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §3.7 promoted from `adopt-and-enforce` to `enforced` following WP-DEP-G-1 live verification (confirmed P0 G-15 hazard; hot-fix commit `b7e671c`). | DevOps |
+| 2026-04-19 | §1.6 "Hardening pending" promoted from `adopt-and-enforce` to `enforced` on WP-DEP-G-2 landing (commit `0b813ee`). | DevOps |
 
 ---
 
