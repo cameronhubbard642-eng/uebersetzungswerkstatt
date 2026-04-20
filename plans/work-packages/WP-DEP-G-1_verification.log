@@ -1,0 +1,89 @@
+# WP-DEP-G-1 Verification Log
+# Date: 2026-04-19
+# Deployed URL: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/
+# Repo HEAD at pre-fix probe time: f79e45c94ec07a58e3854f6cde6943f7c35a88d6 (SW v10)
+# Hot-fix commit: b7e671c (SW v11)
+
+## PRE-FIX: §4 verification probes (2026-04-19)
+
+### Deployed URL preflight (§3.3)
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/ → HTTP/2 200
+
+### Hyphenated-form probes (PRECACHE_URLS as shipped in f79e45c)
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html    → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/manifest.json → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German-Icon-I.jpeg   → HTTP/2 404
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German-Icon-II.jpeg  → HTTP/2 404
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German-Icon-III.jpeg → HTTP/2 404
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German-Icon-IV.jpeg  → HTTP/2 404
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German-Icon-V.jpeg   → HTTP/2 404
+
+### Spaced (URL-encoded) form probes — tracked filenames
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20I.jpeg   → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20II.jpeg  → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20III.jpeg → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20IV.jpeg  → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20V.jpeg   → HTTP/2 200
+
+### Decision: §5.2 BROKEN BASELINE — hot-fix required
+Five hyphenated icon entries → 404; five spaced/URL-encoded entries → 200.
+GitHub Pages does NOT alias hyphenated filenames to spaced tracked files.
+SW v10 (f79e45c) cache.addAll has been failing atomically for all new visitors since merge.
+
+## HOT-FIX APPLIED: commit b7e671c
+sw.js L4:    CACHE_NAME 'werkstatt-v10' → 'werkstatt-v11'
+sw.js L9–13: 'German-Icon-{I–V}.jpeg' → 'German%20Icon%20{I–V}.jpeg'
+Exactly 6 lines changed. No other files touched.
+Pushed to origin/main via fast-forward merge from claude/objective-stonebraker-209e9f.
+
+## POST-DEPLOY: §5.2 steps 6–7 (2026-04-19)
+
+### Step 6 — sw.js probe confirming werkstatt-v11 is live
+curl -s https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js | head -10:
+  // Service Worker for Philosophische Übersetzungswerkstatt
+  // Cache-first for assets, network-first for API calls and manifests
+  const CACHE_NAME = 'werkstatt-v11';    ← CONFIRMED
+  const PRECACHE_URLS = [
+    'index.html',
+    'manifest.json',
+    'German%20Icon%20I.jpeg',
+    'German%20Icon%20II.jpeg',
+    'German%20Icon%20III.jpeg',
+    'German%20Icon%20IV.jpeg',
+
+### Step 7 — Post-fix spaced-form probes
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20I.jpeg   → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20II.jpeg  → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20III.jpeg → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20IV.jpeg  → HTTP/2 200
+https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/German%20Icon%20V.jpeg   → HTTP/2 200
+
+### Step 8 — Desktop SW install verification (Chrome, non-incognito)
+SW state check via navigator.serviceWorker.getRegistrations() + caches.keys()/keys():
+  active.scriptURL: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js
+  active.state: "activated"
+  installing: null
+  waiting: null
+  cacheKeys: ["werkstatt-v11"]
+  werkstatt-v11 cache entries (9):
+    https://…/uebersetzungswerkstatt/index.html
+    https://…/uebersetzungswerkstatt/German%20Icon%20I.jpeg
+    https://…/uebersetzungswerkstatt/German%20Icon%20II.jpeg
+    https://…/uebersetzungswerkstatt/German%20Icon%20III.jpeg
+    https://…/uebersetzungswerkstatt/German%20Icon%20IV.jpeg
+    https://…/uebersetzungswerkstatt/German%20Icon%20V.jpeg
+    https://…/uebersetzungswerkstatt/
+    https://…/uebersetzungswerkstatt/icon-192.png
+    https://…/uebersetzungswerkstatt/manifest.json
+Note: verified on an existing Chrome tab (not a true fresh-incognito install) via JavaScript
+probe. SW is activated, no errors, all precache entries populated with URL-encoded spaced
+filenames. Console error capture unavailable due to Chrome extension tracking limitation
+(tracking begins only after first tool call on a tab).
+
+### Step 9 — iOS smoke
+DEFERRED. No iOS device available in task session. Surface to Cam as follow-up.
+Revert path if iOS smoke fails: git revert b7e671c && git push origin main.
+
+## RESULT: HOT-FIX VERIFIED GREEN (with iOS smoke deferred to Cam)
+SW v11 active. Cache bucket 'werkstatt-v11' populated. All precache URLs resolve 200.
+Closes SPEC.md §10 G-15 / WP-DEP-G-1.
