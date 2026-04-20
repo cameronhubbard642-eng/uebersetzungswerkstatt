@@ -1,7 +1,7 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v17';
+const CACHE_NAME = 'werkstatt-v18';
 
 const PRECACHE_URLS = [
   'index.html',
@@ -64,9 +64,13 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Listen for SKIP_WAITING message from update banner
+// Message handler: SKIP_WAITING activates a waiting SW; GET_CACHE_NAME lets the
+// client read the current CACHE_NAME for last-seen version tracking (Amendment 3).
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'GET_CACHE_NAME' && event.ports[0]) {
+    event.ports[0].postMessage({ cacheName: CACHE_NAME });
   }
 });

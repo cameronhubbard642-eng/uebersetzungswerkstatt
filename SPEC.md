@@ -251,6 +251,8 @@ All keys are `localStorage` keys with the literal prefix `uw_`. "Written by" and
 | `uw_convTotalExchanges` | `number` | `_convEndConversation` at L24317 | constructor (L19017) | Aggregate counter only. |
 | `uw_streakData` | `{ current, longest, lastDate }` | streak helper at L24403 | constructor (L19020) | Per-day streak record. |
 | `uw_llmAssessment` | `{ level, assessment, recommendations[], timestamp }` | assessment generator (L24650) | assessment renderer (L24543) | Cached CEFR-level output. |
+| `uw_lastSeenCacheName` | `string` (e.g., `"werkstatt-v18"`) | SW `controllerchange` handler (index.html SW registration block); first-install bootstrap (same block) | SW registration block — banner-show decision on page load | Written by SW-lifecycle infrastructure, not through `App.save()`. Stores the `CACHE_NAME` of the last SW the user's browser successfully activated. Banner shown iff the controlling SW's CACHE_NAME differs from this value. Updated only on `controllerchange` (never on banner click). Seeded without banner on first install. Added by WP-ARCH-G-3 Amendment 3. Must be added to `_restoreFromIDB()` manifest when WP-ARCH-G-1 lands. |
+| `uw_diag_controllerchange_timeout` | `number` (Unix timestamp via `Date.now()`) | SW `controllerchange` handler — written only if GET_CACHE_NAME ack not received within 3 seconds | Post-iOS-click diagnostic inspection | Safety-net diagnostic. Presence signals that `clients.claim()` may not be claiming the page on iOS (Hypothesis D, WP-ARCH-G-3 §A3.3). No user-visible effect. Not exported; not included in IDB manifest. |
 
 **Keys NOT persisted** (in-memory only; would be persisted in Spanish):
 
@@ -773,25 +775,32 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 #### 8.3.1 Client-side update UX
 
-Service worker registration (L24678–24712, IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19) aligned this block with Spanish §1.6 and landed three of the four WP-DEP-G-2 hardening changes (Amendment 2 removed `reg.update()` — see below). The registration describes a **single activation path**: banner-click is the only gate.
+Service worker registration (IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19, through Amendment 3) aligned this block with Spanish §1.6 and established a **single activation path**: banner-click is the only gate. Banner visibility is driven by client-side last-seen CACHE_NAME tracking, not SW lifecycle state.
 
-**Registration flow (current — WP-ARCH-G-3 Amendment 2):**
+**Registration flow (current — WP-ARCH-G-3 Amendment 3):**
 
 1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes. Per-page-load update detection is provided by this option alone.
-2. ~~`if (reg.active) reg.update()`~~ — **removed in Amendment 2.** Verification (v14 §9.5, v15 §9.6) established that `register()` resolves after SW-1 has already activated, so the `reg.active` guard from Amendment 1 also fired on first install, populating `reg.waiting` via a second install and triggering the banner spuriously. `updateViaCache: 'none'` provides sufficient per-page-load detection for the principal-only audience; mid-session detection is intentionally not provided. See `ARCHITECTURE.md §1.6` for the recorded divergence from Spanish.
-3. Registration-time `if (reg.waiting && reg.active)` check — surfaces the `#update-banner` immediately if a SW is already in `waiting` from a prior session. The `&& reg.active` guard ensures a first-install (no prior controller) does not show the banner.
-4. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected. The installing worker's `statechange` is tracked; when it reaches `'installed' && reg.active` (Spanish commit `42e18fa` lesson: `reg.active` is stable on iOS PWA first-launch where `navigator.serviceWorker.controller` can be momentarily null), the `#update-banner` is shown.
-5. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js:69–73` handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → `location.reload()` → user sees the new version.
+2. ~~`reg.update()`~~ — **removed in Amendment 2.** Triggered a double-install race on Chrome (verification §9.5 v14 / §9.6 v15). Mid-session detection intentionally not provided; see `ARCHITECTURE.md §1.6` divergence 1.
+3. On page load, query the **controlling SW's CACHE_NAME** via `GET_CACHE_NAME` postMessage. Compare to `localStorage.uw_lastSeenCacheName`. Banner shown iff they differ (genuine new version). If no `lastSeen` (first install), seed it without showing a banner.
+4. If `reg.waiting` exists at registration time (prior-session waiting SW), also query **its CACHE_NAME** via `GET_CACHE_NAME`. Banner shown only if its CACHE_NAME differs from `lastSeen` — guards against the iOS spurious-waiting-SW false positive (see §A3.4.5 of the design doc).
+5. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected during this session. On `statechange` to `'installed'`, query the **new SW's CACHE_NAME** via `GET_CACHE_NAME` and compare to `lastSeen`. Banner shown only if they differ.
+6. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js` message handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → GET_CACHE_NAME to new controller → update `uw_lastSeenCacheName` → `location.reload()` → user sees the new version. ✓
 
-**First-install path:** no banner. SW-1 installs and activates with no competing controller; `reg.waiting` is null at `.then()` time, so the registration-time check (step 3) does not fire; the `updatefound` listener attaches but no further installing event occurs (no `reg.update()` call to trigger one). Banner correctly suppressed. ✓
+**Why CACHE_NAME comparison, not lifecycle-state sniffing.** iOS Safari produces spurious `reg.waiting` states with the same SW bytes on first load and every reload (Principal verification, symptom (a), v16/v17). The Spanish-aligned lifecycle guards (`reg.waiting && reg.active`, `installed && reg.active`) fired false-positive banners on every iOS page load. CACHE_NAME comparison is unambiguous: if the versions are identical, no banner; if genuinely different, banner. See `ARCHITECTURE.md §1.6` divergence 2.
 
-**Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` at `sw.js:21` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }`. `sw.js:69–73` remains the sole `skipWaiting` call site, gated on user accept.
+**`lastSeen` update semantics.** `uw_lastSeenCacheName` is updated **only on `controllerchange`** — not when the user clicks the banner. If iOS drops the `SKIP_WAITING` message and the SW never activates, the banner reappears on next load rather than silently leaving the user on the old version.
+
+**Safety-net diagnostic.** The `controllerchange` handler sends `GET_CACHE_NAME` to the new controller and waits up to 3 seconds for an ack before reloading. If the ack doesn't arrive, `uw_diag_controllerchange_timeout = Date.now()` is written to `localStorage` (signals iOS `clients.claim()` failure — Hypothesis D, WP-ARCH-G-3 §A3.3).
+
+**First-install path:** no banner. On first install, `navigator.serviceWorker.controller` is null at page load (SW not yet controlling), so step 3 is skipped. SW installs and activates via `clients.claim()`; `controllerchange` fires; handler queries new controller's CACHE_NAME and seeds `lastSeen` before reloading. On the reloaded page, `lastSeen` matches the controller → no banner. ✓
+
+**Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }`. The `sw.js` message handler (`SKIP_WAITING` path) remains the sole `skipWaiting` call site, gated on user accept.
 
 **User-facing update UX.**
 
 - `#update-banner` markup at L24673–24676 is a bottom-bar with German copy ("Neue Version verfügbar") and a single "Aktualisieren" button. There is no dismiss (`×`) control — divergent from Spanish.
-- "Aktualisieren" button click handler (L24696–24700): calls `navigator.serviceWorker.ready.then(reg => { if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' }); })`. Message-triggered `skipWaiting` path that matches Spanish.
-- `controllerchange` listener (L24692–24694): sets a `refreshing` latch and calls `location.reload()` once. Matches Spanish.
+- "Aktualisieren" button click handler: calls `navigator.serviceWorker.ready.then(reg => { if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' }); })`. Message-triggered `skipWaiting` path that matches Spanish.
+- `controllerchange` listener: updates `uw_lastSeenCacheName` via GET_CACHE_NAME, then reloads. Diverges from Spanish (which does a simple reload) by adding the last-seen update step.
 
 ### 8.4 Versioning
 

@@ -24693,30 +24693,100 @@ if ('serviceWorker' in navigator) {
     // recorded divergence rationale. See plans/work-packages/WP-ARCH-G-3_design.md
     // Amendment 2.
 
-    // (WP-DEP-G-2 #3) Surface the update banner against a SW already in `waiting`
-    // from a previous session — this can happen when the prior session ended
-    // before the user accepted the update.
-    if (reg.waiting && reg.active) {
-      document.getElementById('update-banner').classList.add('visible');
+    // (Amendment 3) SW-lifecycle-state guards replaced by client-side last-seen
+    // CACHE_NAME tracking via GET_CACHE_NAME postMessage. iOS Safari produces spurious
+    // reg.waiting states with the same SW bytes on first load, causing false-positive
+    // banners. Fix: compare CACHE_NAMEs rather than trusting lifecycle slot presence.
+    // lastSeen updates only on controllerchange — if SKIP_WAITING is dropped on iOS
+    // and the SW never activates, the banner reappears on next load rather than
+    // silently stranding the user on the old version. See ARCHITECTURE.md §1.6.
+
+    // Query controller CACHE_NAME: banner shown iff differs from lastSeen.
+    // First-install bootstrap (§A3.4.7): if no lastSeen, seed it without showing banner.
+    if (navigator.serviceWorker.controller) {
+      const ch = new MessageChannel();
+      ch.port1.onmessage = (e) => {
+        const live = e.data?.cacheName;
+        if (!live) return;
+        const lastSeen = localStorage.getItem('uw_lastSeenCacheName');
+        if (!lastSeen) {
+          localStorage.setItem('uw_lastSeenCacheName', live);
+        } else if (lastSeen !== live) {
+          document.getElementById('update-banner').classList.add('visible');
+        }
+      };
+      navigator.serviceWorker.controller.postMessage({ type: 'GET_CACHE_NAME' }, [ch.port2]);
     }
 
+    // §A3.4.5 mitigation: prior-session waiting SW. If a SW is already in waiting
+    // from a previous session, compare its CACHE_NAME to lastSeen — show banner
+    // only if different, guarding against the spurious-waiting-SW false positive.
+    if (reg.waiting) {
+      const ch2 = new MessageChannel();
+      ch2.port1.onmessage = (e) => {
+        const wName = e.data?.cacheName;
+        if (!wName) return;
+        const lastSeen = localStorage.getItem('uw_lastSeenCacheName');
+        if (lastSeen && lastSeen !== wName) {
+          document.getElementById('update-banner').classList.add('visible');
+        }
+      };
+      reg.waiting.postMessage({ type: 'GET_CACHE_NAME' }, [ch2.port2]);
+    }
+
+    // Warm-load: detect a new SW installing during this session. On statechange to
+    // 'installed', compare its CACHE_NAME to lastSeen before showing the banner —
+    // replaces the old lifecycle-state guard (installed && reg.active).
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       newWorker.addEventListener('statechange', () => {
-        // (WP-DEP-G-2 #4) Use `reg.active` instead of `navigator.serviceWorker.controller`.
-        // `controller` can be momentarily null during first launch of an iOS standalone
-        // PWA session (Spanish commit 42e18fa). `reg.active` is the stable signal that
-        // distinguishes "this is an update to an existing SW" from "this is a first install."
-        if (newWorker.state === 'installed' && reg.active) {
-          document.getElementById('update-banner').classList.add('visible');
+        if (newWorker.state === 'installed') {
+          const ch3 = new MessageChannel();
+          ch3.port1.onmessage = (e) => {
+            const nName = e.data?.cacheName;
+            if (!nName) return;
+            const lastSeen = localStorage.getItem('uw_lastSeenCacheName');
+            if (lastSeen && lastSeen !== nName) {
+              document.getElementById('update-banner').classList.add('visible');
+            }
+          };
+          newWorker.postMessage({ type: 'GET_CACHE_NAME' }, [ch3.port2]);
         }
       });
     });
   });
 
+  // controllerchange: persist the new controller's CACHE_NAME as lastSeen, then
+  // reload. lastSeen updates ONLY here — not on banner click (§A3.4.6): if
+  // SKIP_WAITING is dropped by iOS and the SW never activates, the banner must
+  // reappear on next load rather than silently leaving the user on the old version.
+  // Safety-net diagnostic (§A3.10.3): if the GET_CACHE_NAME ack doesn't arrive
+  // within 3 seconds, write uw_diag_controllerchange_timeout and reload anyway.
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!refreshing) { refreshing = true; location.reload(); }
+    if (refreshing) return;
+    refreshing = true;
+    if (navigator.serviceWorker.controller) {
+      const ch = new MessageChannel();
+      let acked = false;
+      const timeout = setTimeout(() => {
+        if (!acked) {
+          localStorage.setItem('uw_diag_controllerchange_timeout', Date.now());
+          location.reload();
+        }
+      }, 3000);
+      ch.port1.onmessage = (e) => {
+        acked = true;
+        clearTimeout(timeout);
+        if (e.data?.cacheName) {
+          localStorage.setItem('uw_lastSeenCacheName', e.data.cacheName);
+        }
+        location.reload();
+      };
+      navigator.serviceWorker.controller.postMessage({ type: 'GET_CACHE_NAME' }, [ch.port2]);
+    } else {
+      location.reload();
+    }
   });
 
   document.getElementById('update-reload-btn').addEventListener('click', () => {
