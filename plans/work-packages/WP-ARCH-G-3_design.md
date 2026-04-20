@@ -961,3 +961,25 @@ Verdict delivered in this turn.
 ---
 
 **Amendment 2 landed 2026-04-19.** Branch `feat/wp-arch-g-3-amendment-2`. Changes: `index.html` `reg.update()` removed (replaced with regression-prevention comment); `sw.js` CACHE_NAME v15→v16; `ARCHITECTURE.md §1.6` (three invariants, divergence paragraph, §6 entry); `SPEC.md §8.3.1` (three-of-four hardening, Amendment 2 rationale); `PARITY_GAP.md §11.7` row 3 MATCH→DIVERGENT (intentional, recorded), score table updated (§11.7: MATCH 4→3, DIVERGENT 0→1; totals MATCH 19→18, DIVERGENT 6→7). Status: pending v16 Scenario A verification before FF-merge to main.
+
+---
+
+## Amendment 4 — landed 2026-04-19
+
+**Branch:** `feat/wp-arch-g-3-amendment-4-spanish-port` (force-pushed; FF-merge to `main` pending Chrome + iOS verification).
+**Commit message:** `fix(WP-ARCH-G-3): Amendment 4 — port Spanish banner pattern (v18→v19)`
+
+**Root cause of Amendments 1–3 failure:** All three amendments were working in the main `if ('serviceWorker' in navigator) { … }` block, which runs synchronously during page parse. Chrome's `register()` promise resolves immediately when the SW is already active, so any `reg.update()` call fires before the page has fully loaded — causing a second install, `reg.waiting` populated, and banner triggered spuriously. The Spanish IIFE wraps the entire registration in `window.addEventListener('load', …)`, deferring `reg.update()` past register resolution. This single structural difference is why the Spanish pattern is iOS-stable and the German variants were not.
+
+**Changes landed:**
+- `sw.js`: `CACHE_NAME` → `werkstatt-v19`; `GET_CACHE_NAME` message handler removed; comment updated.
+- `index.html` CSS: errant `display: flex;` removed from `#update-banner` rule (was overriding `display: none;`); stale `.visible` class rule removed.
+- `index.html` HTML: `<button id="update-dismiss-btn">✕</button>` added to `#update-banner`.
+- `index.html` JS: Amendment 3 `GET_CACHE_NAME` / `uw_lastSeenCacheName` / `uw_diag_controllerchange_timeout` block replaced with Spanish IIFE verbatim (`window.load` + `reg.waiting` check + `reg.active` guard + `reg.update()` + dismiss handler).
+- `plans/ARCHITECTURE.md`: §1.6 rewritten as four-invariants Spanish-parity language; §6 Amendment 4 entry added.
+- `SPEC.md`: §8.3.1 rewritten (Spanish-aligned 8-step flow); storage table rows for `uw_lastSeenCacheName` and `uw_diag_controllerchange_timeout` removed; sw.js description and §8.3 caching descriptions updated; CACHE_NAME code block updated to v19.
+- `plans/PARITY_GAP.md`: §11.7 rows 3 and 5 rescored `DIVERGENT → MATCH`; row 6 evidence updated (dismiss button added); summary table §11.7 MATCH 2→4, DIVERGENT 2→0; grand totals MATCH 17→19, DIVERGENT 8→6.
+
+**WP status:** Ready for closure pending Chrome desktop regression (Scenarios A + B) and Principal iOS acceptance. Verification results to be appended to `plans/work-packages/WP-ARCH-G-3_verification.log §9.10` after Chrome pass.
+
+**Slot map:** v19 = Amendment 4; WP-FE-G-1 Report-Only → v20; WP-AUD-G-1 → v21; WP-FE-G-1 Enforce → v22.

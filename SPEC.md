@@ -42,7 +42,7 @@ The German repo is a hand-authored single-file PWA plus sibling static assets. T
 Top-level deployable tree (`gh-pages-deploy/`):
 
 - `index.html` — the entire single-page application. **24,703 lines, ~1,950 KB on disk.** Contains `<head>` (meta + two base64 inline icon `<link>` tags), one `<style>` block, `<body>` markup shell (sidebar, main, four modals, update banner), and two `<script>` blocks (main application and service-worker registration).
-- `sw.js` — service worker. **73 lines, 2,038 B.** Precaches an enumerated asset list, uses cache-first for app assets and network-first for `manifest.json` plus any cross-origin or non-GET request. Activation via client-posted `SKIP_WAITING` (and an additional unconditional `skipWaiting()` on install — see §8.3.1). `CACHE_NAME = 'werkstatt-v10'` (L4).
+- `sw.js` — service worker. Precaches an enumerated asset list, uses cache-first for app assets and network-first for `manifest.json` plus any cross-origin or non-GET request. Activation via client-posted `SKIP_WAITING` (sole gate; install-time `skipWaiting()` removed by WP-ARCH-G-3). `CACHE_NAME = 'werkstatt-v19'` (L4).
 - `manifest.json` — canonical PWA manifest. **13 lines, 429 B.** Referenced by `<link rel="manifest" href="manifest.json">` at L13. **No alternate per-icon manifests exist.** No `lang`, no `orientation`, no maskable icon variants.
 - `icon-192.png`, `icon-512.png` — two PWA icons referenced by `manifest.json`. **Not** present in the SW precache list (see §8.3).
 - `German-Icon-I.jpeg` … `German-Icon-V.jpeg` — five hyphenated home-screen icon variants. **Listed in `sw.js` precache** (L6–14). **Not tracked on `main`** — these are untracked working-copy duplicates. Not referenced from `index.html`'s DOM.
@@ -251,8 +251,6 @@ All keys are `localStorage` keys with the literal prefix `uw_`. "Written by" and
 | `uw_convTotalExchanges` | `number` | `_convEndConversation` at L24317 | constructor (L19017) | Aggregate counter only. |
 | `uw_streakData` | `{ current, longest, lastDate }` | streak helper at L24403 | constructor (L19020) | Per-day streak record. |
 | `uw_llmAssessment` | `{ level, assessment, recommendations[], timestamp }` | assessment generator (L24650) | assessment renderer (L24543) | Cached CEFR-level output. |
-| `uw_lastSeenCacheName` | `string` (e.g., `"werkstatt-v18"`) | SW `controllerchange` handler (index.html SW registration block); first-install bootstrap (same block) | SW registration block — banner-show decision on page load | Written by SW-lifecycle infrastructure, not through `App.save()`. Stores the `CACHE_NAME` of the last SW the user's browser successfully activated. Banner shown iff the controlling SW's CACHE_NAME differs from this value. Updated only on `controllerchange` (never on banner click). Seeded without banner on first install. Added by WP-ARCH-G-3 Amendment 3. Must be added to `_restoreFromIDB()` manifest when WP-ARCH-G-1 lands. |
-| `uw_diag_controllerchange_timeout` | `number` (Unix timestamp via `Date.now()`) | SW `controllerchange` handler — written only if GET_CACHE_NAME ack not received within 3 seconds | Post-iOS-click diagnostic inspection | Safety-net diagnostic. Presence signals that `clients.claim()` may not be claiming the page on iOS (Hypothesis D, WP-ARCH-G-3 §A3.3). No user-visible effect. Not exported; not included in IDB manifest. |
 
 **Keys NOT persisted** (in-memory only; would be persisted in Spanish):
 
@@ -757,15 +755,15 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 **Manifest:** `manifest.json` at the repo root declares `name: "Philosophische Übersetzungswerkstatt"`, `short_name: "Übersetzungs"`, `description: "German philosophical translation practice"`, `start_url: "./index.html"`, `display: "standalone"`, `background_color: "#faf8f5"`, `theme_color: "#faf8f5"`, and two icon entries referencing `icon-192.png` (192×192) and `icon-512.png` (512×512). The German manifest is **single-file**: there is no `manifest-1.json` through `manifest-5.json`, no runtime manifest swap, no alternate icon set, no `lang` field, no `orientation` field, and no `maskable` icon variants. All of these are present in the Spanish baseline and are German gaps scored in `plans/PARITY_GAP.md` §11.7.
 
-**Service worker:** `sw.js`, served from the repo root, scope `./`. Registered from `index.html` at L24680 with `navigator.serviceWorker.register('sw.js')`. **No options object is passed** — in particular, `{ updateViaCache: 'none' }` is absent. This is the most consequential divergence from the Spanish baseline: on iOS Safari, the absence of `updateViaCache: 'none'` allows the browser's HTTP cache to serve a stale `sw.js` indefinitely, defeating the SW-update-detection path that the SPEC's iOS-first framing depends on.
+**Service worker:** `sw.js`, served from the repo root, scope `./`. Registration in `index.html` uses `navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })` inside a `window.addEventListener('load', …)` IIFE — `{ updateViaCache: 'none' }` prevents iOS Safari from serving stale `sw.js` from the HTTP cache. See §8.3.1 for the full registration flow.
 
 **Caching strategy** (observed from `sw.js`, full file 73 lines):
 
-- **Install** (L17–22): opens the named cache (`werkstatt-v10`) and `cache.addAll(PRECACHE_URLS)`. **Calls `self.skipWaiting()` unconditionally at install** (L21). Deliberate divergence from Spanish, which does not `skipWaiting()` on install and gates activation behind the user-accepted update banner.
+- **Install** (L17–21): opens the named cache (`werkstatt-v19`) and `cache.addAll(PRECACHE_URLS)`. No install-time `skipWaiting()` — removed by WP-ARCH-G-3; activation is user-gated via the update banner (see §8.3.1).
 - **Activate** (L25–31): deletes all caches whose name is not `CACHE_NAME`, then calls `self.clients.claim()`.
 - **Fetch — network-first branch** (L38–51): matches URLs whose pathname ends `manifest.json`, **or** whose hostname is not `location.hostname`, **or** whose method is not `GET`. Network result is written through to cache on `ok`. The cross-origin-as-network-first heuristic is broader than Spanish's, which targets specifically `api.*` / `generativelanguage` hosts. In current usage this has no observable difference, but it is a divergent *policy*.
 - **Fetch — cache-first branch** (L53–65): everything else. Serve cache hit if present; otherwise fetch and write-through on `ok`.
-- **Messaging** (L69–73): listens for `{ type: 'SKIP_WAITING' }` and calls `self.skipWaiting()`. Redundant with the install-time `skipWaiting()` but exercised by the update banner path — see §8.3.1.
+- **Messaging** (L67–72): listens for `{ type: 'SKIP_WAITING' }` and calls `self.skipWaiting()`. Sole activation gate — see §8.3.1.
 
 **Precache list (`PRECACHE_URLS`)** is hand-maintained in `sw.js` L6–14, six entries: `index.html`, `manifest.json`, `German-Icon-I.jpeg` … `German-Icon-V.jpeg`. **Notably absent** from the precache: `icon-192.png` and `icon-512.png` (the PWA install icons referenced by `manifest.json`), and `sw.js` itself.
 
@@ -775,39 +773,35 @@ There is no second-branch commit. The Spanish two-branch hand-commit pattern has
 
 #### 8.3.1 Client-side update UX
 
-Service worker registration (IIFE at end of `<body>`). Registration runs from an inline `<script>` after DOMContentLoaded. WP-ARCH-G-3 (2026-04-19, through Amendment 3) aligned this block with Spanish §1.6 and established a **single activation path**: banner-click is the only gate. Banner visibility is driven by client-side last-seen CACHE_NAME tracking, not SW lifecycle state.
+Service worker registration (IIFE at end of `<body>`). Wrapped in `window.addEventListener('load', …)` to defer `reg.update()` past page-parse time, avoiding the Chrome double-install race. WP-ARCH-G-3 Amendment 4 (2026-04-19) restored Spanish §1.6 parity.
 
-**Registration flow (current — WP-ARCH-G-3 Amendment 3):**
+**Registration flow (current — WP-ARCH-G-3 Amendment 4, Spanish-aligned):**
 
-1. `navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })` — fresh `sw.js` is fetched from network on every page load; the iOS Safari HTTP cache cannot serve stale SW bytes. Per-page-load update detection is provided by this option alone.
-2. ~~`reg.update()`~~ — **removed in Amendment 2.** Triggered a double-install race on Chrome (verification §9.5 v14 / §9.6 v15). Mid-session detection intentionally not provided; see `ARCHITECTURE.md §1.6` divergence 1.
-3. On page load, query the **controlling SW's CACHE_NAME** via `GET_CACHE_NAME` postMessage. Compare to `localStorage.uw_lastSeenCacheName`. Banner shown iff they differ (genuine new version). If no `lastSeen` (first install), seed it without showing a banner.
-4. If `reg.waiting` exists at registration time (prior-session waiting SW), also query **its CACHE_NAME** via `GET_CACHE_NAME`. Banner shown only if its CACHE_NAME differs from `lastSeen` — guards against the iOS spurious-waiting-SW false positive (see §A3.4.5 of the design doc).
-5. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected during this session. On `statechange` to `'installed'`, query the **new SW's CACHE_NAME** via `GET_CACHE_NAME` and compare to `lastSeen`. Banner shown only if they differ.
-6. Banner-click posts `{ type: 'SKIP_WAITING' }` to `reg.waiting` → `sw.js` message handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → GET_CACHE_NAME to new controller → update `uw_lastSeenCacheName` → `location.reload()` → user sees the new version. ✓
+1. `navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })` — fresh `sw.js` fetched from network on every page load; iOS Safari HTTP cache cannot serve stale SW bytes.
+2. `reg.waiting` cold-load check — if a SW is already waiting from a prior session, show banner immediately.
+3. `reg.installing` guard — if a SW is installing at registration time, track it (with `!!reg.active` as the isUpdate flag).
+4. `reg.addEventListener('updatefound', …)` — fires when a new SW is detected during this session. Tracks the installing worker with `!!reg.active`.
+5. `reg.update()` — explicit mid-session update poll. Safe inside `load` listener (deferred past register resolution).
+6. On statechange to `'installed'` with `isUpdate === true`, show banner.
+7. Banner-click posts `{ type: 'SKIP_WAITING' }` to `waitingSW` → `sw.js` message handler calls `self.skipWaiting()` → SW activates → `clients.claim()` → `controllerchange` → `location.reload()` → user sees the new version. ✓
+8. Dismiss-click hides the banner without activating.
 
-**Why CACHE_NAME comparison, not lifecycle-state sniffing.** iOS Safari produces spurious `reg.waiting` states with the same SW bytes on first load and every reload (Principal verification, symptom (a), v16/v17). The Spanish-aligned lifecycle guards (`reg.waiting && reg.active`, `installed && reg.active`) fired false-positive banners on every iOS page load. CACHE_NAME comparison is unambiguous: if the versions are identical, no banner; if genuinely different, banner. See `ARCHITECTURE.md §1.6` divergence 2.
-
-**`lastSeen` update semantics.** `uw_lastSeenCacheName` is updated **only on `controllerchange`** — not when the user clicks the banner. If iOS drops the `SKIP_WAITING` message and the SW never activates, the banner reappears on next load rather than silently leaving the user on the old version.
-
-**Safety-net diagnostic.** The `controllerchange` handler sends `GET_CACHE_NAME` to the new controller and waits up to 3 seconds for an ack before reloading. If the ack doesn't arrive, `uw_diag_controllerchange_timeout = Date.now()` is written to `localStorage` (signals iOS `clients.claim()` failure — Hypothesis D, WP-ARCH-G-3 §A3.3).
-
-**First-install path:** no banner. On first install, `navigator.serviceWorker.controller` is null at page load (SW not yet controlling), so step 3 is skipped. SW installs and activates via `clients.claim()`; `controllerchange` fires; handler queries new controller's CACHE_NAME and seeds `lastSeen` before reloading. On the reloaded page, `lastSeen` matches the controller → no banner. ✓
+**First-install path:** no banner. On first install, `reg.active` is null so `isUpdate` is `false` for the initial installing worker. SW installs and activates via `clients.claim()`; `controllerchange` fires and triggers `location.reload()`. On the reloaded page, no waiting or new-install worker → no banner. ✓
 
 **Install-time `self.skipWaiting()` removed.** WP-ARCH-G-3 selected Option A on Appendix B #B-4 (see §B-4 below): the install-time `skipWaiting` was a reactive workaround for the v9→v10 HTTP-cache problem; the proper fix is `{ updateViaCache: 'none' }`. The `sw.js` message handler (`SKIP_WAITING` path) remains the sole `skipWaiting` call site, gated on user accept.
 
 **User-facing update UX.**
 
-- `#update-banner` markup at L24673–24676 is a bottom-bar with German copy ("Neue Version verfügbar") and a single "Aktualisieren" button. There is no dismiss (`×`) control — divergent from Spanish.
-- "Aktualisieren" button click handler: calls `navigator.serviceWorker.ready.then(reg => { if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' }); })`. Message-triggered `skipWaiting` path that matches Spanish.
-- `controllerchange` listener: updates `uw_lastSeenCacheName` via GET_CACHE_NAME, then reloads. Diverges from Spanish (which does a simple reload) by adding the last-seen update step.
+- `#update-banner` is a bottom-bar with German copy ("Neue Version verfügbar"), a reload button "Aktualisieren", and a dismiss button "✕". Parity with Spanish.
+- "Aktualisieren" button click handler: posts `{ type: 'SKIP_WAITING' }` to `waitingSW` (captured at banner-show time). Message-triggered `skipWaiting` path matches Spanish.
+- `controllerchange` listener: simple reload. Matches Spanish.
 
 ### 8.4 Versioning
 
 There is **no application version number** in any conventional sense. No `version` field in `manifest.json`, no `VERSION` file, no build-time stamp, no git SHA embedded in the artifact, no `package.json` to carry a semver. The one version string in the deploy artifact is `CACHE_NAME` on `sw.js` L4:
 
 ```js
-const CACHE_NAME = 'werkstatt-v10';
+const CACHE_NAME = 'werkstatt-v19';
 ```
 
 **`CACHE_NAME` as the de facto version stamp.** As in Spanish, `CACHE_NAME` serves three roles at once — Cache Storage key, invalidation token (old caches are deleted in the `activate` handler, `sw.js` L27–28), and the only observable version marker a returning user sees. Bumping it is the single mechanism that forces a returning user's browser to fetch fresh copies of precached assets, including `index.html`.

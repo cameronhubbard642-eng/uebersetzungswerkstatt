@@ -108,23 +108,14 @@ The `AudioCache.sanitize()` rule is adopted verbatim from Spanish (`lowercase`, 
 
 ### 1.6 Service worker strategy — **enforced**
 
-Current state (`SPEC.md §8.3`, `§8.3.1`):
+Four invariants, all matching Spanish §1.6 (Amendment 4 aligned German to Spanish parity 2026-04-19; see §6):
 
-- Cache-first for every precached asset (`PRECACHE_URLS` array in `sw.js` L6–14).
-- Network-first for `manifest.json` and any cross-origin or non-GET request (`sw.js` L38–51).
-- `CACHE_NAME` is the version stamp (`sw.js` L4 — currently `'werkstatt-v18'`). Any change to a precached asset requires a `CACHE_NAME` bump.
-- **Activation has a single path:** the user-accepted update banner posts `{ type: 'SKIP_WAITING' }` to `reg.waiting`; the `sw.js` message handler calls `self.skipWaiting()`. This is the sole activation gate, aligned with Spanish §1.6. Install-time `self.skipWaiting()` was removed by WP-ARCH-G-3 (which absorbed the reverted WP-DEP-G-2 scope and closed SPEC Appendix B #B-4 by design).
-- **Banner visibility is driven by user-visible version comparison, not SW lifecycle state** (WP-ARCH-G-3 Amendment 3). The client queries the controlling SW's `CACHE_NAME` via `GET_CACHE_NAME` postMessage on page load and compares it to `localStorage.uw_lastSeenCacheName`. Banner shown iff they differ (genuine new version the user hasn't accepted). `uw_lastSeenCacheName` is updated only on `controllerchange` — not on banner click — so if iOS drops the `SKIP_WAITING` message and the SW never activates, the banner reappears on next load rather than silently stranding the user. See §3.2 for the key's IDB-restore obligation.
+1. Cache-first for precached assets; network-first for manifests and cross-origin/non-GET.
+2. `CACHE_NAME` as the version stamp. Currently `'werkstatt-v19'`.
+3. `{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.
+4. User-gated activation via `{ type: 'SKIP_WAITING' }` handshake. No install-time `skipWaiting`. `reg.waiting` checked at registration time; `reg.active` used in `updatefound` statechange guard.
 
-**Hardening — enforced.** Spanish §1.6 invariant the German app honors (retained through all amendments):
-
-- **`{ updateViaCache: 'none' }` at registration.** iOS Safari standalone PWAs will no longer be served stale `sw.js` from the HTTP cache. Per-page-load update detection is provided by this option alone; the explicit `reg.update()` call was removed (see divergence note 1 below).
-
-**German-specific divergences from Spanish §1.6 (two, both intentional and recorded):**
-
-1. **(WP-ARCH-G-3 Amendment 2, 2026-04-19)** German omits the explicit `reg.update()` call from the registration block. Per-page-load update detection is provided solely by `updateViaCache: 'none'`. Mid-session update detection is intentionally not provided. Rationale: the explicit `reg.update()` triggered a double-install race on Chrome (verification §9.5 / §9.6); the principal-only audience's relaunch cadence makes per-page-load detection sufficient; preserving the call would re-introduce the regression.
-
-2. **(WP-ARCH-G-3 Amendment 3, 2026-04-19)** German replaces the Spanish-aligned `reg.waiting && reg.active` registration-time check and `reg.active`-guarded `statechange` handler (WP-DEP-G-2 #3 and #4) with client-side last-seen CACHE_NAME tracking via `GET_CACHE_NAME` postMessage. Spanish retains the lifecycle-state approach; German diverges because iOS Safari produced spurious `reg.waiting` states with the same SW bytes, causing false-positive banners on first load and every reload (Principal verification, symptom (a)). CACHE_NAME comparison is unambiguous across all browsers, platforms, and SW lifecycle quirks. `uw_lastSeenCacheName` must be added to the `_restoreFromIDB()` manifest when WP-ARCH-G-1 (IDB mirror) lands — see §3.2.
+**B-4 closed (Amendment 4).** Install-time `self.skipWaiting()` was reactive, not intentional — it caused the banner regression. Removed. Provisional status retired.
 
 **Change conditions.** Switching any of the cache strategies (e.g., making `index.html` network-first) is a Senior Dev Oversight decision because it interacts with offline semantics and update detection. Adding a precache asset requires the `CACHE_NAME` bump.
 
@@ -366,6 +357,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 | 2026-04-19 | §1.6 Amendment 1 (WP-ARCH-G-3): `reg.update()` guarded on `reg.active` to eliminate first-install double-install race surfaced in v14 verification (Scenario A banner regression). CACHE_NAME bumped to v15. B-4 disposition unchanged. PARITY_GAP §11.7 scores unchanged. | Senior Dev Oversight Engineer |
 | 2026-04-19 | §1.6 Amendment 2 (WP-ARCH-G-3): explicit `reg.update()` removed entirely — Chrome's `register()` Promise resolves after SW-1 has activated, so the `reg.active` guard from Amendment 1 still fires on first install, populating `reg.waiting` and triggering spurious banner. Per-page-load detection retained via `updateViaCache: 'none'`; mid-session detection intentionally not provided (principal-only audience). German diverges from Spanish §1.6; divergence recorded in §1.6 above. CACHE_NAME bumped to v16. PARITY_GAP §11.7 row 3 rescored MATCH→DIVERGENT (intentional, recorded). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §1.6 Amendment 3 (WP-ARCH-G-3): SW-lifecycle-state banner triggers (WP-DEP-G-2 #3 `reg.waiting && reg.active` and #4 `statechange`/`reg.active` guard) replaced by client-side last-seen CACHE_NAME tracking. Principal confirmed iOS symptom (a): banner on first load persists across reloads — diagnosed as iOS Safari producing spurious `reg.waiting` states. Fix: `GET_CACHE_NAME` SW message protocol + `uw_lastSeenCacheName` localStorage key. `lastSeen` updates only on `controllerchange`. §3.2 updated with key table. CACHE_NAME bumped to v18. PARITY_GAP §11.7 row 5 rescored MATCH→DIVERGENT (intentional, recorded). | Senior Dev Oversight Engineer |
+| 2026-04-19 | §1.6 Amendment 4 (WP-ARCH-G-3): reverted Amendments 2 and 3; ported Spanish banner/registration IIFE pattern verbatim. `reg.update()` restored inside `window.addEventListener('load', …)` to avoid Chrome double-install race. `GET_CACHE_NAME` protocol and `uw_lastSeenCacheName`/`uw_diag_controllerchange_timeout` localStorage keys removed. `reg.waiting` cold-load check and `reg.active`-guarded statechange handler restored. Dismiss button (`✕`) added. CACHE_NAME bumped to v19. All §1.6 invariants now match Spanish §1.6. PARITY_GAP §11.7 rows 3, 5, and A1 rescored DIVERGENT→MATCH. | Senior Dev Oversight Engineer |
 
 ---
 
