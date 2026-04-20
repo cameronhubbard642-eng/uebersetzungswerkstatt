@@ -1,16 +1,16 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v10';
+const CACHE_NAME = 'werkstatt-v11';
 
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',
-  'German-Icon-I.jpeg',
-  'German-Icon-II.jpeg',
-  'German-Icon-III.jpeg',
-  'German-Icon-IV.jpeg',
-  'German-Icon-V.jpeg'
+  'German%20Icon%20I.jpeg',
+  'German%20Icon%20II.jpeg',
+  'German%20Icon%20III.jpeg',
+  'German%20Icon%20IV.jpeg',
+  'German%20Icon%20V.jpeg'
 ];
 
 // Install: precache core assets and immediately take control
