@@ -1,16 +1,51 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v24';
+const CACHE_NAME = 'werkstatt-v25';
 
 const PRECACHE_URLS = [
   'index.html',
   'manifest.json',
+  'manifest-1.json',
+  'manifest-2.json',
+  'manifest-3.json',
+  'manifest-4.json',
+  'manifest-5.json',
   'German%20Icon%20I.jpeg',
   'German%20Icon%20II.jpeg',
   'German%20Icon%20III.jpeg',
   'German%20Icon%20IV.jpeg',
-  'German%20Icon%20V.jpeg'
+  'German%20Icon%20V.jpeg',
+  'apple-touch-icon-1.png',
+  'apple-touch-icon-2.png',
+  'apple-touch-icon-3.png',
+  'apple-touch-icon-4.png',
+  'apple-touch-icon-5.png',
+  'icon-1-192.png',
+  'icon-1-512.png',
+  'icon-1-favicon.png',
+  'icon-1-192-maskable.png',
+  'icon-1-512-maskable.png',
+  'icon-2-192.png',
+  'icon-2-512.png',
+  'icon-2-favicon.png',
+  'icon-2-192-maskable.png',
+  'icon-2-512-maskable.png',
+  'icon-3-192.png',
+  'icon-3-512.png',
+  'icon-3-favicon.png',
+  'icon-3-192-maskable.png',
+  'icon-3-512-maskable.png',
+  'icon-4-192.png',
+  'icon-4-512.png',
+  'icon-4-favicon.png',
+  'icon-4-192-maskable.png',
+  'icon-4-512-maskable.png',
+  'icon-5-192.png',
+  'icon-5-512.png',
+  'icon-5-favicon.png',
+  'icon-5-192-maskable.png',
+  'icon-5-512-maskable.png'
 ];
 
 // Returns true for LLM inference endpoints whose response bodies must not be cached.
