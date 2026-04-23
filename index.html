@@ -1431,7 +1431,7 @@ body.sidebar-open {
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(44px + env(safe-area-inset-bottom, 0px));
+    height: calc(48px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--accent);
     z-index: 200;
@@ -1442,7 +1442,7 @@ body.sidebar-open {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 1px;
     border: none;
     background: transparent;
@@ -1452,7 +1452,7 @@ body.sidebar-open {
     font-weight: 500;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    padding: 3px 2px;
+    padding: 7px 2px 3px;
     min-height: 44px;
     transition: color 0.15s;
   }
