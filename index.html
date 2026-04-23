@@ -18762,7 +18762,7 @@ const FSRS = (() => {
     return _clamp(W[7] * d0 + (1 - W[7]) * newD, 1, 10);
   }
 
-  /** Next stability after a successful recall (rating >= 2) */
+  /** Next stability after a successful recall (rating >= 2), for Review state. */
   function _nextRecallStability(d, s, r, rating) {
     const hardPenalty = (rating === 2) ? W[15] : 1;
     const easyBonus = (rating === 4) ? W[16] : 1;
@@ -18772,6 +18772,11 @@ const FSRS = (() => {
       (Math.exp((1 - r) * W[10]) - 1) *
       hardPenalty *
       easyBonus);
+  }
+
+  /** Next stability for a Learning/Relearning step (short-term, FSRS v4.5 W[17]/W[18]). */
+  function _nextShortTermStability(s, rating) {
+    return Math.max(s * Math.exp(W[17] * (rating - 3 + W[18])), 0.1);
   }
 
   /** Next stability after a lapse (rating === 1, Again) */
@@ -18809,14 +18814,14 @@ const FSRS = (() => {
       card.lapses = (rating === 1) ? 1 : 0;
       card.state = (rating === 1) ? 1 : (rating < 4 ? 1 : 2);
     } else if (card.state === 1 || card.state === 3) {
-      // Learning or Relearning
+      // Learning or Relearning — use short-term stability formula (FSRS v4.5)
       card.difficulty = _nextDifficulty(card.difficulty, rating);
       if (rating === 1) {
         card.stability = _initStability(1);
         card.lapses++;
         card.state = (card.state === 1) ? 1 : 3;
       } else {
-        card.stability = _nextRecallStability(card.difficulty, card.stability, r || 0.9, rating);
+        card.stability = _nextShortTermStability(card.stability, rating);
         card.reps++;
         card.state = 2; // Graduate to Review
       }

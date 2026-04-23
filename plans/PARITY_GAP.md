@@ -16,14 +16,14 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | Section | MATCH | PARTIAL | MISSING | DIVERGENT | N/A | Total |
 |---|---:|---:|---:|---:|---:|---:|
 | §11.1 Architecture | 6 | 3 | 1 | 0 | 0 | 10 |
-| §11.2 Data Model | 4 | 0 | 5 | 1 | 0 | 10 |
+| §11.2 Data Model | 5 | 0 | 5 | 0 | 0 | 10 |
 | §11.3 Features | 4 | 8 | 1 | 1 | 0 | 14 |
 | §11.4 Content | 3 | 6 | 8 | 4 | 1 | 22 |
 | §11.5 UI/UX | 2 | 4 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
 | §11.8 Configuration | 1 | 1 | 1 | 0 | 0 | 3 |
-| **Totals** | **25** | **23** | **20** | **6** | **1** | **75** |
+| **Totals** | **26** | **23** | **20** | **5** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -58,7 +58,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 6 | Import with per-section merge rules (union, dedupe, per-key precedence) | **MATCH** | Four new merge handlers added in WP-FE-G-3: `translationHistory` dedupe-by-`(date\|exerciseId)`; `fsrsState` via `FSRS.mergeCards()` (newer `lastReview` wins); `activeTime` per-day max; `statsAssessment` timestamp-based precedence. `_version > 2` shows non-blocking warning; v1 silently accepted. |
 | 7 | Custom text import merging into the in-memory dictionary | **MATCH** | `doImport` at L20873 merges `vocabulary` into `DICT` at L20890–20893 (same plain-overwrite semantics as Spanish). |
 | 8 | Reset flow that preserves API keys and preferences | **MATCH** | `_doReset()` (WP-FE-G-5) clears `completed`, `grammarProgress`, `grammarUnitProgress`, `vocabProgress`, and calls `FSRS.resetAll()` — matching Spanish `_doReset` semantics. API keys and preferences preserved. Triggered via `#reset-confirm-overlay` styled modal (not native `confirm()`). |
-| 9 | FSRS card shape: `{ difficulty, stability, lastReview, reps, lapses, scheduledDays, state }` | **DIVERGENT** *Intentional because:* German runs FSRS v4.5 (19 weights, exp-based `initDifficulty` via W[4]–W[5], mean-reversion `nextDifficulty` via W[7]); Spanish runs FSRS v4 (17 weights, linear `initDifficulty`, no mean reversion — despite the Spanish comment saying "FSRS-4.5 defaults"). German is algorithmically ahead; no downgrade warranted. Weight values differ by calibration provenance (German: v4.5 calibrated defaults; Spanish: older round values). Card schema is field-for-field identical — no data-model migration required. Open item: W[17] and W[18] (short-term stability for Learning/Relearning states) defined but unused in German — deferred to follow-up WP; Cam convergence call pending. Verified 2026-04-23 (WP-ARCH-G-2). See `ARCHITECTURE.md §1.4`. |
+| 9 | FSRS card shape: `{ difficulty, stability, lastReview, reps, lapses, scheduledDays, state }` | **MATCH** | Card schema field-for-field identical. German implements canonical FSRS v4.5 in full (19 weights all active, including W[17]/W[18] short-term stability for Learning/Relearning states, landed `werkstatt-v29`). Spanish runs FSRS v4 (17 weights, no short-term formula) — German is algorithmically ahead. See `ARCHITECTURE.md §1.4`. |
 | 10 | `audio/manifest.json` shape: flat `{ path: true }` index | **MISSING** | No `audio/` tree at all (Content §4.2.2). See §11.4 for full audio-pipeline scoring. |
 
 ---
@@ -181,7 +181,7 @@ These do not have explicit Spanish §11.7 checkboxes but map to Spanish §8.3 ha
 
 Populated from `DIVERGENT` rows above. Each requires the "intentional because…" justification stated in-row.
 
-1. **§11.2 row 9 — FSRS card shape (DIVERGENT, intentional — verified 2026-04-23, WP-ARCH-G-2).** German runs FSRS v4.5 (19 weights, exponential `initDifficulty`, mean-reversion `nextDifficulty`); Spanish runs FSRS v4 (17 weights, linear `initDifficulty`, no mean reversion). Card schema is field-for-field identical; no data migration required. No downgrade of German warranted — German is algorithmically ahead. Open item: W[17]/W[18] short-term stability formula (Learning/Relearning states) defined but unused — deferred to follow-up WP pending Cam's convergence call. See `ARCHITECTURE.md §1.4`.
+1. **§11.2 row 9 — FSRS card shape (rescored MATCH, 2026-04-23).** Full FSRS v4.5 implementation complete (`werkstatt-v29`): W[17]/W[18] short-term stability formula for Learning/Relearning states now wired. Card schema field-for-field identical. German remains algorithmically ahead of Spanish (v4.5 vs v4) — intentional and in German's favour. See `ARCHITECTURE.md §1.4`.
 2. **§11.3 row 9 — installation-time `skipWaiting` (DIVERGENT, pending Principal confirmation).** Captured in §11.7 supplementary row A1 and Appendix B #B-4. *Intentional because:* commit `f79e45c` claims this was added "to force update". If confirmed intentional, this becomes a German-specific architectural invariant divergent from Spanish (Spanish gates activation on user-accept).
 3. **§11.4 row 3 — `DICT` gender field.** *Intentional because:* German morphology requires grammatical gender. Spanish shape `{pos, gloss, lemma?}`; German shape `{pos, gloss, lemma?, gender?}`. German is a superset of Spanish.
 4. **§11.4 row 7 — author-specific vocabulary sections.** *Intentional because:* authors differ. Section-naming convention matches Spanish (bare author surname).
