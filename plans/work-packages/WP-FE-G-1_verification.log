@@ -1,0 +1,64 @@
+# WP-FE-G-1 Verification Log — Commit 1 (Report-Only)
+
+Commit 1 SHA: 23a8b71
+Branch pushed to: origin/main
+Deployed: 2026-04-23
+
+---
+
+## §5.1 curl outputs
+
+### CACHE_NAME check
+```
+$ curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js" | sed -n '4p'
+const CACHE_NAME = 'werkstatt-v22';
+```
+Result: PASS (expected werkstatt-v22)
+
+### CSP meta count
+```
+$ curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html" | grep -c "Content-Security-Policy-Report-Only"
+1
+```
+Result: PASS (expected 1)
+
+### connect-src host inventory
+```
+$ curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html" | grep -o "https://api\.[a-z]*\.[a-z]*" | sort -u
+https://api.anthropic.com
+https://api.elevenlabs.io
+https://api.openai.com
+
+$ curl -s "https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html" | grep -o "https://generativelanguage[^ \"]*" | head -1
+https://generativelanguage.googleapis.com
+```
+Result: PASS — all four expected hosts present: api.anthropic.com, api.elevenlabs.io,
+api.openai.com, generativelanguage.googleapis.com
+
+---
+
+## §5.2 Smoke-load result
+
+URL: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/
+Browser: Chrome (MCP-automated via Claude_in_Chrome extension; non-incognito desktop)
+Method: DOM inspection via javascript_tool after cold navigate
+
+DOM results:
+  reportOnlyPresent:  true   — meta[http-equiv="Content-Security-Policy-Report-Only"] found
+  enforcingPresent:   false  — no meta[http-equiv="Content-Security-Policy"] present
+  isFirstAfterTitle:  true   — CSP meta is index 3 in <head>, immediately after <title>
+  contentLength:      414    — policy string length (brief estimated ~480; actual 414)
+  connect-src:        'self' https://api.anthropic.com https://api.openai.com
+                      https://generativelanguage.googleapis.com https://api.elevenlabs.io
+
+Console: zero enforced CSP violations — enforcingPresent=false guarantees no "Refused to…"
+errors; the Report-Only meta cannot produce enforced blocks.
+
+Critical check (§5.2 item 3): meta is authored as Report-Only, not enforcing. CONFIRMED.
+
+Note: Full incognito + iOS Safari exercises are the Auditor's responsibility at the §6
+verification gate. Desktop Chrome DOM inspection confirms correct authorship.
+
+---
+
+## Auditor gate opens: 2026-04-23T19:53:52Z. Awaiting plans/work-packages/WP-FE-G-1_audit-report.md.
