@@ -49,6 +49,8 @@
   --pos-pron: #be185d;
   --pos-part: #6b7280;
   --pos-num: #1e3a5f;
+  --font-ui: 'Copperplate', 'Copperplate Gothic Light', 'Copperplate Gothic', serif;
+  --font-content: 'Baskerville', 'Libre Baskerville', Georgia, serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 /* Prevent iOS double-tap-to-zoom on all interactive elements */
@@ -58,7 +60,7 @@ button, a, select, input, textarea, .exercise-item, .unit-header, .unit-item,
   touch-action: manipulation;
 }
 body {
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-content);
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -66,6 +68,26 @@ body {
   height: 100dvh; /* iOS dynamic viewport height — accounts for Safari chrome */
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* ── Typography: small-caps on UI chrome; normal on lesson content ── */
+#sidebar, #mobile-header, #mobile-tab-bar,
+.modal, .review-banner, #update-banner,
+button, input[type="text"], input[type="password"],
+input[type="email"], select {
+  font-variant: small-caps;
+}
+/* Lesson content: suppress small-caps so Baskerville renders cleanly */
+#translation-input, #translation-display, .source-segment,
+.source-text, .reference-text,
+.vocab-card-german, .vocab-card-back, .vocab-card-english,
+.vocab-mc-option,
+#vocab-typed-input,
+.grammar-paradigm, .grammar-paradigm td, .grammar-paradigm th,
+.grammar-cloze-sentence, .grammar-production-prompt,
+.grammar-exercise-text, .gloss-word, .gloss-container,
+.translation-area, .translation-result {
+  font-variant: normal;
 }
 /* Lock body scroll when mobile sidebar is open — use overflow:hidden on html+body
    instead of position:fixed which causes scroll-to-top on iOS */
@@ -95,13 +117,13 @@ body.sidebar-open {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 #sidebar-header p {
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 4px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .text-tabs {
   flex-shrink: 0;
@@ -112,7 +134,7 @@ body.sidebar-open {
   flex: 1;
   padding: 10px 4px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-align: center;
   cursor: pointer;
   border: none;
@@ -137,7 +159,7 @@ body.sidebar-open {
 .exercise-item {
   padding: 8px 12px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border-radius: 4px;
   margin-bottom: 2px;
@@ -167,7 +189,7 @@ body.sidebar-open {
 .vocab-group-header {
   padding: 7px 12px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   color: var(--text);
   cursor: pointer;
@@ -196,7 +218,7 @@ body.sidebar-open {
 .vocab-section-header {
   padding: 8px 12px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -234,7 +256,7 @@ body.sidebar-open {
   width: 100%;
   padding: 8px 12px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -258,7 +280,7 @@ body.sidebar-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   background: var(--white);
 }
 #toolbar-left {
@@ -282,7 +304,7 @@ body.sidebar-open {
 .toggle-btn {
   padding: 5px 12px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -331,7 +353,7 @@ body.sidebar-open {
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   white-space: nowrap;
   z-index: 100;
   pointer-events: none;
@@ -342,7 +364,7 @@ body.sidebar-open {
 .word-wrapper .first-gloss {
   display: block;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--accent);
   text-align: center;
   margin-top: -2px;
@@ -372,7 +394,7 @@ body.sidebar-open {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: 6px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 11px;
 }
 #pos-legend.visible { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -394,7 +416,7 @@ body.sidebar-open {
 #translation-section label {
   display: block;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -404,7 +426,7 @@ body.sidebar-open {
   width: 100%;
   min-height: 120px;
   padding: 14px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   font-size: 15px;
   line-height: 1.7;
   border: 1px solid var(--border);
@@ -429,7 +451,7 @@ body.sidebar-open {
 .action-btn {
   padding: 9px 20px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border: none;
   border-radius: 5px;
@@ -502,7 +524,7 @@ body.sidebar-open {
 }
 #evaluation-result h4 {
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -515,7 +537,7 @@ body.sidebar-open {
 #evaluation-result .feedback {
   font-size: 13px;
   line-height: 1.6;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Reference translation */
@@ -532,7 +554,7 @@ body.sidebar-open {
 #reference-display.visible { display: block; }
 #reference-display .ref-label {
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -563,7 +585,7 @@ body.sidebar-open {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .modal h2 {
   font-size: 16px;
@@ -583,7 +605,7 @@ body.sidebar-open {
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .modal input:focus { outline: none; border-color: var(--accent); }
 .modal input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -596,7 +618,7 @@ body.sidebar-open {
 .modal-btn {
   padding: 7px 16px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border-radius: 4px;
   border: 1px solid var(--border);
@@ -624,7 +646,7 @@ body.sidebar-open {
 }
 .progress-label {
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
   margin-bottom: 4px;
 }
@@ -642,7 +664,7 @@ body.sidebar-open {
 }
 .source-note {
   font-size: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
   margin-top: 16px;
   padding-top: 12px;
@@ -663,7 +685,7 @@ body.sidebar-open {
 .mode-btn {
   padding: 6px 4px;
   font-size: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 500;
   text-align: center;
   cursor: pointer;
@@ -691,7 +713,7 @@ body.sidebar-open {
 }
 .vocab-category-title {
   font-weight: 600;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -719,7 +741,7 @@ body.sidebar-open {
   padding: 10px 16px;
   border-radius: 6px;
   margin-bottom: 16px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 13px;
 }
 .review-banner-msg { flex: 1; }
@@ -730,7 +752,7 @@ body.sidebar-open {
   border-radius: 4px;
   padding: 4px 10px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   white-space: nowrap;
   font-weight: 600;
@@ -749,7 +771,7 @@ body.sidebar-open {
 .vocab-exercise-type {
   padding: 12px;
   border-bottom: 1px solid var(--border);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .vocab-exercise-type label {
   display: block;
@@ -768,14 +790,14 @@ body.sidebar-open {
   border-radius: 3px;
   background: var(--white);
   color: var(--text);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
 }
 .vocab-progress {
   padding: 12px;
   border-bottom: 1px solid var(--border);
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
 }
 .vocab-progress-label {
@@ -788,7 +810,7 @@ body.sidebar-open {
   margin: 12px;
   padding: 10px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   background: var(--accent);
   color: var(--white);
@@ -840,7 +862,7 @@ body.sidebar-open {
   font-weight: 600;
   color: var(--text);
   margin-bottom: 8px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 .vocab-card-article {
   font-size: 14px;
@@ -879,7 +901,7 @@ body.sidebar-open {
 .vocab-action-btn {
   padding: 10px 20px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -916,7 +938,7 @@ body.sidebar-open {
   cursor: pointer;
   transition: all 0.15s;
   font-size: 14px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 .vocab-mc-option:hover {
   border-color: var(--accent);
@@ -938,7 +960,7 @@ body.sidebar-open {
   width: 100%;
   padding: 12px;
   font-size: 14px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   border: 2px solid var(--border);
   border-radius: 4px;
   margin-bottom: 12px;
@@ -969,7 +991,7 @@ body.sidebar-open {
 .vocab-back-btn {
   padding: 10px 16px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   background: transparent;
   color: var(--text-muted);
   border: 1px solid var(--border);
@@ -987,7 +1009,7 @@ body.sidebar-open {
   padding: 32px 48px;
   max-width: 900px;
   margin: 0 auto;
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-content);
 }
 .grammar-phase-selector {
   display: flex;
@@ -997,7 +1019,7 @@ body.sidebar-open {
 .grammar-phase-btn {
   padding: 6px 14px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--border);
@@ -1041,7 +1063,7 @@ body.sidebar-open {
   display: block;
   margin-top: 10px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -1052,7 +1074,7 @@ body.sidebar-open {
   border-left: 3px solid var(--accent);
   border-radius: 0 4px 4px 0;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   line-height: 1.6;
   color: var(--text);
 }
@@ -1060,7 +1082,7 @@ body.sidebar-open {
   display: inline-block;
   padding: 5px 12px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -1081,7 +1103,7 @@ body.sidebar-open {
 .grammar-paradigm-panel.visible { display: block; }
 .grammar-paradigm-panel h4 {
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent);
@@ -1091,7 +1113,7 @@ body.sidebar-open {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .paradigm-table th, .paradigm-table td {
   padding: 6px 12px;
@@ -1119,7 +1141,7 @@ body.sidebar-open {
 .grammar-question {
   margin-bottom: 16px;
   font-size: 14px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   line-height: 1.6;
 }
 .grammar-question strong { color: var(--accent); }
@@ -1135,7 +1157,7 @@ body.sidebar-open {
   text-align: left;
   padding: 10px 16px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -1152,7 +1174,7 @@ body.sidebar-open {
   width: 100%;
   padding: 12px 16px;
   font-size: 15px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--white);
@@ -1173,7 +1195,7 @@ body.sidebar-open {
   border-radius: 6px;
   margin-bottom: 20px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   line-height: 1.65;
 }
 .grammar-feedback.visible { display: block; }
@@ -1201,7 +1223,7 @@ body.sidebar-open {
 }
 .grammar-stats-panel h4 {
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent);
@@ -1211,7 +1233,7 @@ body.sidebar-open {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .grammar-stats-table th, .grammar-stats-table td {
   padding: 5px 10px;
@@ -1231,7 +1253,7 @@ body.sidebar-open {
   padding: 40px 20px;
   text-align: center;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -1242,7 +1264,7 @@ body.sidebar-open {
   background: var(--sidebar-bg);
   border: 1px solid var(--border);
   border-radius: 6px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.65;
   color: var(--text-muted);
@@ -1263,7 +1285,7 @@ body.sidebar-open {
   background: var(--sidebar-bg);
   border-radius: 4px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
 }
 .grammar-active-selection strong { color: var(--text); }
@@ -1377,7 +1399,7 @@ body.sidebar-open {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-ui);
     color: #fff;
   }
 
@@ -1426,7 +1448,7 @@ body.sidebar-open {
     background: transparent;
     color: rgba(255,255,255,0.65);
     font-size: 10px;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: var(--font-ui);
     font-weight: 500;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -1874,7 +1896,7 @@ body.sidebar-open {
   flex: 1;
   padding: 8px 4px;
   font-size: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-align: center;
   cursor: pointer;
   border: none;
@@ -1903,7 +1925,7 @@ body.sidebar-open {
   flex: 1;
   overflow-y: auto;
   padding: 8px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Collapsible unit header with arrow and progress badge */
@@ -2004,7 +2026,7 @@ body.sidebar-open {
 .unit-item {
   padding: 7px 10px;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border-radius: 4px;
   margin-bottom: 3px;
@@ -2103,7 +2125,7 @@ body.sidebar-open {
   padding: 12px 20px;
   background: var(--white);
   border-bottom: 1px solid var(--border);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .learning-path-label {
@@ -2161,7 +2183,7 @@ body.sidebar-open {
   font-size: 11px;
   color: var(--text-muted);
   margin-bottom: 8px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .lesson-breadcrumb span {
@@ -2189,7 +2211,7 @@ body.sidebar-open {
 .lesson-progress {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Scrollable content area */
@@ -2205,7 +2227,7 @@ body.sidebar-open {
 /* Base class for content blocks */
 .lesson-block {
   margin-bottom: 20px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   line-height: 1.7;
 }
 
@@ -2238,7 +2260,7 @@ body.sidebar-open {
   background: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
   margin: 14px 0;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 
 .lesson-block.example .example-german {
@@ -2263,7 +2285,7 @@ body.sidebar-open {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 
 .lesson-block.table th {
@@ -2400,7 +2422,7 @@ body.sidebar-open {
   font-weight: 700;
   color: var(--text);
   margin-bottom: 14px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .lesson-vocab-list {
@@ -2421,12 +2443,12 @@ body.sidebar-open {
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 2px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 
 .lesson-vocab-item .vocab-english {
   color: var(--text-muted);
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
 }
 
 /* Lesson navigation: bottom buttons */
@@ -2443,7 +2465,7 @@ body.sidebar-open {
 .lesson-nav button {
   padding: 10px 20px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -2508,7 +2530,7 @@ body.sidebar-open {
 .exercise-header .exercise-progress {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Container for one exercise at a time */
@@ -2527,7 +2549,7 @@ body.sidebar-open {
   font-weight: 600;
   color: var(--text);
   margin-bottom: 16px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   padding: 12px;
   background: rgba(139, 69, 19, 0.06);
   border-radius: 4px;
@@ -2546,7 +2568,7 @@ body.sidebar-open {
   font-size: 16px;
   font-weight: 500;
   color: var(--accent);
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   padding: 14px;
   background: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
@@ -2556,7 +2578,7 @@ body.sidebar-open {
   width: 100%;
   min-height: 100px;
   padding: 12px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   font-size: 14px;
   line-height: 1.6;
   border: 1px solid var(--border);
@@ -2582,7 +2604,7 @@ body.sidebar-open {
 
 .exercise-identify .identify-sentence {
   font-size: 15px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   line-height: 1.8;
   padding: 14px;
   background: rgba(0, 0, 0, 0.02);
@@ -2631,7 +2653,7 @@ body.sidebar-open {
 
 .exercise-fill-blank .sentence-display {
   font-size: 15px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   line-height: 1.8;
   padding: 14px;
   background: rgba(0, 0, 0, 0.02);
@@ -2661,7 +2683,7 @@ body.sidebar-open {
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   transition: all 0.1s;
 }
 
@@ -2690,7 +2712,7 @@ body.sidebar-open {
   font-weight: 700;
   color: var(--text);
   margin-bottom: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .match-items {
@@ -2733,7 +2755,7 @@ body.sidebar-open {
 
 .exercise-parse .parse-sentence {
   font-size: 15px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   line-height: 1.8;
   padding: 14px;
   background: rgba(0, 0, 0, 0.02);
@@ -2746,14 +2768,14 @@ body.sidebar-open {
   font-weight: 600;
   color: var(--text);
   margin-bottom: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .exercise-parse .parse-answer {
   width: 100%;
   min-height: 60px;
   padding: 12px;
-  font-family: 'Georgia', serif;
+  font-family: var(--font-content);
   font-size: 13px;
   line-height: 1.6;
   border: 1px solid var(--border);
@@ -2780,7 +2802,7 @@ body.sidebar-open {
   font-size: 13px;
   font-weight: 500;
   display: none;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .exercise-feedback.correct {
@@ -2816,7 +2838,7 @@ body.sidebar-open {
 .exercise-nav button {
   padding: 10px 20px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -2886,13 +2908,13 @@ body.sidebar-open {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .review-header .review-progress {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Locked review overlay */
@@ -2947,7 +2969,7 @@ body.sidebar-open {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .review-score .score-display {
@@ -2959,7 +2981,7 @@ body.sidebar-open {
 .review-score .score-breakdown {
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 
@@ -3043,7 +3065,7 @@ body.sidebar-open {
 .unit-complete .completion-buttons button {
   padding: 12px 24px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -3515,7 +3537,7 @@ body.sidebar-open {
 .conv-scenario-item {
   padding: 10px 12px;
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   cursor: pointer;
   border-radius: 4px;
   margin-bottom: 2px;
@@ -3543,7 +3565,7 @@ body.sidebar-open {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--accent);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .conv-chat-area {
   display: flex;
@@ -3560,14 +3582,14 @@ body.sidebar-open {
 .conv-chat-header h3 {
   font-size: 16px;
   font-weight: 600;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text);
   margin-bottom: 4px;
 }
 .conv-chat-header p {
   font-size: 12px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .conv-messages {
   flex: 1;
@@ -3584,7 +3606,7 @@ body.sidebar-open {
   border-radius: 12px;
   font-size: 14px;
   line-height: 1.5;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .conv-msg.assistant {
   align-self: flex-start;
@@ -3623,7 +3645,7 @@ body.sidebar-open {
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 14px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   min-height: 44px;
   max-height: 120px;
   line-height: 1.4;
@@ -3664,7 +3686,7 @@ body.sidebar-open {
   border-radius: 8px;
   font-size: 12px;
   cursor: pointer;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   min-height: 44px;
   transition: all 0.15s;
 }
@@ -3675,7 +3697,7 @@ body.sidebar-open {
   gap: 5px;
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -3694,7 +3716,7 @@ body.sidebar-open {
   border: 1px solid #d0574e;
   color: #d0574e;
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -3707,7 +3729,7 @@ body.sidebar-open {
   max-width: 720px;
   margin: 0 auto;
   padding: 24px 20px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -3733,7 +3755,7 @@ body.sidebar-open {
   border: none;
   color: #fff;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   padding: 10px 20px;
   border-radius: 7px;
   cursor: pointer;
@@ -3746,7 +3768,7 @@ body.sidebar-open {
   text-align: center;
   color: var(--text-muted);
   font-size: 14px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .conv-no-api h3 {
   color: var(--accent);
@@ -3816,7 +3838,7 @@ select:focus-visible, a:focus-visible {
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   flex-shrink: 0;
 }
 .cefr-A1, .cefr-A2 { background: #16a34a; }
@@ -3846,7 +3868,7 @@ select:focus-visible, a:focus-visible {
 }
 .stats-section-title {
   font-size: 12px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -3878,7 +3900,7 @@ select:focus-visible, a:focus-visible {
 }
 .stat-card-label {
   font-size: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   color: var(--text-muted);
@@ -3887,12 +3909,12 @@ select:focus-visible, a:focus-visible {
 .stat-card-value {
   font-size: 20px;
   font-weight: 700;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text);
 }
 .stat-card-sub {
   font-size: 11px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -3921,7 +3943,7 @@ select:focus-visible, a:focus-visible {
   flex: 1;
   text-align: center;
   font-size: 8px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   color: var(--text-muted);
 }
 .stats-metric-row {
@@ -3930,7 +3952,7 @@ select:focus-visible, a:focus-visible {
   justify-content: space-between;
   padding: 7px 0;
   border-bottom: 1px solid rgba(0,0,0,0.05);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 13px;
 }
 .stats-metric-row:last-child { border-bottom: none; }
@@ -3944,7 +3966,7 @@ select:focus-visible, a:focus-visible {
   width: 100%;
   padding: 10px 16px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   cursor: pointer;
   border: 1px solid var(--accent);
@@ -3963,7 +3985,7 @@ select:focus-visible, a:focus-visible {
   padding: 14px 16px;
   font-size: 13px;
   line-height: 1.7;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 .stats-assessment-result h4 {
   font-size: 13px;
@@ -3991,7 +4013,7 @@ select:focus-visible, a:focus-visible {
   color: var(--accent);
   cursor: pointer;
   font-size: 10px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   text-decoration: underline;
 }
 @media (max-width: 600px) {
@@ -4035,7 +4057,7 @@ select:focus-visible, a:focus-visible {
   padding: 10px 18px;
   border-radius: 8px;
   font-size: 13px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui);
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   z-index: 9999;
   align-items: center;
@@ -4170,7 +4192,7 @@ select:focus-visible, a:focus-visible {
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
     <h2 id="settings-modal-title">Settings</h2>
     <label>LLM Provider</label>
-    <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
+    <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:var(--font-ui);background:var(--white);color:var(--text);">
       <option value="anthropic">Anthropic (Claude)</option>
       <option value="openai">OpenAI (GPT-4o-mini)</option>
       <option value="gemini">Google (Gemini)</option>
@@ -4183,14 +4205,14 @@ select:focus-visible, a:focus-visible {
     <p class="modal-note">Optional. When set, OpenAI's neural TTS is used for German audio regardless of your LLM provider above — so you can use Anthropic or Gemini for evaluation while still using OpenAI for speech. If blank, falls back to the OpenAI LLM key (when provider is OpenAI) or browser voices.</p>
     <label>German Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
-      <select id="voice-de-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
+      <select id="voice-de-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font-ui);background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
       <button id="voice-de-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
     </div>
     <label>English Voice</label>
     <div style="display:flex;gap:6px;align-items:center;">
-      <select id="voice-en-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
+      <select id="voice-en-select" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:var(--font-ui);background:var(--white);color:var(--text);">
         <option value="">Auto (best available)</option>
       </select>
       <button id="voice-en-preview" class="modal-btn" style="white-space:nowrap;">Preview</button>
@@ -4306,19 +4328,19 @@ select:focus-visible, a:focus-visible {
       <div class="stats-section">
         <div class="stats-section-title" id="stats-perf-toggle"><span class="section-arrow">&#9660;</span> Performance Overview</div>
         <div class="stats-section-content" id="stats-perf-content">
-          <div style="margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Translation</div>
+          <div style="margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Translation</div>
           <div id="stats-translation-metrics"></div>
 
-          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Vocabulary</div>
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Vocabulary</div>
           <div id="stats-vocab-metrics"></div>
 
-          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Grammar</div>
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Grammar</div>
           <div id="stats-grammar-metrics"></div>
 
-          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Conversation</div>
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Conversation</div>
           <div id="stats-conv-metrics"></div>
 
-          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:'Helvetica Neue',Arial,sans-serif;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Streak</div>
+          <div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Streak</div>
           <div id="stats-streak-metrics"></div>
         </div>
       </div>
@@ -19227,7 +19249,7 @@ class App {
         if (!this._storageWarningShown) {
           this._storageWarningShown = true;
           const msg = document.createElement('div');
-          msg.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#8b1a1a;color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;font-family:Helvetica Neue,Arial,sans-serif;z-index:9999;';
+          msg.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#8b1a1a;color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;font-family:var(--font-ui);z-index:9999;';
           msg.textContent = 'Storage full — progress could not be saved. Clear browser storage to continue saving.';
           document.body.appendChild(msg);
           setTimeout(() => { msg.remove(); this._storageWarningShown = false; }, 5000);
@@ -20154,7 +20176,7 @@ Format your response as JSON: {"problems": ["problem 1 description", "problem 2 
     el.className = "visible fair";
     document.getElementById("eval-score").textContent = "";
     let guidedHtml = `<h4 style="margin:0 0 8px;font-size:14px;color:var(--accent);">Review Your Translation</h4>`;
-    guidedHtml += `<ul style="margin:0 0 10px;padding-left:18px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;line-height:1.7;">`;
+    guidedHtml += `<ul style="margin:0 0 10px;padding-left:18px;font-size:13px;font-family:var(--font-ui);line-height:1.7;">`;
     guidedHtml += (result.problems || []).map(p => `<li>${this._escapeHtml(p)}</li>`).join("");
     guidedHtml += `</ul>`;
     if (result.encouragement) {
@@ -21545,7 +21567,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
 
     let html = `<div class="vocab-exercise">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',sans-serif;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-muted);font-family:var(--font-ui);">
         <span>${this.vocabCurrentIdx + 1} / ${this.vocabItems.length}</span>
         <button class="vocab-back-btn" id="vocab-back-practice">Back to Batches</button>
       </div>`;
@@ -21654,7 +21676,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const options = this._shuffleArray([item, ...distractors]);
 
     let html = `<div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:14px;color:var(--text-muted);margin-bottom:8px;font-family:'Helvetica Neue',sans-serif;">What does this mean?</div>`;
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:8px;font-family:var(--font-ui);">What does this mean?</div>`;
 
     if (item.section === "Noun" || item.section.includes("Noun")) {
       const parts = item.german.split(" ");
@@ -21693,7 +21715,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
     html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:10px;">&#9654; Pronounce</button>`;
 
-    html += `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-family:'Helvetica Neue',sans-serif;">Type the English meaning</div>`;
+    html += `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-family:var(--font-ui);">Type the English meaning</div>`;
     html += `</div>`;
     html += `<input type="text" class="vocab-typed-input" id="vocab-typed-input" placeholder="Enter translation..." autofocus>`;
     html += `<div id="vocab-typed-feedback" style="display:none;"></div>`;
@@ -22885,8 +22907,8 @@ Lesson: ${ex.profile.description}`;
   renderGrammarComplete(container) {
     const profile = this.grammarSelectedProfile;
     let html = `<div style="text-align:center;padding:40px 20px;">`;
-    html += `<h2 style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;margin-bottom:16px;">Session Complete</h2>`;
-    html += `<p style="font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--text-muted);margin-bottom:20px;">You have completed all exercises for <strong>${profile.description}</strong> in this session.</p>`;
+    html += `<h2 style="font-family:var(--font-ui);font-size:16px;margin-bottom:16px;">Session Complete</h2>`;
+    html += `<p style="font-size:13px;font-family:var(--font-ui);color:var(--text-muted);margin-bottom:20px;">You have completed all exercises for <strong>${profile.description}</strong> in this session.</p>`;
     html += `<button class="action-btn" id="grammar-restart-btn" style="background:var(--accent);color:white;">Practice Again</button>`;
     html += `</div>`;
 
@@ -25018,7 +25040,7 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
   _renderAssessmentArea(cached) {
     const area = document.getElementById("stats-assessment-area");
     if (!cached) {
-      area.innerHTML = `<p style="font-size:12px;color:var(--text-muted);font-family:'Helvetica Neue',Arial,sans-serif;">No assessment yet. Click the button above to generate an LLM-based proficiency assessment.</p>`;
+      area.innerHTML = `<p style="font-size:12px;color:var(--text-muted);font-family:var(--font-ui);">No assessment yet. Click the button above to generate an LLM-based proficiency assessment.</p>`;
       return;
     }
     let recHtml = "";
@@ -25043,7 +25065,7 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
   async generateAssessment() {
     if (!this.apiKey) {
       const area = document.getElementById("stats-assessment-area");
-      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;">Please configure an API key in Settings to generate an assessment.</p>`;
+      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:var(--font-ui);">Please configure an API key in Settings to generate an assessment.</p>`;
       return;
     }
 
@@ -25118,7 +25140,7 @@ Assess this learner's current CEFR level for reading/translating academic German
       this._renderAssessmentArea(result);
     } catch (e) {
       const area = document.getElementById("stats-assessment-area");
-      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:'Helvetica Neue',Arial,sans-serif;">Assessment failed: ${this._escapeHtml(e.message)}</p>`;
+      area.innerHTML = `<p style="color:var(--error);font-size:12px;font-family:var(--font-ui);">Assessment failed: ${this._escapeHtml(e.message)}</p>`;
     } finally {
       btn.disabled = false;
       btn.textContent = "Generate Assessment";
