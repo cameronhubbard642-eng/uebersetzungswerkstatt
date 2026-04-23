@@ -19135,14 +19135,20 @@ class App {
     document.getElementById("stats-modal").addEventListener("click", (e) => {
       if (e.target.id === "stats-modal") this.closeStats();
     });
+    document.getElementById("reset-confirm-overlay").addEventListener("click", (e) => {
+      if (e.target.id === "reset-confirm-overlay") this.closeResetConfirm();
+    });
+    document.getElementById("reset-cancel-btn").addEventListener("click", () => this.closeResetConfirm());
+    document.getElementById("reset-confirm-btn").addEventListener("click", () => this._doReset());
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" && e.key !== "Tab") return;
-      const modalIds = ["settings-modal", "import-modal", "stats-modal", "sync-modal"];
+      const modalIds = ["reset-confirm-overlay", "settings-modal", "import-modal", "stats-modal", "sync-modal"];
       const active = modalIds.map(id => document.getElementById(id)).find(el => el.classList.contains("visible"));
       if (!active) return;
       if (e.key === "Escape") {
         e.preventDefault();
-        if (active.id === "settings-modal") this.closeSettings();
+        if (active.id === "reset-confirm-overlay") this.closeResetConfirm();
+        else if (active.id === "settings-modal") this.closeSettings();
         else if (active.id === "import-modal") this.closeImport();
         else if (active.id === "stats-modal") this.closeStats();
         else if (active.id === "sync-modal") this.closeSync();
@@ -20796,18 +20802,33 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   resetProgress() {
-    if (confirm("Reset all progress? This clears vocabulary tracking, grammar tracking, and exercise completion.")) {
-      this.completed = {};
-      this.save("completed", this.completed);
-      this.grammarProgress = {};
-      this.grammarUnitProgress = {};
-      this.vocabProgress = {};
-      this.save("grammarProgress", this.grammarProgress);
-      this.save("grammarUnitProgress", this.grammarUnitProgress);
-      this.save("vocabProgress", this.vocabProgress);
-      this.render();
-      this.closeSettings();
-    }
+    this.openResetConfirm();
+  }
+
+  openResetConfirm() {
+    this._resetConfirmFocusOrigin = document.activeElement;
+    document.getElementById("reset-confirm-overlay").classList.add("visible");
+    document.getElementById("reset-cancel-btn").focus();
+  }
+
+  closeResetConfirm() {
+    document.getElementById("reset-confirm-overlay").classList.remove("visible");
+    if (this._resetConfirmFocusOrigin) { this._resetConfirmFocusOrigin.focus(); this._resetConfirmFocusOrigin = null; }
+  }
+
+  _doReset() {
+    this.completed = {};
+    this.save("completed", this.completed);
+    this.grammarProgress = {};
+    this.grammarUnitProgress = {};
+    this.vocabProgress = {};
+    this.save("grammarProgress", this.grammarProgress);
+    this.save("grammarUnitProgress", this.grammarUnitProgress);
+    this.save("vocabProgress", this.vocabProgress);
+    FSRS.resetAll();
+    this.render();
+    this.closeResetConfirm();
+    this.closeSettings();
   }
 
   openSync() {
@@ -24862,6 +24883,17 @@ Assess this learner's current CEFR level for reading/translating academic German
 // Initialize
 window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 </script>
+
+<div class="modal-overlay" id="reset-confirm-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reset-confirm-title" style="max-width:360px;">
+    <h2 id="reset-confirm-title">Fortschritt zurücksetzen?</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin:8px 0 20px;">Dieser Vorgang löscht Vokabel-, Grammatik- und Übungsfortschritt sowie alle FSRS-Lernkarten. Dies kann nicht rückgängig gemacht werden.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="modal-btn" id="reset-cancel-btn">Abbrechen</button>
+      <button class="modal-btn" id="reset-confirm-btn" style="color:var(--error);border-color:var(--error);">Zurücksetzen</button>
+    </div>
+  </div>
+</div>
 
 <div id="update-banner">
   Neue Version verfügbar
