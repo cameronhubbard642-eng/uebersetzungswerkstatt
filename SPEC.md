@@ -690,6 +690,8 @@ The practical consequence: every fetch the German app makes (to Anthropic, OpenA
 
 #### 7.3.2 Baseline CSP
 
+**Status (as of 2026-04-19, WP-FE-G-1 Commit 1):** German `index.html:7` carries a `Content-Security-Policy-Report-Only` meta with the canonical allow-list (full string in the file; see also `plans/work-packages/WP-FE-G-1_design.md §1`). Promotion to enforcing pending Auditor verification (§6 of the engineer brief). The "MISSING" framing below remains until the enforcing commit lands; the Report-Only header does not enforce.
+
 **There is no Content-Security-Policy meta tag in German `index.html`.** Direct grep returns no `Content-Security-Policy`, no `http-equiv`, no `connect-src`, no `default-src`, no `script-src` anywhere in the document `<head>` (lines 1–17) or elsewhere. GitHub Pages also emits no CSP response header (`[UNVERIFIED — needs `curl -I` against the live URL to confirm]`). The German app currently runs under the browser's permissive default — any origin is reachable, any inline script executes, any external resource loads.
 
 This is a **`MISSING` at the architectural level**, not a parity-with-Spanish gap. Establishing a meta CSP is a German invariant the team has not yet committed to. It will be recorded in `plans/ARCHITECTURE.md` as a Phase-1 German architectural commitment, per Dispatch confirmation 2026-04-19.
