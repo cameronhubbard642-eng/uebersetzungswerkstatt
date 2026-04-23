@@ -15,15 +15,15 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 
 | Section | MATCH | PARTIAL | MISSING | DIVERGENT | N/A | Total |
 |---|---:|---:|---:|---:|---:|---:|
-| §11.1 Architecture | 5 | 3 | 2 | 0 | 0 | 10 |
+| §11.1 Architecture | 6 | 3 | 1 | 0 | 0 | 10 |
 | §11.2 Data Model | 3 | 1 | 5 | 1 | 0 | 10 |
 | §11.3 Features | 4 | 7 | 2 | 1 | 0 | 14 |
 | §11.4 Content | 3 | 6 | 8 | 4 | 1 | 22 |
 | §11.5 UI/UX | 2 | 4 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
-| §11.8 Configuration | 0 | 1 | 2 | 0 | 0 | 3 |
-| **Totals** | **22** | **23** | **23** | **6** | **1** | **75** |
+| §11.8 Configuration | 1 | 1 | 1 | 0 | 0 | 3 |
+| **Totals** | **24** | **23** | **21** | **6** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -37,7 +37,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 2 | Hand-authored `index.html` as the canonical source + deploy artifact | **MATCH** | Same tree is both source and deploy artifact (DevOps §8.1; single-branch). |
 | 3 | Service worker at the repo root (`sw.js`) with precache + runtime caching | **MATCH** | `sw.js:4` `CACHE_NAME='werkstatt-v10'`; precache list at `sw.js:6–14`; fetch handler `sw.js:34+`. **Note:** §11.7 row 5 captures iOS-update-detection hardening separately; §11.4 row 9 captures the precache-filename hazard (G-15 / B-3). |
 | 4 | Alternate PWA manifests for runtime-swappable app icons (N icon sets) | **MISSING (port to German)** | Single `manifest.json` at repo root. No `manifest-N.json`. German currently uses inline base64 data URIs to swap favicon/apple-touch-icon at L20650; no manifest swap. **Principal confirmed 2026-04-19 (Appendix B #B-13 resolution): replicate Spanish's per-icon-theme manifest system in German; icons land in repo as images.** See `IMPLEMENTATION_PLAN.md` WP-FE-G-15 (promoted to Phase 2 Wave A). |
-| 5 | Root-level inline head script reading `<app>_appIcon` localStorage to rewrite favicon/touch-icon/manifest href pre-paint | **MISSING** | No head `<script>` before `</head>` at L3889. `_applyAppIcon` runs only from `App.constructor` at L18939. **Scope expands post-B-13:** the head script must also rewrite `<link rel="manifest">` href across the five per-icon manifests. See `IMPLEMENTATION_PLAN.md` WP-FE-G-6. |
+| 5 | Root-level inline head script reading `<app>_appIcon` localStorage to rewrite favicon/touch-icon/manifest href pre-paint | **MATCH** | `index.html:14` — inline IIFE `<script>` reads `localStorage('uw_appIcon') \|\| '1'` and creates `<link rel="manifest">`, `<link rel="apple-touch-icon">`, `<link rel="icon">` elements via `document.createElement` before any static link tags exist in the DOM. Correct hrefs are injected at parse time; no wrong-icon fetches are initiated. `_applyAppIcon` also rewrites all three hrefs at runtime on icon change. WP-FE-G-6 (v27). |
 | 6 | `class App` singleton instantiated on `DOMContentLoaded`, assigned to `window.app` | **MATCH** | L24670 `window.app = new App()` inside `DOMContentLoaded` listener. |
 | 7 | Support singletons: `FSRS`, `ReviewScheduler`, `AudioCache`, `IDB mirror` | **PARTIAL** | `FSRS` present (L18651 IIFE). `ReviewScheduler` **absent** — German calls `FSRS.review(key, rating)` directly. `AudioCache` **absent** (no `audio/`). IDB mirror **absent** (§4.1 #3). |
 | 8 | Mode switching via `display:none` toggle on four content panels, no router, no virtual DOM | **MATCH** | `switchMode` at L20916 toggles `.style.display` on the four `#*-content` panels. No router, no `history` API use, no `startViewTransition`. |
@@ -172,7 +172,7 @@ These do not have explicit Spanish §11.7 checkboxes but map to Spanish §8.3 ha
 | # | Row | Score | Evidence / justification |
 |---|---|---|---|
 | 1 | Settings-modal surface for LLM provider/key, TTS provider/keys/voice, browser voice pickers, app icon picker, reset glossing, reset progress | **PARTIAL** | LLM provider+key: MATCH. TTS provider selector: MISSING. ElevenLabs voice: MISSING. Voice pickers: MATCH. Icon picker: MATCH-shape (DIVERGENT-storage — base64 inline rather than disk PNGs + per-icon manifests). Reset glossing: N/A. Reset progress: PARTIAL (native `confirm()`). |
-| 2 | Pre-paint icon apply via inline head script | **MISSING** | No head `<script>` before `</head>`. `_applyAppIcon` runs only from `App.constructor` at L18939. See FE-G-8. |
+| 2 | Pre-paint icon apply via inline head script | **MATCH** | `index.html:14` — IIFE creates `<link rel="manifest">`, `<link rel="apple-touch-icon">`, `<link rel="icon">` with the correct per-icon hrefs before any other link tags in the DOM. `_applyAppIcon` covers runtime re-applies on icon change. WP-FE-G-6 (v27). |
 | 3 | `_checkExportReminder` thresholds: 7 days since export OR ≥5 completions with no export | **MISSING** | No reminder mechanism (zero-hit grep). See §11.3 row 5. |
 
 ---
