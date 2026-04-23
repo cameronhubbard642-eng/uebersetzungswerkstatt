@@ -708,6 +708,44 @@ body.sidebar-open {
   color: var(--text-muted);
   font-weight: normal;
 }
+
+/* ── Due-review banners ──────────────────────────────────── */
+.review-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+}
+.review-banner-msg { flex: 1; }
+.review-banner-btn {
+  background: white;
+  color: var(--accent);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.review-banner-btn:hover { opacity: 0.85; }
+.review-banner-dismiss {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.review-banner-dismiss:hover { color: white; }
 .vocab-exercise-type {
   padding: 12px;
   border-bottom: 1px solid var(--border);
@@ -21033,6 +21071,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           <p>Three exercise types are available: <strong>Flashcard</strong> (self-assessed recall — click the card to reveal the answer, then mark whether you knew it), <strong>Multiple Choice</strong> (select the correct English translation from four options), and <strong>Typed Response</strong> (type the English translation from memory). You can switch exercise types at any time using the dropdown above the batch list.</p>
           <p>The sidebar tracks your progress as completed/total for each batch and category. An item is marked complete when you answer it correctly. Your progress persists across sessions. Selecting a batch you have already completed will let you practice it again. To clear all vocabulary progress, use the Reset option in Settings.</p>
         </div>`;
+        this._injectReviewBanner("vocabulary");
       }
     } else if (mode === "grammar") {
       document.getElementById("exercise-list").style.display = "none";
@@ -21584,6 +21623,52 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   /**
    * Get overdue vocab FSRS card keys and their corresponding VOCAB items.
    */
+  /**
+   * Inject a due-review banner into the top of the vocab or grammar content area.
+   * mode: "vocabulary" | "grammar"
+   */
+  _injectReviewBanner(mode) {
+    const isVocab = mode === "vocabulary";
+    const prefix = isVocab ? "vocab_" : "grammar_";
+    const count = FSRS.getOverdueKeys().filter(k => k.startsWith(prefix)).length;
+    if (count === 0) return;
+    const containerId = isVocab ? "vocab-content" : "grammar-content";
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const bannerId = isVocab ? "vocab-review-banner" : "grammar-review-banner";
+    if (document.getElementById(bannerId)) return; // already present
+    const itemWord = isVocab
+      ? (count === 1 ? "Wort" : "Wörter")
+      : (count === 1 ? "Übung" : "Übungen");
+    const reviewCall = isVocab ? "startVocabReview()" : "startGrammarReview()";
+    const banner = document.createElement("div");
+    banner.className = "review-banner";
+    banner.id = bannerId;
+    banner.innerHTML =
+      `<span class="review-banner-msg">${count} ${itemWord} zur Wiederholung fällig</span>` +
+      `<button class="review-banner-btn" onclick="app.${reviewCall}">Jetzt wiederholen</button>` +
+      `<button class="review-banner-dismiss" aria-label="Schließen" onclick="this.closest('.review-banner').remove()">&#x2715;</button>`;
+    container.prepend(banner);
+  }
+
+  /** Find the grammar profile with the most overdue FSRS items (for review routing). */
+  _getOverdueGrammarProfile() {
+    const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
+    if (overdueKeys.length === 0) return GRAMMAR_PROFILES[0];
+    const counts = {};
+    for (const key of overdueKeys) {
+      for (const p of GRAMMAR_PROFILES) {
+        if (key.startsWith(`grammar_${p.pattern}_`) || key === `grammar_${p.pattern}`) {
+          counts[p.pattern] = (counts[p.pattern] || 0) + 1;
+          break;
+        }
+      }
+    }
+    if (!Object.keys(counts).length) return GRAMMAR_PROFILES[0];
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+    return GRAMMAR_PROFILES.find(p => p.pattern === top) || GRAMMAR_PROFILES[0];
+  }
+
   _getOverdueVocabItems() {
     const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("vocab_"));
     const items = [];
@@ -21625,11 +21710,30 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
    * Start a review session of overdue grammar items.
    */
   startGrammarReview() {
-    // Collect overdue grammar keys
     const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
     if (overdueKeys.length === 0) return;
-    // For now, show an alert with count — full review queue will be built by UX Implementer (Feature 3/4)
-    alert(`${overdueKeys.length} grammar item(s) due for review. Start a grammar practice session to review them.`);
+
+    // Route to the profile with the most overdue items
+    const profile = this._getOverdueGrammarProfile();
+    this._resetAllTTSState();
+    this.grammarSelectedProfile = profile;
+    this.grammarCurrentIdx = 0;
+    this.grammarRetrying = false;
+    // Set a non-null activeItem so switchMode won't re-render the welcome screen
+    this.grammarActiveItem = { type: "global-review", profilePattern: profile.pattern };
+    this.generateGrammarExercises();
+
+    if (this.currentMode !== "grammar") {
+      this.switchMode("grammar"); // grammarActiveItem is set → skips _renderGrammarWelcome
+    } else {
+      this.renderGrammarSidebar_new();
+    }
+
+    const container = document.getElementById("grammar-content");
+    if (container) {
+      container.innerHTML = "";
+      this.renderGrammarContent();
+    }
   }
 
   // ============================================================
@@ -23939,6 +24043,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
       <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
       <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
     </div>`;
+    this._injectReviewBanner("grammar");
   }
 
   _sidebarHeaderHTML(title, subtitle) {
