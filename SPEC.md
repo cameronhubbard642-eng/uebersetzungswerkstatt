@@ -875,7 +875,7 @@ All user-configurable settings live in the Settings modal (`#settings-modal`, L3
 No `.env`, no feature flags, no config files. Code-level constants:
 
 - `sw.js`: `CACHE_NAME = 'werkstatt-v10'` (L4) — bumped per release.
-- `FSRS` IIFE (L18651): 19-element weights vector (Spanish cites 17). FSRS algorithm version semantics `[UNVERIFIED]` — Senior Dev owns algo parity.
+- `FSRS` IIFE (L18651): FSRS v4.5, 19-weight vector (Spanish uses FSRS v4 with 17 weights). Reconciled 2026-04-23 (WP-ARCH-G-2): German v4.5 is algorithmically ahead; no downgrade warranted. W[17]/W[18] (short-term stability formula for Learning/Relearning states) defined but unused — open item in `ARCHITECTURE.md §1.4`.
 - `App.llmComplete` default timeout: `API_TIMEOUT_MS = 30000` at L18921.
 - Export reminder thresholds: **not applicable** (no reminder mechanism exists).
 

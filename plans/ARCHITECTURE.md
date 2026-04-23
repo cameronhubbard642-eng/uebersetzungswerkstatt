@@ -75,13 +75,21 @@ Spanish §1.3 includes `sessionStorage` as a tab-scoped fallback for API-key vis
 
 **Status: provisional (decline).** Will be promoted to a recorded ruling in §5 once the IDB mirror lands.
 
-### 1.4 FSRS as the only scheduler — **enforced (with version reconciliation pending)**
+### 1.4 FSRS as the only scheduler — **enforced (v4.5; W[17]/W[18] short-term formula open)**
 
 - Spaced repetition uses the embedded `FSRS` IIFE at L18651. The implementation owns its own storage key (`uw_fsrsState` at L18665).
 - FSRS keys share a flat namespace across vocab and grammar, with prefix conventions: `vocab_<section>_<num>` (L21496) and `grammar_<pattern>_<paradigmKey>` (L22418).
 - There is **no** `ReviewScheduler` wrapper class in German. `class App` calls into `FSRS` directly via `FSRS.review(key, rating)` and `FSRS.getOverdueKeys()`. This is a deliberate simplification of Spanish §1.4.
 
-**Open reconciliation.** German FSRS uses a 19-element weights vector; Spanish cites 17. Whether this reflects a different FSRS-algorithm version or a different tuning of v4.5 has not been line-verified in this pass (`PARITY_GAP.md §11.2 row 9`, `SPEC.md` Verification notes). Senior Dev owns the reconciliation; until it lands, the FSRS algorithm is treated as **DIVERGENT pending** rather than `enforced`.
+**Reconciliation complete (2026-04-23, WP-ARCH-G-2).** Line-verified German FSRS (L18651) against Spanish FSRS (L29445). Findings:
+
+1. **Algorithm version.** German runs FSRS v4.5 (19 weights, exp-based `initDifficulty` via `W[4]–W[5]`, mean reversion in `nextDifficulty` via W[7]); Spanish runs FSRS v4 (17 weights, linear `initDifficulty`, difficulty-scaled `nextDifficulty`, no mean reversion). The Spanish comment labels this "FSRS-4.5 defaults" but the formula set is v4. German is algorithmically ahead; no downgrade is warranted.
+
+2. **Weight values.** German: calibrated v4.5 defaults `[0.4072, 1.1829, 3.1262, 15.4722, 7.2102, 0.5316, 1.0651, 0.0589, 1.5330, 0.1482, 1.0131, 1.8558, 0.0200, 0.3400, 1.2600, 0.2900, 2.6100, 0.5100, 0.6000]`. Spanish: older round defaults `[0.4, 0.6, 2.4, 5.8, 4.93, 0.94, 0.86, 0.01, 1.49, 0.14, 0.94, 2.18, 0.05, 0.34, 1.26, 0.29, 2.61]`. Difference is calibration provenance, not algorithmic correctness. DIVERGENT (intentional).
+
+3. **Card schema.** Field-for-field identical between German and Spanish: `{ difficulty, stability, lastReview, reps, lapses, scheduledDays, state }`. No data-model migration required.
+
+4. **Open item: W[17] and W[18] unused.** German defines W[17] = 0.51 and W[18] = 0.60 (the FSRS v4.5 short-term stability parameters) but does not implement the short-term stability formula for Learning/Relearning states (`S_short = S × e^(W[17]×(G−3+W[18]))`). All non-Again ratings in all states use `_nextRecallStability` (the long-term formula, W[8]–W[10]). Behavioral impact is mild (learning steps are short; the long-term formula produces reasonable values). Implementing the short-term formula would alter scheduling for Learning/Relearning cards — deferred to a follow-up WP pending Cam's convergence call. See `PARITY_GAP.md §11.2 row 9`.
 
 **Change conditions.** The FSRS implementation is Senior Dev Oversight's domain. Team Managers do not touch the algorithm or the weights vector. Changes to key-prefix conventions require a ruling because they affect the shared namespace. Adding a `ReviewScheduler` wrapper (to mirror Spanish §1.4) is also a Senior Dev decision and routes through the same escalation as removing one.
 
@@ -358,6 +366,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 | 2026-04-19 | §1.6 Amendment 2 (WP-ARCH-G-3): explicit `reg.update()` removed entirely — Chrome's `register()` Promise resolves after SW-1 has activated, so the `reg.active` guard from Amendment 1 still fires on first install, populating `reg.waiting` and triggering spurious banner. Per-page-load detection retained via `updateViaCache: 'none'`; mid-session detection intentionally not provided (principal-only audience). German diverges from Spanish §1.6; divergence recorded in §1.6 above. CACHE_NAME bumped to v16. PARITY_GAP §11.7 row 3 rescored MATCH→DIVERGENT (intentional, recorded). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §1.6 Amendment 3 (WP-ARCH-G-3): SW-lifecycle-state banner triggers (WP-DEP-G-2 #3 `reg.waiting && reg.active` and #4 `statechange`/`reg.active` guard) replaced by client-side last-seen CACHE_NAME tracking. Principal confirmed iOS symptom (a): banner on first load persists across reloads — diagnosed as iOS Safari producing spurious `reg.waiting` states. Fix: `GET_CACHE_NAME` SW message protocol + `uw_lastSeenCacheName` localStorage key. `lastSeen` updates only on `controllerchange`. §3.2 updated with key table. CACHE_NAME bumped to v18. PARITY_GAP §11.7 row 5 rescored MATCH→DIVERGENT (intentional, recorded). | Senior Dev Oversight Engineer |
 | 2026-04-19 | §1.6 Amendment 4 (WP-ARCH-G-3): reverted Amendments 2 and 3; ported Spanish banner/registration IIFE pattern verbatim. `reg.update()` restored inside `window.addEventListener('load', …)` to avoid Chrome double-install race. `GET_CACHE_NAME` protocol and `uw_lastSeenCacheName`/`uw_diag_controllerchange_timeout` localStorage keys removed. `reg.waiting` cold-load check and `reg.active`-guarded statechange handler restored. Dismiss button (`✕`) added. CACHE_NAME bumped to v19. All §1.6 invariants now match Spanish §1.6. PARITY_GAP §11.7 rows 3, 5, and A1 rescored DIVERGENT→MATCH. | Senior Dev Oversight Engineer |
+| 2026-04-23 | §1.4 reconciliation complete (WP-ARCH-G-2, docs-only). German FSRS confirmed as v4.5 (19 weights, exp-based `initDifficulty`, mean-reversion `nextDifficulty`); Spanish confirmed as FSRS v4 (17 weights, linear `initDifficulty`, no mean reversion — despite the Spanish comment). No convergence downgrade of German warranted. Card schema field-for-field identical; no data migration. Open item: W[17]/W[18] short-term stability formula not implemented (deferred; Cam convergence call pending). §1.4 status promoted from DIVERGENT-pending to enforced (v4.5). PARITY_GAP §11.2 row 9 DIVERGENT justification updated to verified. | Senior Dev Oversight Engineer |
 
 ---
 

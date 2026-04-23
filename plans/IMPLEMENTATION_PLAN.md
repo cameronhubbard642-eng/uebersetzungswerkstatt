@@ -55,7 +55,7 @@ Quick-scan table. Detailed cards in §§1–4.
 | WP-DEP-G-3 | 2 | SW precache + `CACHE_NAME` discipline for audio tree | DevOps | High *(if WP-CON-G-1 greenlights)* | 1 day | WP-CON-G-3 |
 | WP-CON-G-4 | 2 | ElevenLabs as second neural-TTS provider (parity with Spanish) | Frontend + Auditor | Medium *(if Principal greenlights — Open Q3)* | 2 days | WP-FE-G-1 (CSP must land first) |
 | WP-ARCH-G-1 | 3 | IndexedDB mirror (`WerkstattIDB`) + `_restoreFromIDB()` | Frontend (impl); Senior Dev (schema) | High | 3 days | WP-FE-G-3 (envelope shape settled first) |
-| WP-ARCH-G-2 | 3 | FSRS version reconciliation (19 weights vs. 17) | Senior Dev | Medium | 1 day | — |
+| WP-ARCH-G-2 | 3 | FSRS version reconciliation (19 weights vs. 17) | Senior Dev | Medium | 1 day | **CLOSED** (2026-04-23, docs-only) |
 | WP-ARCH-G-3 | 3→1 | Install-time `skipWaiting` decision + absorption of WP-DEP-G-2 scope | Senior Dev (decision); DevOps (impl) | Medium | 1 day | **CLOSED** (2026-04-19) |
 | WP-AUD-G-2 | 4 | LLM-output XSS audit — line-by-line `_escapeHtml` verification | Auditor + Frontend | Medium | 1 day | WP-FE-G-1 |
 | WP-FE-G-11 | 4 | Per-region `lang="de"` overrides + semantic landmarks + SW-banner English translation | Frontend | Medium | ½ day | — (B-12 resolved 2026-04-19) |
@@ -486,15 +486,19 @@ The remaining `adopt-and-enforce` items are the genuine Phase-3 work.
 
 ### WP-ARCH-G-2 — FSRS version reconciliation (19 weights vs. 17)
 
+**Status: CLOSED (2026-04-23, docs-only).**
+
 **Owner:** Senior Dev Oversight.
 **Source rows:** `SPEC.md §9.6`; `PARITY_GAP.md §11.2 row 9`; `ARCHITECTURE.md §1.4`.
 **Priority:** Medium. Algorithmic correctness, not user-blocking.
 
 **Scope.** Line-verify the German `FSRS` IIFE at L18651 against the Spanish version. Specifically: (a) confirm whether the 19-element weights vector reflects FSRS v4.5 with a different tuning, FSRS v5 (which has more weights), or something else; (b) whether the field set on a card is identical between Spanish and German; (c) whether `getOverdueKeys()` and the retrievability/difficulty/stability math are identical at the formula level. Decide: align German on Spanish (or vice versa), or document the divergence as intentional with a stated reason.
 
+**Outcome (WP-ARCH-G-2, 2026-04-23).** DIVERGENT (intentional). German runs FSRS v4.5 (19 weights, exp-based `initDifficulty`, mean-reversion `nextDifficulty`); Spanish runs FSRS v4 (17 weights, linear `initDifficulty`, no mean reversion) — the Spanish comment mislabels this "FSRS-4.5 defaults". German is algorithmically ahead; no downgrade warranted. Card schema field-for-field identical; no data migration required. Open item deferred to follow-up WP: W[17]/W[18] (short-term stability formula for Learning/Relearning states) are defined but unused — see `ARCHITECTURE.md §1.4`.
+
 **Exit criteria:**
-- Reconciliation outcome recorded in `ARCHITECTURE.md §1.4` change log.
-- `PARITY_GAP.md §11.2 row 9` rescored to `MATCH` (if aligned), or `DIVERGENT` with explicit "intentional because…" justification (if divergence ratified).
+- [x] Reconciliation outcome recorded in `ARCHITECTURE.md §1.4` change log.
+- [x] `PARITY_GAP.md §11.2 row 9` rescored to `DIVERGENT` with explicit "intentional because…" justification.
 
 ### WP-ARCH-G-3 — Install-time `skipWaiting` decision and action (+ absorption of WP-DEP-G-2 scope)
 
