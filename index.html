@@ -3993,8 +3993,8 @@ select:focus-visible, a:focus-visible {
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="settings-modal">
-  <div class="modal">
-    <h2>Settings</h2>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+    <h2 id="settings-modal-title">Settings</h2>
     <label>LLM Provider</label>
     <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:'Helvetica Neue',Arial,sans-serif;background:var(--white);color:var(--text);">
       <option value="anthropic">Anthropic (Claude)</option>
@@ -4064,8 +4064,8 @@ select:focus-visible, a:focus-visible {
 
 <!-- Import Modal -->
 <div class="modal-overlay" id="import-modal">
-  <div class="modal">
-    <h2>Import Text</h2>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+    <h2 id="import-modal-title">Import Text</h2>
     <p class="modal-note" style="margin-top:0">Import a JSON file with additional exercises. Expected format:</p>
     <pre style="background:var(--bg);padding:10px;border-radius:4px;font-size:11px;margin-top:8px;overflow-x:auto;line-height:1.5;">{
   "id": "my-text",
@@ -4094,9 +4094,9 @@ select:focus-visible, a:focus-visible {
 
 <!-- Statistics & Assessment Modal -->
 <div class="modal-overlay" id="stats-modal">
-  <div class="modal stats-modal">
+  <div class="modal stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
     <div class="stats-modal-header">
-      <h2><span class="cefr-badge cefr-unknown" id="stats-cefr-badge">—</span> Statistics &amp; Assessment</h2>
+      <h2 id="stats-modal-title"><span class="cefr-badge cefr-unknown" id="stats-cefr-badge">—</span> Statistics &amp; Assessment</h2>
       <button class="stats-close-btn" id="stats-close-btn" aria-label="Close statistics">&times;</button>
     </div>
     <div class="stats-modal-body">
@@ -4160,8 +4160,8 @@ select:focus-visible, a:focus-visible {
 
 <!-- Sync Progress Modal -->
 <div class="modal-overlay" id="sync-modal">
-  <div class="modal">
-    <h2>Sync Progress Across Devices</h2>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
+    <h2 id="sync-modal-title">Sync Progress Across Devices</h2>
     <p class="modal-note" style="margin-top:0">Progress is stored in this browser's localStorage and does not sync automatically. Use export/import to transfer your progress between browsers or devices.</p>
 
     <label style="margin-top:16px">Export</label>
@@ -19085,6 +19085,30 @@ class App {
     document.getElementById("stats-modal").addEventListener("click", (e) => {
       if (e.target.id === "stats-modal") this.closeStats();
     });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" && e.key !== "Tab") return;
+      const modalIds = ["settings-modal", "import-modal", "stats-modal", "sync-modal"];
+      const active = modalIds.map(id => document.getElementById(id)).find(el => el.classList.contains("visible"));
+      if (!active) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (active.id === "settings-modal") this.closeSettings();
+        else if (active.id === "import-modal") this.closeImport();
+        else if (active.id === "stats-modal") this.closeStats();
+        else if (active.id === "sync-modal") this.closeSync();
+        return;
+      }
+      const inner = active.querySelector(".modal");
+      const sel = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+      const focusable = Array.from(inner.querySelectorAll(sel)).filter(el => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first || !inner.contains(document.activeElement)) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last || !inner.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+      }
+    });
     // Active time tracking
     this._initActiveTimeTracking();
 
@@ -20655,6 +20679,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   openSettings() {
+    this._settingsFocusOrigin = document.activeElement;
     document.getElementById("api-key-input").value = this.apiKey;
     document.getElementById("api-provider-select").value = this.apiProvider;
     document.getElementById("tts-api-key-input").value = this.ttsApiKey;
@@ -20663,6 +20688,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const iconRadio = document.querySelector(`#icon-picker input[value="${this.appIcon}"]`);
     if (iconRadio) iconRadio.checked = true;
     document.getElementById("settings-modal").classList.add("visible");
+    const _sf = document.querySelector('#settings-modal .modal select:not([disabled]),#settings-modal .modal input:not([disabled]),#settings-modal .modal button:not([disabled])');
+    if (_sf) _sf.focus();
     // Bind voice preview buttons
     const previewDe = document.getElementById("voice-de-preview");
     const previewEn = document.getElementById("voice-en-preview");
@@ -20672,6 +20699,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
   closeSettings() {
     document.getElementById("settings-modal").classList.remove("visible");
+    if (this._settingsFocusOrigin) { this._settingsFocusOrigin.focus(); this._settingsFocusOrigin = null; }
   }
 
   saveSettings() {
@@ -20736,13 +20764,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   openSync() {
+    this._syncFocusOrigin = document.activeElement;
     document.getElementById("sync-status").textContent = "";
     document.getElementById("sync-file-input").value = "";
     document.getElementById("sync-modal").classList.add("visible");
+    const _sf = document.querySelector('#sync-modal .modal button:not([disabled]),#sync-modal .modal input:not([disabled])');
+    if (_sf) _sf.focus();
   }
 
   closeSync() {
     document.getElementById("sync-modal").classList.remove("visible");
+    if (this._syncFocusOrigin) { this._syncFocusOrigin.focus(); this._syncFocusOrigin = null; }
   }
 
   exportProgress() {
@@ -20900,13 +20932,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   openImport() {
+    this._importFocusOrigin = document.activeElement;
     document.getElementById("import-status").textContent = "";
     document.getElementById("file-input").value = "";
     document.getElementById("import-modal").classList.add("visible");
+    const _sf = document.querySelector('#import-modal .modal button:not([disabled]),#import-modal .modal input:not([disabled])');
+    if (_sf) _sf.focus();
   }
 
   closeImport() {
     document.getElementById("import-modal").classList.remove("visible");
+    if (this._importFocusOrigin) { this._importFocusOrigin.focus(); this._importFocusOrigin = null; }
   }
 
   doImport() {
@@ -24467,12 +24503,16 @@ Be encouraging but honest. Keep the whole summary under 250 words.`;
 
   // ── Statistics Modal ──────────────────────────────────────
   openStats() {
+    this._statsFocusOrigin = document.activeElement;
     this._renderStatsContent();
     document.getElementById("stats-modal").classList.add("visible");
+    const _sf = document.querySelector('#stats-modal .modal button:not([disabled])');
+    if (_sf) _sf.focus();
   }
 
   closeStats() {
     document.getElementById("stats-modal").classList.remove("visible");
+    if (this._statsFocusOrigin) { this._statsFocusOrigin.focus(); this._statsFocusOrigin = null; }
   }
 
   _renderStatsContent() {

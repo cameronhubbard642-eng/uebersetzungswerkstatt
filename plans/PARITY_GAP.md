@@ -19,11 +19,11 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | §11.2 Data Model | 3 | 1 | 5 | 1 | 0 | 10 |
 | §11.3 Features | 4 | 7 | 2 | 1 | 0 | 14 |
 | §11.4 Content | 3 | 6 | 8 | 4 | 1 | 22 |
-| §11.5 UI/UX | 1 | 4 | 1 | 0 | 0 | 6 |
+| §11.5 UI/UX | 2 | 4 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
 | §11.8 Configuration | 0 | 1 | 2 | 0 | 0 | 3 |
-| **Totals** | **21** | **23** | **24** | **6** | **1** | **75** |
+| **Totals** | **22** | **23** | **23** | **6** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -122,7 +122,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 3 | Dark mode via `@media (prefers-color-scheme: dark)` | **PARTIAL** | Present at L3841 for `:root` tokens; no component-scoped dark overrides. |
 | 4 | Touch target minimums (44×44 px) on mobile | **PARTIAL** | `touch-action: manipulation` globally applied (L42–46); 44×44 px minimums per selector `[UNVERIFIED]`. |
 | 5 | Safe-area inset handling (`env(safe-area-inset-bottom)`) | **PARTIAL** | `@supports` block at L1248–1267; no `#mobile-tab-bar` means the bottom-inset pattern Spanish uses is N/A. |
-| 6 | `role="dialog"` + focus-trap + Escape-closes for modals | **MISSING** | Zero `role=`, zero `aria-modal`, zero global `keydown`+Escape handler (zero-hit grep). See FE-G-4. |
+| 6 | `role="dialog"` + focus-trap + Escape-closes for modals | **MATCH** | All four modals (`#settings-modal`, `#import-modal`, `#stats-modal`, `#sync-modal`) carry `role="dialog" aria-modal="true" aria-labelledby="<modal>-title"` on the inner `.modal` div. Document-level `keydown` handler in `App.init()` traps Tab within the visible modal and closes on Escape. Each `open*` method stores `document.activeElement` as `_*FocusOrigin`; each `close*` method restores focus on dismiss. WP-FE-G-4 (v24). |
 | 7 | `aria-live="polite"` regions for mode content and evaluation results | **MATCH** | L3973, L3989–3991. |
 | 8 | `focus-visible` outline pattern and `aria-pressed` on toggle buttons | **PARTIAL** | Global `:focus-visible` at L3600–3608: MATCH. `aria-pressed` on `#pos-toggle` / `#gloss-toggle` / `#gloss-hide-toggle`: **MISSING** (zero-hit grep on toggle buttons). |
 
