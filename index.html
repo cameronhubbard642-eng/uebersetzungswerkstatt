@@ -4102,6 +4102,10 @@ select:focus-visible, a:focus-visible {
     </div>
     <p class="modal-note" style="margin-top:6px;">If you have added this app to your home screen, you will need to remove it and re-add it for the new icon to take effect.</p>
 
+    <label style="margin-top:14px;">Reset Automatic Glossing</label>
+    <p class="modal-note">This clears which words have been automatically glossed, so all glosses will reappear on the next passage.</p>
+    <button class="modal-btn" id="reset-glossing-btn" style="margin-top:8px;" aria-label="Reset automatic glossing">Reset Automatic Glossing</button>
+
     <label style="margin-top:14px;">Reset Progress</label>
     <p class="modal-note">This clears all vocabulary tracking and exercise completion data.</p>
     <button class="modal-btn" id="reset-progress-btn" style="margin-top:8px;color:var(--error);border-color:var(--error);" aria-label="Reset all progress">Reset All Progress</button>
@@ -19066,6 +19070,9 @@ class App {
     // Translation history for stats
     this._translationHistory = this.load("translationHistory") || [];
 
+    // Persisted inline-gloss suppression
+    this._glossSeen = (this.load("glossSeen") || {}).words || {};
+
     // Conversation session tracking
     this._convSessionCount = this.load("convSessionCount") || 0;
     this._convTotalExchanges = this.load("convTotalExchanges") || 0;
@@ -19113,6 +19120,7 @@ class App {
     document.getElementById("settings-btn").addEventListener("click", () => this.openSettings());
     document.getElementById("settings-cancel").addEventListener("click", () => this.closeSettings());
     document.getElementById("settings-save").addEventListener("click", () => this.saveSettings());
+    document.getElementById("reset-glossing-btn").addEventListener("click", () => this.resetGlossSeen());
     document.getElementById("reset-progress-btn").addEventListener("click", () => this.resetProgress());
     // TTS button for translation tab
     document.getElementById("german-tts-btn").addEventListener("click", () => this.toggleGermanTTS());
@@ -19639,7 +19647,8 @@ class App {
     display.className = this.posActive ? "pos-active" : "";
 
     // Collect words from completed exercises in this text — suppress auto-glosses for them
-    const seen = {};
+    const _glossCountBefore = Object.keys(this._glossSeen).length;
+    const seen = Object.assign({}, this._glossSeen);
     for (const otherEx of text.exercises) {
       if (otherEx === ex) continue;
       const key = text.id + ":" + otherEx.id;
@@ -19702,6 +19711,14 @@ class App {
                 gloss.textContent = entry.gloss;
                 wrapper.appendChild(gloss);
                 seen[lower] = true;
+                if (isFirstTime) {
+                  this._glossSeen[lower] = true;
+                  if (entry.lemma) {
+                    const lemmaKey = entry.lemma.toLowerCase();
+                    seen[lemmaKey] = true;
+                    this._glossSeen[lemmaKey] = true;
+                  }
+                }
               }
             }
           }
@@ -19712,6 +19729,9 @@ class App {
 
     // Reset input
     document.getElementById("translation-input").value = "";
+    if (Object.keys(this._glossSeen).length !== _glossCountBefore) {
+      this.save("glossSeen", { words: this._glossSeen });
+    }
     // Update POS legend
     document.getElementById("pos-legend").className = this.posActive ? "visible" : "";
 
@@ -20830,10 +20850,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.save("grammarProgress", this.grammarProgress);
     this.save("grammarUnitProgress", this.grammarUnitProgress);
     this.save("vocabProgress", this.vocabProgress);
+    this._glossSeen = {};
+    this.save("glossSeen", { words: {} });
     FSRS.resetAll();
     this.render();
     this.closeResetConfirm();
     this.closeSettings();
+  }
+
+  resetGlossSeen() {
+    this._glossSeen = {};
+    this.save("glossSeen", { words: {} });
   }
 
   openSync() {
@@ -20863,7 +20890,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       translationHistory: this._translationHistory,
       fsrsState: FSRS.getAllCards(),
       activeTime: this._activeTimeData,
-      statsAssessment: this.load("llmAssessment") || null
+      statsAssessment: this.load("llmAssessment") || null,
+      glossSeen: { words: this._glossSeen }
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -20993,7 +21021,19 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
             this.save("llmAssessment", data.statsAssessment);
           }
         }
-        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + (historyAdded ? `, ${historyAdded} history entries` : "") + (fsrsMerged ? `, ${fsrsMerged} FSRS cards` : "") + ".";
+        // Merge glossSeen — union (seen is seen; never un-see)
+        let glossMerged = 0;
+        if (data.glossSeen && typeof data.glossSeen === "object") {
+          const words = data.glossSeen.words || {};
+          for (const w of Object.keys(words)) {
+            if (!this._glossSeen[w]) {
+              this._glossSeen[w] = true;
+              glossMerged++;
+            }
+          }
+          if (glossMerged > 0) this.save("glossSeen", { words: this._glossSeen });
+        }
+        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + (historyAdded ? `, ${historyAdded} history entries` : "") + (fsrsMerged ? `, ${fsrsMerged} FSRS cards` : "") + (glossMerged ? `, ${glossMerged} gloss records` : "") + ".";
         status.style.color = "var(--success)";
         this.render();
       } catch (err) {

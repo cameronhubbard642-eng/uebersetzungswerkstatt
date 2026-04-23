@@ -136,8 +136,8 @@ No build pipeline exists at the source level. `index.html` is hand-authored; ass
 - **Exercise list** — sidebar list of passages for the selected text (`#exercise-list`), marked complete/incomplete. Active exercise persistence is per-tab in-memory only (`this._exercisePositions` at L18928, read/written at L19192 and L19196). Not persisted across reloads. Spanish persists `taller_translationLastGroup`.
 - **German display** — tokenized per-word rendering in `#german-display` (L3961). Click-on-word / hover-on-word attaches a tooltip with POS + gloss from `DICT` (rendered inline, not via a body-portal). L19605–19622.
 - **POS coloring** — per-part-of-speech CSS tokens applied when `posActive` is true. Legend at `#pos-legend` (L3946–3960) with thirteen swatches (noun/verb/adj/adv/prep/conj/art/pron/particle/aux/modal/pres.part/past.part). Toggled via `togglePOS()` (L19656) bound to `#pos-toggle`. Default `posActive = true` (L18929).
-- **Automatic inline glossing** — first appearance of a word in a rendering receives an inline gloss; subsequent appearances are suppressed via a **per-render-local `seen` map** at L19558 / L19614–19620. The map is recreated on every `renderTranslation()` call, never serialized, and never carried across reloads. There is no `uw_glossSeen` storage key; there is no "Reset automatic glossing" Settings control. Spanish persists `glossSeen.v1` and flushes it on successful Evaluate.
-- **Glossing-suppression algorithm specifics (corpus-driven).** Suppression keys on **surface form only**, not on `lemma`. German `DICT` has `lemma` entries for ~59 inflected forms (e.g., `"ist" → "sein"` at L4255), but the `seen` map does not walk the chain — `"ist"` and `"sein"` are independent suppression keys. Spanish walks a soft-normalization graph via `_vocabLemmaToFSRS`; German has no analogue. Toggled by `toggleGlossAll()` (L19663) and `toggleGlossHide()` (L19671); the two states are mutually exclusive.
+- **Automatic inline glossing** — first appearance of a word in a rendering receives an inline gloss; subsequent appearances are suppressed via `seen`, a local map seeded from `this._glossSeen` (persisted in `uw_glossSeen`). On each render, newly glossed words are added to `this._glossSeen`; if the set grew, `uw_glossSeen` is written once at the end of `renderExercise()`. A "Reset automatic glossing" button in Settings clears `uw_glossSeen` via `resetGlossSeen()`. WP-FE-G-2.
+- **Glossing-suppression algorithm specifics (corpus-driven).** Suppression keys on **surface form and `DICT.lemma`**. When a word is first-glossed, its lowercase form is marked in `seen` and `this._glossSeen`; if the `DICT` entry carries a `lemma` field (e.g., `"ist"` → `lemma: "sein"`), the lemma key is also marked — so `"sein"` is not re-glossed after `"ist"` is seen. This single-hop lemma-chain walk closes the Spanish `_vocabLemmaToFSRS` parity gap for the common inflected-form case. Toggled by `toggleGlossAll()` (L19663) and `toggleGlossHide()` (L19671); the two states are mutually exclusive.
 - **German TTS** — `▶ Listen` button (`#german-tts-btn`, L3962). Two-tier fallback chain via `_speakGerman` at L20187: OpenAI neural TTS (`POST https://api.openai.com/v1/audio/speech` at L20054 / L20148; in-memory cache `_ttsCache` capped at 25 entries via `MAX_TTS_CACHE` at L20096) when `ttsApiKey` (or the LLM key, if provider is OpenAI) is present → browser `speechSynthesis` (`_browserSpeak`, L20200). **No pre-generated MP3 tier, no `TRANSLATION_AUDIO_MAP`, no ElevenLabs.**
 - **Translation input + actions** (`#action-row`, L3967–3972): **Get Hints**, **Evaluate**, **Show Reference**, **Next**.
 - **Evaluate** — LLM-powered if an API key is set (routes through `App.llmComplete(...)`); otherwise falls through to a client-side heuristic (`evaluateHeuristic` at L19964). On success the exercise is marked complete (`this.save("completed", this.completed)` at L19715, L19725, L19922).
@@ -196,7 +196,7 @@ See §9 for the full configuration surface. Feature-level summary:
 - **Browser German / English voice picker + Preview** (L4011–4024).
 - **App icon picker** — five radio options (L4027–4053) populated by inline base64 thumbnails. (Spanish ships per-icon PWA manifests + on-disk PNGs; German ships one canonical `manifest.json` and stores the five icons as base64 strings inline in the picker, with the five `German-Icon-*.jpeg` on disk for the precache list — see §8.3 hazard.)
 - **Reset All Progress** — inline destructive button (L4058) backed by `resetProgress()` at L20724, which uses a **native `confirm()` dialog** (L20725). Spanish routes through a styled `#reset-confirm-overlay` modal.
-- **No "Reset automatic glossing"** control (consistent with the ephemeral gloss-seen behavior in §3.2).
+- **"Reset automatic glossing"** button present in Settings (WP-FE-G-2). Clears `uw_glossSeen` via `resetGlossSeen()`.
 
 ### 3.7 Sync / Import / Stats modals
 
@@ -247,6 +247,7 @@ All keys are `localStorage` keys with the literal prefix `uw_`. "Written by" and
 | `uw_fsrsState` | `{ [fsrsKey]: { difficulty, stability, lastReview, reps, lapses, scheduledDays, state } }` | `FSRS._save` (L18882) | `FSRS._load` (L18892); surface via `FSRS.getCard` etc. | Written directly by the FSRS engine, not through `App.save`. Key namespace is shared across vocab (`vocab_*`) and grammar (`grammar_*`). |
 | `uw_activeTime` | `{ [yyyy-mm-dd]: seconds }` | `_initActiveTimeTracking` (L24378, L24386) | constructor (L19009) | Day key = `new Date().toISOString().slice(0,10)` (UTC). |
 | `uw_translationHistory` | `Array<{ date, exerciseId, score, … }>` | `recordTranslationResult` (L24426) | constructor (L19013) | |
+| `uw_glossSeen` | `{ words: { [lowercased-word]: true } }` | `renderExercise()` (once per render, if new words glossed); `resetGlossSeen()`; `_doReset()` | constructor (via `this._glossSeen`) | WP-FE-G-2. Lemma forms also written alongside surface forms when `DICT[w].lemma` exists. |
 | `uw_convSessionCount` | `number` | `_convEndConversation` at L24316 | constructor (L19016) | Aggregate counter only. |
 | `uw_convTotalExchanges` | `number` | `_convEndConversation` at L24317 | constructor (L19017) | Aggregate counter only. |
 | `uw_streakData` | `{ current, longest, lastDate }` | streak helper at L24403 | constructor (L19020) | Per-day streak record. |
@@ -255,7 +256,6 @@ All keys are `localStorage` keys with the literal prefix `uw_`. "Written by" and
 **Keys NOT persisted** (in-memory only; would be persisted in Spanish):
 
 - `this._exercisePositions` — last exercise index per text. L18928.
-- Inline-gloss-seen state — scoped to each `render()` call as a local `seen` object (L19614–19620).
 - Last-export-date / export reminder threshold state — no tracking.
 - Conversation message contents — only aggregate counters persist.
 
@@ -298,14 +298,14 @@ Produces a Blob-downloaded JSON file named `uebersetzungswerkstatt-progress-YYYY
   "translationHistory": [...],
   "fsrsState": { "<cardKey>": { "difficulty": ..., "stability": ..., "lastReview": "<ISO>", "reps": ..., "lapses": ..., "scheduledDays": ..., "state": ... }, ... },
   "activeTime": { "<yyyy-mm-dd>": <seconds>, ... },
-  "statsAssessment": { "level": "...", "assessment": "...", "recommendations": [...], "timestamp": <ms> } | null
+  "statsAssessment": { "level": "...", "assessment": "...", "recommendations": [...], "timestamp": <ms> } | null,
+  "glossSeen": { "words": { "<lowercased-word>": true, ... } }
 }
 ```
 
 **Fields not in envelope (N/A or deferred):**
 
 - `vocabMastery` — concept absent in German (mastery is collapsed into `vocabProgress` + FSRS).
-- `glossSeen` — not exported because not persisted at all (consistent with §3.2); deferred to WP-FE-G-2.
 
 **Key additionally present that is not in Spanish's envelope:**
 
@@ -327,9 +327,11 @@ Accepts a file with `_format === "uebersetzungswerkstatt-sync"` (L20786). `_vers
 - `translationHistory` — append-and-dedupe by composite key `(date + "|" + exerciseId)`; new entries appended to `this._translationHistory`.
 - `fsrsState` — per-card recency merge via `FSRS.mergeCards()`; incoming card wins if its `lastReview` is newer (or reps higher when tied).
 - `activeTime` — per-day max; incoming value for a day replaces local only if it is larger.
+- `statsAssessment` — import wins if `timestamp` is newer than local cached value.
+- `glossSeen` — union; each word key in `data.glossSeen.words` is merged into `this._glossSeen` (WP-FE-G-2). Count of newly-merged words reported in status string.
 - `statsAssessment` — import wins if its `timestamp` is newer than the locally cached `llmAssessment`; otherwise local is kept.
 - `apiKey` — **refused** (closed by WP-AUD-G-1).
-- `vocabMastery` / `glossSeen` — not handled (N/A or deferred).
+- `vocabMastery` — not handled (N/A; mastery collapsed into vocabProgress + FSRS).
 
 A single status string is written to `#sync-status` with per-section merge counts. On success, `this.render()` runs.
 
@@ -538,7 +540,7 @@ No two-tier resolution exists in German. Playback is one-tier conceptually (live
 
 #### 5.3.4 Sync/export format
 
-See §4.3 for the full envelope shape. Content-side note: the export payload at `exportProgress` (L20749) carries `completed`, `customTexts`, `grammarProgress`, `grammarUnitProgress`, `vocabProgress`. It does not carry the FSRS card store (`uw_fsrsState`), and it does not carry a `glossSeen` set (because German has none). Custom-text import preserves `{id, title, author, year, exercises, vocabulary}` shape (`doImport` at L20884).
+See §4.3 for the full envelope shape. Content-side note: the export payload at `exportProgress` carries `completed`, `customTexts`, `grammarProgress`, `grammarUnitProgress`, `vocabProgress`, `translationHistory`, `fsrsState`, `activeTime`, `statsAssessment`, and `glossSeen` (WP-FE-G-2). Custom-text import preserves `{id, title, author, year, exercises, vocabulary}` shape (`doImport` at L20884).
 
 ---
 
@@ -867,7 +869,7 @@ All user-configurable settings live in the Settings modal (`#settings-modal`, L3
 
 ### 9.5 Glossing and progress
 
-- **Reset automatic glossing** — absent. Glossing is already stateless (§3.2). Consistent with the divergent §3.2 gloss-seen design; no separate control needed because no persisted state exists to reset.
+- **Reset automatic glossing** — present (WP-FE-G-2). "Reset Automatic Glossing" button in Settings calls `resetGlossSeen()`, which clears `uw_glossSeen` and `this._glossSeen`.
 - **Reset all progress** (`#reset-progress-btn`, L4058) — wraps `resetProgress()` at L20724, which uses native `confirm()` and does not invoke a styled confirmation overlay.
 
 ### 9.6 Non-UI / internal configuration
