@@ -17,13 +17,13 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 |---|---:|---:|---:|---:|---:|---:|
 | §11.1 Architecture | 6 | 3 | 1 | 0 | 0 | 10 |
 | §11.2 Data Model | 5 | 0 | 5 | 0 | 0 | 10 |
-| §11.3 Features | 4 | 8 | 1 | 1 | 0 | 14 |
+| §11.3 Features | 5 | 8 | 0 | 1 | 0 | 14 |
 | §11.4 Content | 5 | 6 | 6 | 4 | 1 | 22 |
-| §11.5 UI/UX | 2 | 4 | 0 | 0 | 0 | 6 |
+| §11.5 UI/UX | 3 | 3 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
 | §11.8 Configuration | 1 | 1 | 1 | 0 | 0 | 3 |
-| **Totals** | **28** | **23** | **18** | **5** | **1** | **75** |
+| **Totals** | **30** | **22** | **17** | **5** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -68,7 +68,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | # | Row | Score | Evidence / justification |
 |---|---|---|---|
 | 1 | Four-mode switcher: Translation / Vocabulary / Grammar / Conversation | **MATCH** | `.mode-btn` × 4 at L3896–3899; `switchMode` dispatcher L20916. |
-| 2 | Dual rendering (desktop sidebar + mobile bottom bar) | **MISSING** | Only the sidebar rendering exists. No `#mobile-tab-bar` DOM (zero-hit grep). |
+| 2 | Dual rendering (desktop sidebar + mobile bottom bar) | **MATCH** | `#mobile-tab-bar` at L4375–4380 (4 `.mobile-tab` buttons, German labels); `#mobile-header` at L4070–4073 (48px fixed bar + hamburger); `@media (max-width: 767px)` shows both, hides at desktop. `switchMode` syncs both `.mode-btn` and `.mobile-tab` active state. WP-FE-G-7 (v32). |
 | 3 | Sidebar footer: Sync / Import / Settings / Statistics | **MATCH** | L3917–3920 — content matches; order in German is Sync / Import / Statistics / Settings (Spanish: Sync / Import / Settings / Statistics). Order divergence is cosmetic; row scores MATCH. |
 | 4 | SW update banner with explicit `SKIP_WAITING` handshake | **MATCH** | `#update-banner` at L24673–24676; registration IIFE at L24678–24702 wires `updatefound` → banner → `SKIP_WAITING` → `controllerchange` → reload. Banner copy is German ("Neue Version verfügbar"/"Aktualisieren") — see FE-G-12 for the localization decision. |
 | 5 | Export reminder banner (7-day / ≥5-completion threshold) | **MISSING** | No `_checkExportReminder`, no `lastExportDate`, no banner DOM (zero-hit grep). |
@@ -121,7 +121,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 2 | Design tokens on `:root` (surface / text / brand / semantic / POS color scale) | **MATCH** | L17–39. (Cleaner than Spanish — no stray `.pos-*` literal-hex classes outside `:root`.) |
 | 3 | Dark mode via `@media (prefers-color-scheme: dark)` | **PARTIAL** | Present at L3841 for `:root` tokens; no component-scoped dark overrides. |
 | 4 | Touch target minimums (44×44 px) on mobile | **PARTIAL** | `touch-action: manipulation` globally applied (L42–46); 44×44 px minimums per selector `[UNVERIFIED]`. |
-| 5 | Safe-area inset handling (`env(safe-area-inset-bottom)`) | **PARTIAL** | `@supports` block at L1248–1267; no `#mobile-tab-bar` means the bottom-inset pattern Spanish uses is N/A. |
+| 5 | Safe-area inset handling (`env(safe-area-inset-bottom)`) | **MATCH** | `@supports` block at L1248–1267; `#mobile-tab-bar` `padding-bottom` uses `env(safe-area-inset-bottom)` in `@media (max-width: 767px)` block. WP-FE-G-7 (v32). |
 | 6 | `role="dialog"` + focus-trap + Escape-closes for modals | **MATCH** | All four modals (`#settings-modal`, `#import-modal`, `#stats-modal`, `#sync-modal`) carry `role="dialog" aria-modal="true" aria-labelledby="<modal>-title"` on the inner `.modal` div. Document-level `keydown` handler in `App.init()` traps Tab within the visible modal and closes on Escape. Each `open*` method stores `document.activeElement` as `_*FocusOrigin`; each `close*` method restores focus on dismiss. WP-FE-G-4 (v24). |
 | 7 | `aria-live="polite"` regions for mode content and evaluation results | **MATCH** | L3973, L3989–3991. |
 | 8 | `focus-visible` outline pattern and `aria-pressed` on toggle buttons | **PARTIAL** | Global `:focus-visible` at L3600–3608: MATCH. `aria-pressed` on `#pos-toggle` / `#gloss-toggle` / `#gloss-hide-toggle`: **MISSING** (zero-hit grep on toggle buttons). |
