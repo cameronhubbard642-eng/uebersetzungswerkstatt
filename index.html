@@ -1758,14 +1758,6 @@ body.sidebar-open {
     padding: max(6px, env(safe-area-inset-top, 0px)) 8px 6px;
   }
 
-  /* Vocab exercise type selector: prevent iOS zoom */
-  .vocab-exercise-type select,
-  #vocab-exercise-select {
-    font-size: 16px !important;
-    min-height: 44px;
-    padding: 8px 10px !important;
-  }
-
   /* Vocabulary sidebar: enlarge tap targets */
   .vocab-section-header,
   .vocab-group-header {
@@ -19166,6 +19158,8 @@ class App {
     this.vocabSelectedCategories = [];
     this.vocabExpandedGroups = {};
     this.vocabExerciseType = "typed";
+    this._vocabTierFailures = { flashcard: 0, 'multiple-choice': 0, typed: 0 };
+    this._vocabSessionDemotion = 0;
     this.vocabItems = [];
     this.vocabCurrentIdx = 0;
     this.vocabProgress = {};
@@ -19186,6 +19180,8 @@ class App {
     this.vocabFlipped = false;
     // Grammar mode state
     this.grammarPhase = "repetition"; // repetition | cloze | production
+    this._thematicSessionDemotions = {};
+    this._thematicSessionFailures = {};
     this.grammarSelectedProfile = null;
     this.grammarExercises = [];
     this.grammarCurrentIdx = 0;
@@ -21385,14 +21381,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const batches = this.buildVocabBatches();
     const vocabProgress = this.load("vocabProgress") || {};
 
-    // Exercise type selector at top
+    // Adaptive difficulty notice replaces manual exercise type selector
     let html = `<div class="vocab-exercise-type" style="padding:6px 0 8px;">
-      <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);display:block;margin-bottom:4px;">Exercise Type</label>
-      <select id="vocab-exercise-select" style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-size:12px;font-family:'Helvetica Neue',sans-serif;background:var(--white);">
-        <option value="flashcard"${this.vocabExerciseType === "flashcard" ? " selected" : ""}>Flashcard</option>
-        <option value="multiple-choice"${this.vocabExerciseType === "multiple-choice" ? " selected" : ""}>Multiple Choice</option>
-        <option value="typed"${this.vocabExerciseType === "typed" ? " selected" : ""}>Typed Response</option>
-      </select>
+      <p style="font-size:11px;color:var(--text-muted);font-style:italic;margin:0;">Difficulty adapts to your mastery level.</p>
     </div>`;
 
     // Build groups with collapsible headers
@@ -21478,18 +21469,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     exerciseList.innerHTML = html;
 
-    // Exercise type dropdown — update immediately when changed (no need to restart batch)
-    const exerciseTypeSelect = exerciseList.querySelector("#vocab-exercise-select");
-    if (exerciseTypeSelect) {
-      exerciseTypeSelect.addEventListener("change", () => {
-        this.vocabExerciseType = exerciseTypeSelect.value;
-        if (this.vocabActiveBatch !== null && this.vocabActiveBatch !== undefined && this.vocabItems.length > 0) {
-          this.vocabFlipped = false;
-          this.renderVocabExercise();
-        }
-      });
-    }
-
     // Section header toggle (General Vocabulary / Author Vocabulary)
     exerciseList.querySelectorAll(".vocab-section-header").forEach(hdr => {
       hdr.addEventListener("click", () => {
@@ -21571,11 +21550,13 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         <button class="vocab-back-btn" id="vocab-back-practice">Back to Batches</button>
       </div>`;
 
-    if (this.vocabExerciseType === "flashcard") {
+    const _effectiveType = this._getVocabTier(item);
+    this.vocabExerciseType = _effectiveType;
+    if (_effectiveType === "flashcard") {
       html += this.renderFlashcard(item);
-    } else if (this.vocabExerciseType === "multiple-choice") {
+    } else if (_effectiveType === "multiple-choice") {
       html += this.renderMultipleChoice(item);
-    } else if (this.vocabExerciseType === "typed") {
+    } else {
       html += this.renderTypedResponse(item);
     }
 
@@ -21758,6 +21739,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.save("vocabProgress", this.vocabProgress);
     // Feed FSRS: knew → Good(3), didn't know → Again(1)
     this._recordVocabFSRS(item, knew ? 3 : 1);
+    this._updateVocabDemotion(item, !!knew);
     this._resetAllTTSState();
     this.vocabCurrentIdx++;
     this.vocabFlipped = false;
@@ -21787,6 +21769,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
     // Feed FSRS: correct → Good(3), incorrect → Again(1)
     this._recordVocabFSRS(item, isCorrect ? 3 : 1);
+    this._updateVocabDemotion(item, isCorrect);
 
     setTimeout(() => {
       this._resetAllTTSState();
@@ -21827,6 +21810,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     }
     // Feed FSRS: correct → Good(3), incorrect → Again(1)
     this._recordVocabFSRS(item, isCorrect ? 3 : 1);
+    this._updateVocabDemotion(item, isCorrect);
 
     input.disabled = true;
     checkBtn.style.display = "none";
@@ -21849,6 +21833,68 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   _recordVocabFSRS(item, rating) {
     const fsrsKey = `vocab_${item.section}_${item.num}`;
     FSRS.review(fsrsKey, rating);
+  }
+
+  _getVocabTier(item) {
+    const fsrsKey = `vocab_${item.section}_${item.num}`;
+    const card = FSRS.getCard(fsrsKey);
+    let tier;
+    if (!card || card.state <= 1 || card.reps <= 1) { tier = 'flashcard'; }
+    else if (card.stability < 7) { tier = 'multiple-choice'; }
+    else { tier = 'typed'; }
+    const tiers = ['flashcard', 'multiple-choice', 'typed'];
+    return tiers[Math.max(tiers.indexOf(tier) - this._vocabSessionDemotion, 0)];
+  }
+
+  _updateVocabDemotion(item, isCorrect) {
+    const tier = this._getVocabTier(item);
+    if (!isCorrect) {
+      this._vocabTierFailures[tier] = (this._vocabTierFailures[tier] || 0) + 1;
+      if (this._vocabTierFailures[tier] >= 2) {
+        this._vocabSessionDemotion = Math.min(this._vocabSessionDemotion + 1, 2);
+        this._vocabTierFailures[tier] = 0;
+      }
+    } else {
+      this._vocabTierFailures[tier] = 0;
+    }
+  }
+
+  _getThematicTier(fsrsKey) {
+    const card = FSRS.getCard(fsrsKey);
+    if (!card || card.state <= 1 || card.reps <= 1) return 'repetition';
+    if (card.stability < 7) return 'cloze';
+    return 'production';
+  }
+
+  _getEffectiveGrammarPhase(ex) {
+    let fsrsKey = null;
+    if (ex.paradigmKey) {
+      fsrsKey = `grammar_${ex.profile.pattern}_${ex.paradigmKey}`;
+    } else if (ex.sentenceId || (ex.sentence && ex.sentence.id)) {
+      fsrsKey = `grammar_${ex.sentenceId || ex.sentence.id}`;
+    }
+    if (!fsrsKey) return 'repetition';
+    const demoted = this._thematicSessionDemotions[fsrsKey];
+    if (demoted) return demoted;
+    return this._getThematicTier(fsrsKey);
+  }
+
+  _trackThematicDemotion(ex, isCorrect) {
+    if (isCorrect) return;
+    const currentPhase = this.grammarPhase;
+    if (currentPhase === 'repetition') return;
+    let fsrsKey = null;
+    if (ex.paradigmKey) {
+      fsrsKey = `grammar_${ex.profile.pattern}_${ex.paradigmKey}`;
+    } else if (ex.sentenceId || (ex.sentence && ex.sentence.id)) {
+      fsrsKey = `grammar_${ex.sentenceId || ex.sentence.id}`;
+    }
+    if (!fsrsKey) return;
+    const failKey = `${fsrsKey}:${currentPhase}`;
+    this._thematicSessionFailures[failKey] = (this._thematicSessionFailures[failKey] || 0) + 1;
+    if (this._thematicSessionFailures[failKey] >= 2) {
+      this._thematicSessionDemotions[fsrsKey] = currentPhase === 'production' ? 'cloze' : 'repetition';
+    }
   }
 
   /**
@@ -21924,7 +21970,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this._resetAllTTSState();
     this.vocabActiveBatch = null;
     this._vocabReviewMode = true;
-    this.vocabExerciseType = document.getElementById("vocab-exercise-select")?.value || this.vocabExerciseType || "flashcard";
+    this._vocabTierFailures = { flashcard: 0, 'multiple-choice': 0, typed: 0 };
+    this._vocabSessionDemotion = 0;
     this.vocabItems = this._shuffleArray([...items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
@@ -22067,6 +22114,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const profile = this.grammarSelectedProfile;
     if (!profile) { this.grammarExercises = []; return; }
     this.grammarSessionId = Date.now();
+    this._thematicSessionDemotions = {};
+    this._thematicSessionFailures = {};
 
     // Collect all German passages from TEXTS
     const allPassages = [];
@@ -22301,13 +22350,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     // Active selection indicator
     html += `<div class="grammar-active-selection"><strong>${this.grammarSelectedProfile.description}</strong> — Exercise ${this.grammarCurrentIdx + 1} of ${this.grammarExercises.length}</div>`;
 
-    // Phase selector
-    html += `<div class="grammar-phase-selector">`;
-    for (const phase of ["repetition","cloze","production"]) {
-      const label = phase.charAt(0).toUpperCase() + phase.slice(1);
-      html += `<button class="grammar-phase-btn${this.grammarPhase === phase ? " active" : ""}" data-phase="${phase}">${label}</button>`;
-    }
-    html += `</div>`;
+    // FSRS-driven phase selection: compute per-exercise phase
+    this.grammarPhase = this._getEffectiveGrammarPhase(ex);
 
     // Render phase-specific content
     if (this.grammarPhase === "repetition") {
@@ -22572,15 +22616,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   bindGrammarEvents(ex) {
-    // Phase buttons
-    document.querySelectorAll(".grammar-phase-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        this.grammarPhase = btn.dataset.phase;
-        this.grammarParadigmVisible = false;
-        this.renderGrammarContent();
-      });
-    });
-
     // Paradigm toggle
     const pToggle = document.getElementById("grammar-paradigm-toggle");
     if (pToggle) {
@@ -22675,6 +22710,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     this.showGrammarFeedback(isCorrect, ex);
     this.recordGrammarProgress(ex, isCorrect);
+    this._trackThematicDemotion(ex, isCorrect);
   }
 
   async handleProductionSubmit(ex) {
@@ -22716,6 +22752,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     this.showGrammarFeedback(isCorrect, ex);
     this.recordGrammarProgress(ex, isCorrect);
+    this._trackThematicDemotion(ex, isCorrect);
 
     // Production phase: re-present on incorrect
     if (!isCorrect && !this.grammarRetrying) {

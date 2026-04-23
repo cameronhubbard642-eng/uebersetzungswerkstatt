@@ -338,7 +338,7 @@ German currently has only OpenAI neural TTS + browser fallback. Adding ElevenLab
 
 `PARITY_GAP.md §11.3 rows 7, 8` capture the absence. German lets the user pick the exercise tier explicitly via dropdown; Spanish's FSRS-driven tier-with-session-demotions is more pedagogically aggressive. Whether this is a parity gap to close or an intentional German simplification is not yet decided.
 
-**Status:** open. Routes to Principal as a pedagogical preference question, not a pure architectural one.
+**Status: RESOLVED — inherit (2026-04-23, Principal ruling).** WP-FE-G-18 landed: `_vocabTierFailures` + `_vocabSessionDemotion` for vocab tier; `_thematicSessionDemotions` + `_thematicSessionFailures` for grammar phase; manual dropdown retired. Commit SHA: TBD (pending push).
 
 ### Q5. The five Open Questions in `SPEC.md` Appendix B
 
