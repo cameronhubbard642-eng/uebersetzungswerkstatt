@@ -95,8 +95,8 @@
 
 **Scratch round-trip result: PASS (by code inspection).**
 
-**Live state round-trip: DEFERRED — Cam runs manually post-merge per A-2 Dispatch brief §3.WP-FE-G-3.**
-Pre-test backup step: Cam should export current progress file before importing any test file.
+**Live state round-trip: PASS — Cam confirmed 2026-04-23 (local time), commit `73c1ff9`.**
+All 5 criteria green: `_version: 2` present; four new keys (`translationHistory`, `fsrsState`, `activeTime`, `statsAssessment`) present with real data; import status green (0 new items, dedup correct); Stats unchanged post-import; no vocab/grammar progress lost.
 
 ---
 
