@@ -16,14 +16,14 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | Section | MATCH | PARTIAL | MISSING | DIVERGENT | N/A | Total |
 |---|---:|---:|---:|---:|---:|---:|
 | §11.1 Architecture | 5 | 3 | 2 | 0 | 0 | 10 |
-| §11.2 Data Model | 1 | 3 | 5 | 1 | 0 | 10 |
+| §11.2 Data Model | 3 | 1 | 5 | 1 | 0 | 10 |
 | §11.3 Features | 4 | 7 | 2 | 1 | 0 | 14 |
 | §11.4 Content | 3 | 6 | 8 | 4 | 1 | 22 |
 | §11.5 UI/UX | 1 | 4 | 1 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
 | §11.8 Configuration | 0 | 1 | 2 | 0 | 0 | 3 |
-| **Totals** | **19** | **25** | **24** | **6** | **1** | **75** |
+| **Totals** | **21** | **23** | **24** | **6** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -54,8 +54,8 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 2 | `sessionStorage` carry-through for API-key fields | **MISSING** | No `sessionStorage.*` call sites in `index.html` (zero-hit grep). |
 | 3 | IndexedDB mirror (one database, one object store, same key namespace) for iOS storage-pressure recovery | **MISSING** | No `indexedDB.*` call sites (zero-hit grep). See FE-G-3. **Cross-reference:** SPEC §10 row 4 scores this as `DIVERGENT` from a security-debt-applicability lens; the capability itself is `MISSING`. Resolution routed to Principal via Appendix B #B-5. |
 | 4 | `_restoreFromIDB()`-equivalent boot rehydration | **MISSING** | Method does not exist (zero-hit grep on `_restoreFromIDB`). |
-| 5 | Export to JSON with versioned envelope `{ _format, _version, exportedAt, … }` | **PARTIAL** | Envelope present at L20750–20759 (`_format: "uebersetzungswerkstatt-sync"`, `_version: 1`, `exportedAt`). Four Spanish v2 fields missing: `translationHistory`, `fsrsState`, `activeTime`, `statsAssessment` (plus `vocabMastery` is `N/A` per shape divergence, `glossSeen` is `N/A` until FE-G-2). See FE-G-6. |
-| 6 | Import with per-section merge rules (union, dedupe, per-key precedence) | **PARTIAL** | `importProgress` (L20774) does union merge on five keys. Dedupe-by-composite-key (Spanish's `translationHistory` pattern) and recency-based merge (Spanish's `fsrsState` pattern) are absent — symmetric to row 5. |
+| 5 | Export to JSON with versioned envelope `{ _format, _version, exportedAt, … }` | **MATCH** | v2 envelope landed via WP-FE-G-3: `_version: 2`; four fields added: `translationHistory` (`this._translationHistory`), `fsrsState` (`FSRS.getAllCards()`), `activeTime` (`this._activeTimeData`), `statsAssessment` (`load("llmAssessment")`). `vocabMastery` is `N/A`; `glossSeen` deferred to WP-FE-G-2. |
+| 6 | Import with per-section merge rules (union, dedupe, per-key precedence) | **MATCH** | Four new merge handlers added in WP-FE-G-3: `translationHistory` dedupe-by-`(date\|exerciseId)`; `fsrsState` via `FSRS.mergeCards()` (newer `lastReview` wins); `activeTime` per-day max; `statsAssessment` timestamp-based precedence. `_version > 2` shows non-blocking warning; v1 silently accepted. |
 | 7 | Custom text import merging into the in-memory dictionary | **MATCH** | `doImport` at L20873 merges `vocabulary` into `DICT` at L20890–20893 (same plain-overwrite semantics as Spanish). |
 | 8 | Reset flow that preserves API keys and preferences | **PARTIAL** | `resetProgress` (L20724) preserves API keys and preferences, but uses native `confirm()` not a styled modal. Also does not clear FSRS state (Spanish `_doReset` nulls `fsrsState`). See FE-G-10. |
 | 9 | FSRS card shape: `{ difficulty, stability, lastReview, reps, lapses, scheduledDays, state }` | **DIVERGENT** *Intentional because:* German FSRS IIFE at L18651 uses a 19-element weights vector (Spanish 17). Field set itself appears identical at `_newCard` (L18674) but algorithm-version semantics `[UNVERIFIED]`. Senior Dev owns algo parity; recommend treating as DIVERGENT pending an explicit FSRS-version reconciliation pass. |

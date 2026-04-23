@@ -1,0 +1,122 @@
+# WP-FE-G-3 Verification Log
+
+**WP:** WP-FE-G-3 — Export/import envelope v2 parity (slot v23)
+**Engineer:** Code task (blissful-tharp-7dfeba worktree)
+**Date:** 2026-04-23
+**Base SHA at spawn:** 2fd9b44 (werkstatt-v22)
+
+---
+
+## Pre-flight
+
+| Check | Result |
+|---|---|
+| `git rev-parse HEAD` | `2fd9b44` ✓ |
+| Working tree at spawn | Clean ✓ |
+| `sw.js:4` CACHE_NAME | `werkstatt-v22` ✓ |
+| `exportProgress()` location | L20748 ✓ |
+| `_version: 1` | L20751 ✓ |
+| `importProgress()` location | L20773 ✓ |
+| `doImport()` location | L20867 ✓ |
+
+---
+
+## Code changes applied
+
+### sw.js
+- L4: `werkstatt-v22` → `werkstatt-v23`
+
+### index.html — exportProgress() (L20748)
+- `_version: 1` → `_version: 2`
+- Added `translationHistory: this._translationHistory`
+- Added `fsrsState: FSRS.getAllCards()`
+- Added `activeTime: this._activeTimeData`
+- Added `statsAssessment: this.load("llmAssessment") || null`
+
+### index.html — importProgress() (L20773)
+- Added `_version > 2` non-blocking warning path
+- Added `translationHistory` merge: append-and-dedupe by `(date + "|" + exerciseId)` composite key
+- Added `fsrsState` merge: `FSRS.mergeCards(data.fsrsState)` — recency-based per card
+- Added `activeTime` merge: per-day max
+- Added `statsAssessment` merge: import wins if `timestamp` is newer than local
+- Updated status string to report `historyAdded` and `fsrsMerged` counts
+
+---
+
+## Scratch round-trip test
+
+**Method:** Static fixture construction + logic inspection (browser unavailable in task session).
+
+**Fixture (scratch_v2.json):**
+```json
+{
+  "_format": "uebersetzungswerkstatt-sync",
+  "_version": 2,
+  "exportedAt": "2026-04-23T00:00:00.000Z",
+  "completed": { "wittgenstein/tlp/1": true },
+  "customTexts": {},
+  "grammarProgress": {},
+  "grammarUnitProgress": {},
+  "vocabProgress": {},
+  "translationHistory": [
+    { "date": "2026-04-23", "exerciseId": "wittgenstein/tlp/1", "textId": "tlp", "score": 4, "timestamp": 1745366400000 }
+  ],
+  "fsrsState": {
+    "vocab_sein_0": { "difficulty": 5.0, "stability": 2.5, "lastReview": "2026-04-22T10:00:00.000Z", "reps": 3, "lapses": 0, "scheduledDays": 3, "state": 2 }
+  },
+  "activeTime": { "2026-04-23": 300 },
+  "statsAssessment": { "level": "B2", "assessment": "Strong reading comprehension.", "recommendations": [], "timestamp": 1745366400000 }
+}
+```
+
+**Round-trip analysis:**
+
+1. **Export → v2 file**: `_version: 2` present ✓. All four new sections present ✓. Empty arrays/objects OK for users with no prior state (confirmed: `this._translationHistory` defaults to `[]`, `FSRS.getAllCards()` returns `{}`, `this._activeTimeData` defaults to `{}`, `load("llmAssessment")` returns `null` → exported as `null`) ✓.
+
+2. **Import scratch fixture into clean state**:
+   - `_format` check passes ✓
+   - `_version === 2`, no warning shown ✓
+   - `completed`: 1 new key → `merged = 1` ✓
+   - `translationHistory`: 1 entry, composite key `"2026-04-23|wittgenstein/tlp/1"` not in empty set → `historyAdded = 1` ✓
+   - `fsrsState`: `FSRS.mergeCards({"vocab_sein_0": {...}})` — card not in empty store → `fsrsMerged = 1` ✓
+   - `activeTime`: `300 > 0` → `timeDaysMerged = 1`, value written ✓
+   - `statsAssessment`: `timestamp: 1745366400000`, no local assessment → import wins, saved ✓
+   - Status: `"Imported: 1 new completions, 1 history entries, 1 FSRS cards."` ✓
+
+3. **Re-export (same state)**: `_version: 2` ✓; `translationHistory` has 1 entry ✓; `fsrsState` has `vocab_sein_0` card ✓; `activeTime` has `"2026-04-23": 300` ✓; `statsAssessment` has B2 assessment ✓.
+
+4. **Bytewise equality (modulo `exportedAt`)**: All fields round-trip losslessly ✓.
+
+5. **v1 backward compatibility**: Fixture with `_version: 1` and no new fields → format check passes, `_version` check: `1 > 2` is false → no warning, import proceeds, new section handlers see `undefined`/`null` → all skipped cleanly ✓.
+
+6. **_version > 2 path**: Fixture with `_version: 3` → warning shown, import continues ✓.
+
+7. **Duplicate suppression**: Second import of same fixture → `translationHistory` already has `"2026-04-23|wittgenstein/tlp/1"` in set → `historyAdded = 0`; FSRS card `lastReview` identical → `fsrsMerged = 0`; `activeTime` `300 > 300` is false → `timeDaysMerged = 0`; `statsAssessment` timestamps equal → `1745366400000 > 1745366400000` is false → local kept ✓.
+
+**Scratch round-trip result: PASS (by code inspection).**
+
+**Live state round-trip: DEFERRED — Cam runs manually post-merge per A-2 Dispatch brief §3.WP-FE-G-3.**
+Pre-test backup step: Cam should export current progress file before importing any test file.
+
+---
+
+## Doc edits applied
+
+| File | Change |
+|---|---|
+| `SPEC.md §4.3.3` | Envelope schema updated to v2; omission bullets removed for 4 new fields; security note updated (apiKey refused) |
+| `SPEC.md §4.3.4` | Import section rewritten: `_version` check documented; four new merge rules documented |
+| `PARITY_GAP.md §11.2 row 5` | `PARTIAL` → `MATCH` |
+| `PARITY_GAP.md §11.2 row 6` | `PARTIAL` → `MATCH` |
+| `PARITY_GAP.md` score summary | §11.2 MATCH 1→3, PARTIAL 3→1; Totals MATCH 19→21, PARTIAL 25→23 |
+
+---
+
+## Verification checklist (A-2 Dispatch §3.WP-FE-G-3)
+
+1. `_version: 2` present in exported file — **PASS** (code inspection) ✓
+2. All four new sections present in exported file (empty arrays/objects OK) — **PASS** (code inspection) ✓
+3. Scratch round-trip: export → import into fresh state → re-export → bytewise-equal (modulo `exportedAt`) — **PASS** (code inspection) ✓
+4. v1 import still works (backward compatibility) — **PASS** (code inspection) ✓
+
+Live round-trip: **DEFERRED to Cam (post-merge).**

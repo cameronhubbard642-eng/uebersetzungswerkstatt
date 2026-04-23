@@ -283,51 +283,55 @@ Boot is initiated by `window.addEventListener("DOMContentLoaded", () => { window
 
 #### 4.3.3 Export (`exportProgress`, L20749)
 
-Produces a Blob-downloaded JSON file named `uebersetzungswerkstatt-progress-YYYY-MM-DD.json`. Payload shape (L20750–20759):
+Produces a Blob-downloaded JSON file named `uebersetzungswerkstatt-progress-YYYY-MM-DD.json`. Payload shape (v2 envelope, WP-FE-G-3):
 
 ```json
 {
   "_format": "uebersetzungswerkstatt-sync",
-  "_version": 1,
+  "_version": 2,
   "exportedAt": "<ISO-8601>",
   "completed": {...},
   "customTexts": {...},
   "grammarProgress": {...},
   "grammarUnitProgress": {...},
-  "vocabProgress": {...}
+  "vocabProgress": {...},
+  "translationHistory": [...],
+  "fsrsState": { "<cardKey>": { "difficulty": ..., "stability": ..., "lastReview": "<ISO>", "reps": ..., "lapses": ..., "scheduledDays": ..., "state": ... }, ... },
+  "activeTime": { "<yyyy-mm-dd>": <seconds>, ... },
+  "statsAssessment": { "level": "...", "assessment": "...", "recommendations": [...], "timestamp": <ms> } | null
 }
 ```
 
-**Omissions vs. Spanish v2 envelope:**
+**Fields not in envelope (N/A or deferred):**
 
-- `translationHistory` — **not exported**.
 - `vocabMastery` — concept absent in German (mastery is collapsed into `vocabProgress` + FSRS).
-- `fsrsState` — **not exported.** FSRS card state is lost across devices on sync.
-- `activeTime` — **not exported.**
-- `statsAssessment` (`uw_llmAssessment`) — **not exported.**
-- `glossSeen` — not exported because not persisted at all (consistent with §3.2).
+- `glossSeen` — not exported because not persisted at all (consistent with §3.2); deferred to WP-FE-G-2.
 
-**Keys additionally passed in the payload but not in Spanish's envelope:**
+**Key additionally present that is not in Spanish's envelope:**
 
 - `grammarUnitProgress` — present because German uses unit-level tracking (additional field, not a divergence from Spanish that needs porting back).
 
-**Security divergence.** German export does **not** include `apiKey` (only the six fields above are written at L20750–20759). German import **does** read `apiKey` if present and applies it to the in-memory field on a first-key-wins basis (L20803–20806). A hand-crafted sync file can therefore inject a provider key into a fresh browser. See §10 G-4 and Appendix C C-G2.
+**Security.** German export does **not** include `apiKey`. The import side also refuses `apiKey` (closed by WP-AUD-G-1). See §10 G-4 and Appendix C C-G2.
 
 After export, no `lastExportDate` is recorded (the concept does not exist in German).
 
 #### 4.3.4 Import — progress (`importProgress`, L20774)
 
-Accepts a file with `_format === "uebersetzungswerkstatt-sync"` (L20786). **No `_version` check** (Spanish warns on `_version !== 2`). Merge rules per section (L20791–20851):
+Accepts a file with `_format === "uebersetzungswerkstatt-sync"` (L20786). `_version` handling (WP-FE-G-3): if `_version > 2`, a non-blocking warning is shown in `#sync-status` and import continues; `_version === 1` is accepted silently (back-compat). Merge rules per section:
 
-- `completed` — union; existing truthy values win (L20794–20798).
-- `apiKey` — **applied only if local is empty** (L20803–20806). See security note in §4.3.3.
-- `customTexts` — append-only by `id` (L20810–20815).
-- `grammarProgress` — union by key; existing values win (L20822–20826).
-- `grammarUnitProgress` — union by key; existing values win (L20833–20837).
-- `vocabProgress` — union by key; existing values win (L20844–20848).
-- `translationHistory` / `vocabMastery` / `activeTime` / `fsrsState` / `statsAssessment` / `glossSeen` — **not handled.**
+- `completed` — union; existing truthy values win.
+- `customTexts` — append-only by `id`.
+- `grammarProgress` — union by key; existing values win.
+- `grammarUnitProgress` — union by key; existing values win.
+- `vocabProgress` — union by key; existing values win.
+- `translationHistory` — append-and-dedupe by composite key `(date + "|" + exerciseId)`; new entries appended to `this._translationHistory`.
+- `fsrsState` — per-card recency merge via `FSRS.mergeCards()`; incoming card wins if its `lastReview` is newer (or reps higher when tied).
+- `activeTime` — per-day max; incoming value for a day replaces local only if it is larger.
+- `statsAssessment` — import wins if its `timestamp` is newer than the locally cached `llmAssessment`; otherwise local is kept.
+- `apiKey` — **refused** (closed by WP-AUD-G-1).
+- `vocabMastery` / `glossSeen` — not handled (N/A or deferred).
 
-A single status string is written to `#sync-status` with per-section merge counts (L20852). On success, `this.render()` runs (L20854).
+A single status string is written to `#sync-status` with per-section merge counts. On success, `this.render()` runs.
 
 #### 4.3.5 Import — custom text (`doImport`, L20873)
 

@@ -20748,13 +20748,17 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   exportProgress() {
     const payload = {
       _format: "uebersetzungswerkstatt-sync",
-      _version: 1,
+      _version: 2,
       exportedAt: new Date().toISOString(),
       completed: this.completed,
       customTexts: this.customTexts,
       grammarProgress: this.grammarProgress,
       grammarUnitProgress: this.grammarUnitProgress,
-      vocabProgress: this.vocabProgress
+      vocabProgress: this.vocabProgress,
+      translationHistory: this._translationHistory,
+      fsrsState: FSRS.getAllCards(),
+      activeTime: this._activeTimeData,
+      statsAssessment: this.load("llmAssessment") || null
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -20786,6 +20790,10 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           status.textContent = "Not a valid progress file. (Use 'Import Text File' for exercise files.)";
           status.style.color = "var(--error)";
           return;
+        }
+        if ((data._version || 1) > 2) {
+          status.textContent = "This file was created by a newer app version; some fields may be ignored.";
+          status.style.color = "var(--text-muted, #888)";
         }
         // Merge completed — union of both sets
         let merged = 0;
@@ -20843,7 +20851,44 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           }
           if (vocabMerged > 0) this.save("vocabProgress", this.vocabProgress);
         }
-        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + ".";
+        // Merge translation history — append-and-dedupe by composite key (date + exerciseId)
+        let historyAdded = 0;
+        if (Array.isArray(data.translationHistory)) {
+          const seen = new Set(this._translationHistory.map(e => (e.date || "") + "|" + (e.exerciseId || "")));
+          for (const entry of data.translationHistory) {
+            const k = (entry.date || "") + "|" + (entry.exerciseId || "");
+            if (!seen.has(k)) {
+              this._translationHistory.push(entry);
+              seen.add(k);
+              historyAdded++;
+            }
+          }
+          if (historyAdded > 0) this.save("translationHistory", this._translationHistory);
+        }
+        // Merge FSRS state — recency-based per card (newer lastReview wins)
+        let fsrsMerged = 0;
+        if (data.fsrsState && typeof data.fsrsState === "object") {
+          fsrsMerged = FSRS.mergeCards(data.fsrsState);
+        }
+        // Merge active time — per-day max
+        let timeDaysMerged = 0;
+        if (data.activeTime && typeof data.activeTime === "object") {
+          for (const [day, secs] of Object.entries(data.activeTime)) {
+            if ((secs || 0) > (this._activeTimeData[day] || 0)) {
+              this._activeTimeData[day] = secs;
+              timeDaysMerged++;
+            }
+          }
+          if (timeDaysMerged > 0) this.save("activeTime", this._activeTimeData);
+        }
+        // Merge stats assessment — import wins if its timestamp is newer than local
+        if (data.statsAssessment && typeof data.statsAssessment === "object" && data.statsAssessment.timestamp) {
+          const local = this.load("llmAssessment");
+          if (!local || data.statsAssessment.timestamp > (local.timestamp || 0)) {
+            this.save("llmAssessment", data.statsAssessment);
+          }
+        }
+        status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + (historyAdded ? `, ${historyAdded} history entries` : "") + (fsrsMerged ? `, ${fsrsMerged} FSRS cards` : "") + ".";
         status.style.color = "var(--success)";
         this.render();
       } catch (err) {
