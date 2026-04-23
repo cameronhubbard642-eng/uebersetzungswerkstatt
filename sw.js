@@ -1,7 +1,7 @@
 // Service Worker for Philosophische Übersetzungswerkstatt
 // Cache-first for assets, network-first for API calls and manifests
 
-const CACHE_NAME = 'werkstatt-v19';
+const CACHE_NAME = 'werkstatt-v21';
 
 const PRECACHE_URLS = [
   'index.html',
@@ -12,6 +12,15 @@ const PRECACHE_URLS = [
   'German%20Icon%20IV.jpeg',
   'German%20Icon%20V.jpeg'
 ];
+
+// Returns true for LLM inference endpoints whose response bodies must not be cached.
+// Excludes /v1/audio/speech (OpenAI TTS) — load-bearing for offline second-listen.
+function isLlmNonAudio(url) {
+  if (url.hostname === 'api.anthropic.com') return true;
+  if (url.hostname === 'generativelanguage.googleapis.com') return true;
+  if (url.hostname === 'api.openai.com' && !url.pathname.startsWith('/v1/audio/speech')) return true;
+  return false;
+}
 
 // Install: precache core assets and immediately take control
 self.addEventListener('install', event => {
@@ -39,7 +48,7 @@ self.addEventListener('fetch', event => {
       event.request.method !== 'GET') {
     event.respondWith(
       fetch(event.request).then(response => {
-        if (response.ok) {
+        if (response.ok && !isLlmNonAudio(url)) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
