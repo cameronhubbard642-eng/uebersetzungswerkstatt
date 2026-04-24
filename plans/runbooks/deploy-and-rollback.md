@@ -227,14 +227,11 @@ If the wrong tip was already serving long enough that active users cached it: bu
 
 ## §7 Escalation
 
-| Situation | Contact | Channel |
-|---|---|---|
-| Destructive force-push required | **Cam (Principal)** — approval required before execution | Direct message |
-| Post-deploy probe red and cause unclear | **Cam** | Direct message |
-| GitHub Pages outage (not a code issue) | GitHub Status (`githubstatus.com`); notify Cam | — |
-| Security incident (keys leaked, CSP violation) | **Cam** immediately | Direct message |
+**Principal sign-off is required before executing any destructive operation** — specifically: force-push to `main`, revert of a commit that touches security-critical paths (CSP, SW caching strategy, API key handling), and any operation that modifies or removes data from the live cache outside the normal `CACHE_NAME` bump cycle.
 
-> **§Need-Cam:** Cam should supply an actual contact channel (Slack handle, email, etc.) and confirm whether any secondary on-call should be listed here. Current doc lists Cam as the sole escalation point.
+For non-destructive operations (standard `git revert`, CACHE_NAME bumps, doc updates), no pre-approval is needed. The post-deploy probe (WP-DEP-G-5) is the gate.
+
+For GitHub Pages outages that are not caused by a code change, check `githubstatus.com` first to rule out a platform incident before escalating.
 
 ---
 
