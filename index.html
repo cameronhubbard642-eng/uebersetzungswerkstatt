@@ -22043,7 +22043,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!batch) return;
 
     this.vocabActiveBatch = batchIdx;
-    this.vocabExerciseType = document.getElementById("vocab-exercise-select").value;
     this.vocabItems = this._shuffleArray([...batch.items]);
     this.vocabCurrentIdx = 0;
     this.vocabFlipped = false;
@@ -25656,10 +25655,186 @@ Assess this learner's current CEFR level for reading/translating academic German
     }
   }
 
+  // ── Smoke test suite — triggered by ?smoke=1 URL param ────────────────
+  async _runSmokeSuite() {
+    const params   = new URLSearchParams(window.location.search);
+    const strict   = params.get('strict') === '1';
+    const overlay  = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:#fff;overflow-y:auto;z-index:99999;padding:24px;font-family:monospace;font-size:13px;line-height:1.6;';
+    document.body.appendChild(overlay);
+    const h = document.createElement('h2');
+    h.textContent = 'Smoke Test Results';
+    h.style.cssText = 'margin-bottom:12px;font-family:monospace;font-size:16px;';
+    overlay.appendChild(h);
+
+    let passed = 0, failed = 0;
+    const ok = (cond, msg) => { if (!cond) throw new Error(msg || 'assertion failed'); };
+    const run = async (name, fn) => {
+      try {
+        await fn();
+        const d = document.createElement('div');
+        d.style.cssText = 'padding:3px 0;color:#166534;';
+        d.textContent = '\u2713 ' + name;
+        overlay.appendChild(d);
+        console.log('[SMOKE PASS]', name);
+        passed++;
+      } catch(e) {
+        const d = document.createElement('div');
+        d.style.cssText = 'padding:3px 0;color:#991b1b;';
+        d.textContent = '\u2717 ' + name + ' \u2014 ' + e.message;
+        overlay.appendChild(d);
+        console.error('[SMOKE FAIL]', name, e);
+        failed++;
+        if (strict) throw e;
+      }
+    };
+
+    // 1. Vocab tab fires switchMode AND batch click renders exercise ────
+    await run('Vocab tab fires switchMode; startVocabBatch renders exercise', () => {
+      const tab = document.querySelector('.mode-btn[data-mode="vocabulary"]') ||
+                  document.querySelector('#mobile-tab-bar .mobile-tab[data-mode="vocabulary"]');
+      ok(tab, 'no vocab mode tab element found');
+      let called = false;
+      const _orig = this.switchMode;
+      this.switchMode = (m) => { if (m === 'vocabulary') called = true; _orig.call(this, m); };
+      try { tab.click(); } finally { this.switchMode = _orig; }
+      ok(called, 'switchMode("vocabulary") was not called on tab click');
+      const vocabContent = document.getElementById('vocab-content');
+      ok(vocabContent && vocabContent.style.display !== 'none', '#vocab-content not visible');
+      // Directly call startVocabBatch to catch the stale vocab-exercise-select TypeError
+      const batches = this.buildVocabBatches();
+      ok(batches.length > 0, 'buildVocabBatches() returned empty array');
+      this.startVocabBatch(0);
+      const exercise = vocabContent.querySelector('.vocab-exercise, #vocab-card, .vocab-mc-options, .vocab-typed-row');
+      ok(exercise, 'no vocab exercise element after startVocabBatch(0)');
+    });
+
+    // 2. First-gloss span renders for new word ─────────────────────────
+    await run('First-gloss span appears after renderExercise with empty _glossSeen', () => {
+      this.switchMode('translation');
+      const textIds = Object.keys(this.allTexts);
+      ok(textIds.length > 0, 'allTexts is empty');
+      const savedSeen   = this._glossSeen;
+      const savedTextId = this.currentTextId;
+      const savedExIdx  = this.currentExerciseIdx;
+      this._glossSeen        = {};
+      this.currentTextId     = textIds[0];
+      this.currentExerciseIdx = 0;
+      try {
+        this.renderExercise();
+        const span = document.getElementById('german-display').querySelector('.first-gloss');
+        ok(span, 'no .first-gloss span found — gloss injection may be broken or DICT has no entries for this text');
+      } finally {
+        this._glossSeen        = savedSeen;
+        this.currentTextId     = savedTextId;
+        this.currentExerciseIdx = savedExIdx;
+      }
+    });
+
+    // 3. #gloss-tip exists at body level ───────────────────────────────
+    await run('#gloss-tip element is body-level (not clipped by overflow ancestor)', () => {
+      const tip = document.getElementById('gloss-tip');
+      ok(tip, '#gloss-tip missing — was initEventHandlers() called?');
+      ok(tip.parentElement === document.body, '#gloss-tip parent is not <body>');
+    });
+
+    // 4. _escapeHtml canonical inputs ──────────────────────────────────
+    await run('_escapeHtml handles <, >, &, ", \', null, undefined, number', () => {
+      ok(this._escapeHtml('<')        === '&lt;',    `< => "${this._escapeHtml('<')}"`);
+      ok(this._escapeHtml('>')        === '&gt;',    `> => "${this._escapeHtml('>')}"`);
+      ok(this._escapeHtml('&')        === '&amp;',   `& => "${this._escapeHtml('&')}"`);
+      ok(this._escapeHtml('"')        === '&quot;',  `" => "${this._escapeHtml('"')}"`);
+      ok(this._escapeHtml("'")        === '&#39;',   `' => "${this._escapeHtml("'")}"`);
+      ok(this._escapeHtml(null)       === 'null',    `null => "${this._escapeHtml(null)}"`);
+      ok(this._escapeHtml(undefined)  === 'undefined', `undefined => "${this._escapeHtml(undefined)}"`);
+      ok(this._escapeHtml(42)         === '42',      `42 => "${this._escapeHtml(42)}"`);
+    });
+
+    // 5. Drawer snap-points reachable (mobile only, skip on desktop) ───
+    await run('Drawer snap-points reachable (skipped on desktop \u2265769px)', () => {
+      if (window.innerWidth > 768) return;
+      const drawer = document.getElementById('translation-drawer');
+      ok(drawer, '#translation-drawer not found');
+      const wasHidden = drawer.classList.contains('drawer-hidden');
+      drawer.classList.remove('drawer-hidden');
+      const snaps = this._drawerSnapPoints();
+      ok(snaps.length === 3, `expected 3 snap points, got ${snaps.length}`);
+      [0, 1, 2].forEach(i => {
+        this._drawerSnapTo(i, false);
+        ok(this._drawerHeight === snaps[i],
+          `snap ${i}: height ${this._drawerHeight}px !== expected ${snaps[i]}px`);
+      });
+      this._drawerSnapTo(0, false);
+      if (wasHidden) drawer.classList.add('drawer-hidden');
+    });
+
+    // 6. All 4 mode tabs fire switchMode ───────────────────────────────
+    await run('All 4 mode tabs (.mode-btn / .mobile-tab) fire switchMode', () => {
+      const modes = ['translation', 'vocabulary', 'grammar', 'conversation'];
+      const fired = new Set();
+      const _orig = this.switchMode;
+      this.switchMode = (m) => { fired.add(m); _orig.call(this, m); };
+      try {
+        document.querySelectorAll('.mode-btn, #mobile-tab-bar .mobile-tab').forEach(btn => {
+          if (modes.includes(btn.dataset.mode)) btn.click();
+        });
+      } finally { this.switchMode = _orig; }
+      modes.forEach(m => ok(fired.has(m), `mode tab "${m}" did not fire switchMode`));
+      this.switchMode('translation');
+    });
+
+    // 7. Settings modal opens ──────────────────────────────────────────
+    await run('Settings modal opens and gains .visible', () => {
+      this.openSettings();
+      const modal = document.getElementById('settings-modal');
+      ok(modal, '#settings-modal element not found');
+      ok(modal.classList.contains('visible'), '#settings-modal missing .visible after openSettings()');
+      const inner = modal.querySelector('[aria-modal="true"]');
+      ok(inner, 'no [aria-modal="true"] inside settings modal');
+      this.closeSettings();
+    });
+
+    // 8. Active manifest HTTP 200 ──────────────────────────────────────
+    await run(`manifest-${this.appIcon || '1'}.json returns HTTP 200`, async () => {
+      const url  = `manifest-${this.appIcon || '1'}.json`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      ok(resp.ok, `${url} returned HTTP ${resp.status}`);
+    });
+
+    // 9. CSS custom properties resolve ────────────────────────────────
+    await run('CSS custom properties --accent, --font-ui, --font-content, --gloss-line-height resolve', () => {
+      const s = getComputedStyle(document.documentElement);
+      ['--accent', '--font-ui', '--font-content', '--gloss-line-height'].forEach(p => {
+        ok(s.getPropertyValue(p).trim(), `CSS property ${p} is empty or unresolved`);
+      });
+    });
+
+    // 10. sw.js CACHE_NAME matches werkstatt-vN ───────────────────────
+    await run('sw.js CACHE_NAME matches /werkstatt-v\\d+/', async () => {
+      const resp = await fetch('sw.js', { cache: 'no-store' });
+      ok(resp.ok, `sw.js returned HTTP ${resp.status}`);
+      const src = await resp.text();
+      ok(/const CACHE_NAME\s*=\s*['"]werkstatt-v\d+['"]/.test(src),
+        'CACHE_NAME missing or does not match werkstatt-vN');
+    });
+
+    // Summary ──────────────────────────────────────────────────────────
+    const sum = document.createElement('div');
+    sum.style.cssText = `margin-top:16px;padding-top:12px;border-top:2px solid #ccc;font-weight:bold;font-size:14px;color:${failed === 0 ? '#166534' : '#991b1b'};`;
+    sum.textContent = `${passed}/${passed + failed} passed${failed > 0 ? ` \u2014 ${failed} FAILED` : ' \u2014 all clear \u2713'}`;
+    overlay.appendChild(sum);
+    console.log(`[SMOKE] ${passed}/${passed + failed} passed`);
+  }
+
 }
 
 // Initialize
-window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
+window.addEventListener("DOMContentLoaded", () => {
+  window.app = new App();
+  if (new URLSearchParams(window.location.search).get('smoke') === '1') {
+    window.app._runSmokeSuite();
+  }
+});
 </script>
 
 <div class="modal-overlay" id="reset-confirm-overlay">
