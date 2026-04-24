@@ -343,6 +343,9 @@ body.sidebar-open {
   box-shadow: 0 4px 16px -4px rgba(0,0,0,0.07);
   margin-bottom: 16px;
   line-height: 2.8;
+  max-height: 40vh;
+  max-height: 40dvh;
+  overflow-y: auto;
 }
 .word-wrapper {
   display: inline-block;
@@ -1576,13 +1579,14 @@ body.sidebar-open {
   }
 
   /* German text display — sticky within #main scroll context;
-     capped at 35dvh so it doesn't dominate small screens */
+     capped at 40dvh (Option 1) so source stays visible while input drawer is open */
   #german-display {
     position: sticky;
     top: 0;
     z-index: 10;
     background: var(--bg);
-    max-height: 35dvh;
+    max-height: 40vh; /* fallback for older iOS */
+    max-height: 40dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 6px;
@@ -1822,6 +1826,62 @@ body.sidebar-open {
     padding: 12px 12px 12px 28px;
     display: flex;
     align-items: center;
+  }
+
+  /* ── Translation input drawer (Option 4) ──────────────────────────── */
+  #translation-drawer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    height: 45vh; /* fallback */
+    height: 45dvh; /* default snap — overridden by JS */
+    background: var(--bg);
+    border-top: 1.5px solid var(--border);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -6px 28px rgba(0,0,0,0.14);
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    will-change: height;
+    /* transition added/removed by JS during drag vs snap */
+  }
+  #translation-drawer.drawer-hidden {
+    display: none !important;
+  }
+  #translation-drawer-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 28px;
+    min-height: 28px;
+    flex-shrink: 0;
+    cursor: ns-resize;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #translation-drawer-handle::before {
+    content: '';
+    display: block;
+    width: 38px;
+    height: 4px;
+    background: color-mix(in srgb, var(--accent) 35%, var(--border));
+    border-radius: 2px;
+  }
+  .translation-drawer-inner {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 14px max(14px, env(safe-area-inset-bottom, 14px));
+  }
+  /* Drag handle controls drawer height — manual resize handle is redundant */
+  .translation-drawer-inner #translation-input {
+    resize: none;
+  }
+  /* Extra #main padding when drawer is active so eval results scroll above drawer */
+  #main.drawer-active {
+    padding-bottom: calc(var(--drawer-height, 45dvh) + 52px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -4188,15 +4248,20 @@ select:focus-visible, a:focus-visible {
     </div>
     <div id="german-display"></div>
     <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
-    <div id="translation-section">
-      <label>Your Translation</label>
-      <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
-    </div>
-    <div id="action-row">
-      <button class="action-btn" id="get-hints-btn" aria-label="Get translation hints">Get Hints</button>
-      <button class="action-btn" id="evaluate-btn" aria-label="Evaluate your translation">Evaluate</button>
-      <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
-      <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
+    <div id="translation-drawer" class="drawer-hidden" aria-label="Translation input" role="region">
+      <div id="translation-drawer-handle" aria-hidden="true"></div>
+      <div class="translation-drawer-inner">
+        <div id="translation-section">
+          <label>Your Translation</label>
+          <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
+        </div>
+        <div id="action-row">
+          <button class="action-btn" id="get-hints-btn" aria-label="Get translation hints">Get Hints</button>
+          <button class="action-btn" id="evaluate-btn" aria-label="Evaluate your translation">Evaluate</button>
+          <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
+          <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
+        </div>
+      </div>
     </div>
     <div id="evaluation-result" aria-live="polite">
       <h4>Evaluation</h4>
@@ -19389,6 +19454,13 @@ class App {
     // Streak tracking
     this._streakData = this.load("streakData") || { current: 0, longest: 0, lastDate: null };
 
+    // Translation drawer state (mobile only — snap 0=25% 1=45% 2=85%)
+    this._drawerSnapIdx = 1;
+    this._drawerHeight = 0;
+    this._kbWasOpen = false;
+    this._lastUserSnapIdx = 1;
+    try { const _ds = parseInt(localStorage.getItem('uw_drawerSnap')); if (_ds >= 0 && _ds <= 2) this._drawerSnapIdx = _ds; } catch(e) {}
+
     this.init();
   }
 
@@ -19599,6 +19671,7 @@ class App {
       }
     });
 
+    this._drawerInit();
     this.render();
   }
 
@@ -21489,8 +21562,10 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       document.getElementById("grammar-sidebar").style.display = "none";
       translationContent.style.display = "";
       document.getElementById("toolbar").style.display = "flex";
+      this._drawerShow();
       this.render();
     }
+    if (mode !== "translation") this._drawerHide();
     document.querySelectorAll(".mode-btn, #mobile-tab-bar .mobile-tab").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.mode === mode);
     });
@@ -21498,6 +21573,117 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (_mobileTitle) {
       const _modeTitles = { translation: "Übersetzungswerkstatt", vocabulary: "Vokabeln", grammar: "Grammatik", conversation: "Gespräch" };
       _mobileTitle.textContent = _modeTitles[mode] || "Übersetzungswerkstatt";
+    }
+  }
+
+  // ── Translation drawer (mobile Option 4) ────────────────────────────────
+
+  _drawerVH() {
+    return window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  }
+
+  _drawerSnapPoints() {
+    // Snap fractions relative to full window height so percentages stay
+    // consistent regardless of whether the virtual keyboard is open.
+    const h = window.innerHeight;
+    return [Math.round(h * 0.25), Math.round(h * 0.45), Math.round(h * 0.85)];
+  }
+
+  _drawerSnapTo(idx, animate) {
+    const drawer = document.getElementById('translation-drawer');
+    const main   = document.getElementById('main');
+    if (!drawer) return;
+    idx = Math.max(0, Math.min(2, idx));
+    const px = this._drawerSnapPoints()[idx];
+    drawer.style.transition = animate ? 'height 0.22s ease' : 'none';
+    drawer.style.height = px + 'px';
+    main.style.setProperty('--drawer-height', px + 'px');
+    this._drawerHeight  = px;
+    this._drawerSnapIdx = idx;
+    try { localStorage.setItem('uw_drawerSnap', idx); } catch(e) {}
+  }
+
+  _drawerShow() {
+    if (window.innerWidth > 768) return; // desktop: no drawer needed
+    const drawer = document.getElementById('translation-drawer');
+    const main   = document.getElementById('main');
+    if (!drawer) return;
+    drawer.classList.remove('drawer-hidden');
+    main.classList.add('drawer-active');
+    this._drawerSnapTo(this._drawerSnapIdx, false);
+  }
+
+  _drawerHide() {
+    const drawer = document.getElementById('translation-drawer');
+    const main   = document.getElementById('main');
+    if (!drawer) return;
+    drawer.classList.add('drawer-hidden');
+    main.classList.remove('drawer-active');
+  }
+
+  _drawerInit() {
+    if (window.innerWidth > 768) return; // desktop: no drawer
+    const drawer = document.getElementById('translation-drawer');
+    const handle = document.getElementById('translation-drawer-handle');
+    if (!drawer || !handle) return;
+
+    // Show immediately if already in translation mode
+    if (this.currentMode === 'translation') this._drawerShow();
+
+    // ── Drag gesture ────────────────────────────────────────────────────
+    let _startY = 0, _startH = 0, _dragging = false;
+
+    const onStart = (e) => {
+      _dragging = true;
+      _startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+      _startH = drawer.getBoundingClientRect().height;
+      drawer.style.transition = 'none';
+      e.preventDefault();
+    };
+
+    const onMove = (e) => {
+      if (!_dragging) return;
+      const y = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+      const delta = _startY - y; // positive = dragging up = taller
+      const maxH = Math.round(this._drawerVH() * 0.92);
+      const newH = Math.max(60, Math.min(_startH + delta, maxH));
+      drawer.style.height = newH + 'px';
+      document.getElementById('main').style.setProperty('--drawer-height', newH + 'px');
+      e.preventDefault();
+    };
+
+    const onEnd = () => {
+      if (!_dragging) return;
+      _dragging = false;
+      const currentH = drawer.getBoundingClientRect().height;
+      const snaps = this._drawerSnapPoints();
+      const closestIdx = snaps.reduce((bi, v, i) =>
+        Math.abs(v - currentH) < Math.abs(snaps[bi] - currentH) ? i : bi, 0);
+      this._lastUserSnapIdx = closestIdx;
+      this._drawerSnapTo(closestIdx, true);
+    };
+
+    handle.addEventListener('touchstart', onStart, { passive: false });
+    handle.addEventListener('touchmove',  onMove,  { passive: false });
+    handle.addEventListener('touchend',   onEnd,   { passive: true  });
+    handle.addEventListener('mousedown',  onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onEnd);
+
+    // ── Virtual keyboard detection via visualViewport ────────────────────
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        if (this.currentMode !== 'translation' || window.innerWidth > 768) return;
+        const kbOpen = (window.innerHeight - window.visualViewport.height) > 150;
+        if (kbOpen && !this._kbWasOpen) {
+          this._kbWasOpen = true;
+          this._lastUserSnapIdx = this._drawerSnapIdx;
+          this._drawerSnapTo(2, true); // expand to large for typing
+        } else if (!kbOpen && this._kbWasOpen) {
+          this._kbWasOpen = false;
+          this._drawerSnapTo(this._lastUserSnapIdx, true); // restore user state
+        }
+      });
     }
   }
 
