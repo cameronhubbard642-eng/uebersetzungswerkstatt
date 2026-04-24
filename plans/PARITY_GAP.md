@@ -18,12 +18,12 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | §11.1 Architecture | 6 | 3 | 1 | 0 | 0 | 10 |
 | §11.2 Data Model | 5 | 0 | 5 | 0 | 0 | 10 |
 | §11.3 Features | 6 | 7 | 0 | 1 | 0 | 14 |
-| §11.4 Content | 5 | 6 | 6 | 4 | 1 | 22 |
+| §11.4 Content | 6 | 6 | 6 | 3 | 1 | 22 |
 | §11.5 UI/UX | 3 | 3 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
 | §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
 | §11.8 Configuration | 1 | 1 | 1 | 0 | 0 | 3 |
-| **Totals** | **31** | **21** | **17** | **5** | **1** | **75** |
+| **Totals** | **32** | **21** | **17** | **4** | **1** | **75** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -97,7 +97,7 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | 6 | Vocabulary array with `{ section, num, spanish\|german, english, extra, state }` shape | **PARTIAL** | `VOCAB` at L10731; shape `{section, num, german, english, extra}`; 3,148 rows across 9 sections. Missing universal `state: "adjusted"` field. Row count 81% of Spanish (3,148 vs 3,905). |
 | 7 | Author-specific vocabulary sections | **DIVERGENT** *Intentional because:* authors differ. German: Wittgenstein 317, Freud 320, Nietzsche 462. Section naming convention matches Spanish (bare author surname). |
 | 8 | Paradigmatic vocabulary sections (Noun / Verb / Adj-Adv / Prep / Conj-Pron-Particle / Idiom) | **PARTIAL** | German sections align name-for-name except Spanish has `Cob Building` (505 rows) where German has `Nietzsche` (462 rows). Per-section deltas: Noun 999/1000; Verb 500/502; Adj/Adv 250/500; Prep 100/79; Conj/Pron/Part 100/74; Idiom 100/202. Section name `Conjunction/Pronoun/Particle` matches verbatim across apps. |
-| 9 | Grammar lessons with `lessonContent: {introduction, keyPoints, comparison, historicalNote}` subtree | **DIVERGENT** *Intentional because:* German follows Jannach's textbook progression and separates reference-lesson content from exercise-pattern generators. Two structures: `GRAMMAR_PROFILES` (48 patterns at L13884) + `GRAMMAR_UNITS` (34 units at L14830). |
+| 9 | Grammar lessons with `lessonContent: {introduction, keyPoints, comparison, historicalNote}` subtree | **MATCH** *(WP-FE-G-19, 2026-04-24; Principal Q4 ruling 2026-04-23 retired the Jannach-justified divergence framing)*. Single `GRAMMAR_LESSONS` array (48 entries) carries Spanish-shape rows: `category` = unit id, `pattern`, `description`, `rule`, `lessonContent = {introduction, keyPoints: [], comparison: "", historicalNote: ""}`, `paradigm`, `paradigmLabels`, `stems`, `generateForms`, `exercises: []`, `thematicSentences: []`. Sub-fields intentionally empty per ruling #4 (content authoring deferred to Phase B). German pedagogy plumbing (`generateForms`, `paradigmGrid`, `forms`, `nouns`, `baseForm`, `generateFormsForMatch`) preserved on the row alongside Spanish fields. `GRAMMAR_PROFILES` retained as a computed shim view (legacy topical category restored) so existing render sites keep working; `GRAMMAR_UNITS` untouched (carries independent unit-tree content that profiles do not expose). Boot-time `grammarProgress` v1→v2 migration shim with pre-migration JSON export modal lands in the same commit; `uw_grammarProgressSchemaVersion=2` flag guards idempotency. |
 | 10 | Grammar lesson count comparable to Spanish 70 | **PARTIAL** | German: 48 `GRAMMAR_PROFILES` + 34 `GRAMMAR_UNITS` (different semantics). Profile count 48 is ~69% of Spanish's 70 lessons; unit count is reference-only. Row-by-row comparison not meaningful given the architecture divergence. |
 | 11 | `paradigm`, `paradigmLabels`, `stems`, `generateForms` on each grammar entry | **MATCH** | `GRAMMAR_PROFILES` rows at L13892+ carry all four; `generateForms` is a function-valued field (matches Spanish convention). |
 | 12 | Translation audio override map (`TRANSLATION_AUDIO_MAP`) | **MISSING** | No such const in German. |

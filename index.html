@@ -4447,6 +4447,22 @@ select:focus-visible, a:focus-visible {
       <button class="modal-btn" id="sync-close-btn" aria-label="Close sync dialog">Close</button>
     </div>
   </div>
+</div>
+
+<!-- WP-FE-G-19 — Pre-migration export modal for grammarProgress v1 → v2 -->
+<div class="modal-overlay" id="grammar-migration-modal" role="presentation">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="grammar-migration-title" aria-describedby="grammar-migration-body">
+    <h2 id="grammar-migration-title">Grammatik-Datenformat aktualisiert</h2>
+    <p class="modal-note" id="grammar-migration-body" style="margin-top:8px;">Das Speicherformat für Grammatikfortschritt wird auf die neue, unit-basierte Lektionsstruktur umgestellt. Vor der Migration kannst du eine JSON-Sicherungskopie deines aktuellen Zustands herunterladen.</p>
+    <p class="modal-note" style="margin-top:10px;"><strong>Empfohlen:</strong> Lade die Sicherung herunter, bevor du die Migration ausführst. So kannst du im Fehlerfall den alten Zustand wiederherstellen.</p>
+    <p class="modal-note" style="margin-top:10px;">„Später" überspringt die Migration für diesen Start; du bleibst auf dem alten Datenformat. Die App liest weiterhin sowohl v1 als auch v2 Einträge.</p>
+    <div class="modal-actions" style="margin-top:16px;gap:8px;flex-wrap:wrap;">
+      <button class="modal-btn" id="grammar-migration-later" aria-label="Migration später">Später</button>
+      <button class="modal-btn" id="grammar-migration-skip" aria-label="Überspringen und fortfahren">Überspringen &amp; fortfahren</button>
+      <button class="modal-btn primary" id="grammar-migration-export" aria-label="Sicherung exportieren und fortfahren">Export &amp; fortfahren</button>
+    </div>
+  </div>
+</div>
 </main>
 
 <div id="mobile-tab-bar">
@@ -14146,9 +14162,19 @@ const VOCAB = [
   {"section": "Freud", "num": 320, "german": "die Schuldneurose", "english": "guilt neurosis", "extra": "Neurosenlehre"}
 ];
 // ============================================================
-// MORPHOLOGICAL PROFILES
+// GRAMMAR LESSONS (Spanish-shape row: category=unit_id, pattern,
+// description, rule, lessonContent, paradigm, paradigmLabels,
+// stems, generateForms, exercises, thematicSentences).
+// WP-FE-G-19: replaces the former two-structure GRAMMAR_PROFILES +
+// GRAMMAR_UNITS model. German-specific pedagogy plumbing
+// (baseForm, paradigmGrid, forms, nouns, generateFormsForMatch,
+// generateForms) is preserved alongside the Spanish fields.
+// A GRAMMAR_PROFILES shim is computed below for legacy read sites;
+// lessonContent sub-fields (keyPoints/comparison/historicalNote)
+// and exercises/thematicSentences are intentionally empty per
+// Principal ruling 2026-04-24 (content population deferred to Phase B).
 // ============================================================
-const GRAMMAR_PROFILES = [
+const GRAMMAR_LESSONS = [
   // === VERB CONJUGATION: WEAK (REGULAR) ===
   {
     category: "verb",
@@ -15090,6 +15116,112 @@ const GRAMMAR_PROFILES = [
     forms: ["womit","wofür","wovon","woran","worauf","worüber","worin","woraus","worum","worunter","woneben","wohinter","wovor","wozu","wobei","wodurch","wogegen"]
   }
 ];
+
+// ------------------------------------------------------------
+// WP-FE-G-19 — Topical pattern→unit map + Spanish-shape augmentation
+// ------------------------------------------------------------
+// Each pattern is assigned the German-Quickly unit whose topic
+// matches the paradigm. Derived topically (no explicit profile→unit
+// reference existed in the German data model); ordering within a unit
+// preserves the GRAMMAR_LESSONS array order.
+const GRAMMAR_PATTERN_TO_UNIT = {
+  // Unit 2 — Present Tense of Verbs and Personal Pronouns
+  "weak_present_indicative":      "unit_2",
+  "strong_present_e_to_i":        "unit_2",
+  "strong_present_a_to_ae":       "unit_2",
+  "irregular_sein":               "unit_2",
+  "irregular_haben":              "unit_2",
+  "irregular_werden":             "unit_2",
+  "personal_pronoun_full":        "unit_2",
+  // Unit 3 — Case Endings Part I (nom/acc)
+  "definite_article":             "unit_3",
+  "indefinite_article":           "unit_3",
+  "noun_masc_nom_acc":            "unit_3",
+  "noun_fem_nom_acc":             "unit_3",
+  "noun_neut_nom_acc":            "unit_3",
+  // Unit 4 — Case Endings Part II (full declension, dat/gen)
+  "definite_article_full":        "unit_4",
+  "indefinite_article_full":      "unit_4",
+  "noun_dative":                  "unit_4",
+  "noun_genitive":                "unit_4",
+  // Unit 5 — Adjectives and Adverbs
+  "adjective_strong":             "unit_5",
+  "adjective_weak":               "unit_5",
+  "adjective_mixed":              "unit_5",
+  // Unit 6 — Prepositions Part I
+  "preposition_accusative":       "unit_6",
+  // Unit 7 — Prepositions Part II
+  "preposition_dative":           "unit_7",
+  "preposition_genitive":         "unit_7",
+  "preposition_two_way":          "unit_7",
+  // Unit 9 — Pronouns
+  "relative_pronoun":             "unit_9",
+  "reflexive_pronoun":            "unit_9",
+  // Unit 10 — Weak Nouns and Adjectives Used as Nouns
+  "weak_noun":                    "unit_10",
+  // Unit 12 — Future Tense
+  "future_tense":                 "unit_12",
+  // Unit 14 — Da- and Wo-Compounds
+  "da_compound":                  "unit_14",
+  "wo_compound":                  "unit_14",
+  // Unit 16 — Verb Tenses Part I (simple past)
+  "weak_past_indicative":         "unit_16",
+  "strong_past_indicative":       "unit_16",
+  "sein_past":                    "unit_16",
+  "haben_past":                   "unit_16",
+  "werden_past":                  "unit_16",
+  // Unit 17 — Verb Tenses Part II (present perfect)
+  "present_perfect":              "unit_17",
+  // Unit 21 — Modal Auxiliaries
+  "modal_duerfen":                "unit_21",
+  "modal_koennen":                "unit_21",
+  "modal_moegen":                 "unit_21",
+  "modal_muessen":                "unit_21",
+  "modal_sollen":                 "unit_21",
+  "modal_wollen":                 "unit_21",
+  // Unit 29 — The Passive
+  "passive_present":              "unit_29",
+  "passive_past":                 "unit_29",
+  // Unit 32 — Subjunctive I
+  "subjunctive_I_sein":           "unit_32",
+  "subjunctive_I_haben":          "unit_32",
+  // Unit 33 — Subjunctive II
+  "subjunctive_II_sein":          "unit_33",
+  "subjunctive_II_haben":         "unit_33",
+  "subjunctive_II_werden":        "unit_33"
+};
+(function _augmentGrammarLessonsForSpanishShape() {
+  for (const lesson of GRAMMAR_LESSONS) {
+    // Preserve legacy (topical) category for the GRAMMAR_PROFILES shim + sidebar grouping.
+    lesson._legacyCategory = lesson.category;
+    // Spanish-shape category = German unit id that contains this lesson.
+    lesson.category = GRAMMAR_PATTERN_TO_UNIT[lesson.pattern] || lesson.category;
+    // lessonContent: introduction = existing German rule prose (verbatim).
+    // Sub-fields intentionally empty per Principal ruling 2026-04-24.
+    lesson.lessonContent = {
+      introduction: lesson.rule || "",
+      keyPoints: [],
+      comparison: "",
+      historicalNote: ""
+    };
+    // Static-exercise + thematic-sentence arrays — empty; German runs via generateForms.
+    lesson.exercises = [];
+    lesson.thematicSentences = [];
+  }
+})();
+
+// ------------------------------------------------------------
+// WP-FE-G-19 — Legacy GRAMMAR_PROFILES shim (computed view).
+// Existing render sites filter by profile.category === "verb" | "modal" | …
+// This shim restores the legacy topical category so those sites keep working
+// while the new unit-id-based category is available on GRAMMAR_LESSONS.
+// Shim retirement deferred to WP-FE-G-24 tail (per engineer brief §3.4).
+// ------------------------------------------------------------
+const GRAMMAR_PROFILES = GRAMMAR_LESSONS.map(l => Object.assign(
+  Object.create(Object.getPrototypeOf(l)),
+  l,
+  { category: l._legacyCategory || l.category }
+));
 
 // ============================================================
 // GRAMMAR UNITS (German Quickly chapter structure)
@@ -19428,7 +19560,166 @@ class App {
 
     try { localStorage.removeItem('uw_drawerSnap'); } catch(e) {}
 
+    // WP-FE-G-19 — grammarProgress v1→v2 migration shim.
+    // v1 key: "<pattern>:<phase>:<sessionId>:<idx>" (per-attempt record)
+    // v2 key: "<pattern>:<phase>" (aggregate {correct, total, phase, pattern, lastSeen})
+    this._pendingGrammarMigration = this._detectGrammarMigrationNeed();
+
     this.init();
+  }
+
+  /** WP-FE-G-19 — detect whether v1→v2 grammarProgress migration is needed. */
+  _detectGrammarMigrationNeed() {
+    try {
+      if (this.load("grammarProgressSchemaVersion") === 2) return false;
+      const entries = this.grammarProgress;
+      if (!entries || typeof entries !== "object") return false;
+      let hasV1 = false;
+      for (const key in entries) {
+        if (key.split(":").length === 4) { hasV1 = true; break; }
+      }
+      if (!hasV1) {
+        // No v1 data — stamp schemaVersion and return.
+        this.save("grammarProgressSchemaVersion", 2);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn("grammarProgress migration detection failed:", e);
+      return false;
+    }
+  }
+
+  /** WP-FE-G-19 — aggregate v1 per-attempt records into v2 per-(pattern×phase) totals. */
+  _migrateGrammarProgressV1toV2(oldProgress) {
+    const newProgress = {};
+    for (const [oldKey, oldEntry] of Object.entries(oldProgress || {})) {
+      const segs = oldKey.split(":");
+      if (segs.length === 2) {
+        // Already v2 — idempotent pass-through.
+        newProgress[oldKey] = oldEntry;
+        continue;
+      }
+      if (segs.length !== 4) {
+        // Unknown shape — preserve verbatim under original key for manual inspection.
+        newProgress[oldKey] = oldEntry;
+        continue;
+      }
+      const pattern = segs[0];
+      const phase = segs[1];
+      const newKey = pattern + ":" + phase;
+      if (!newProgress[newKey]) {
+        newProgress[newKey] = {
+          correct: 0,
+          total: 0,
+          phase: phase,
+          pattern: pattern,
+          lastSeen: 0
+        };
+      }
+      const agg = newProgress[newKey];
+      agg.total += 1;
+      if (oldEntry && oldEntry.correct === true) agg.correct += 1;
+      if (oldEntry && oldEntry.timestamp && oldEntry.timestamp > agg.lastSeen) {
+        agg.lastSeen = oldEntry.timestamp;
+      }
+    }
+    return newProgress;
+  }
+
+  /** WP-FE-G-19 — show pre-migration modal on first boot after WP lands. */
+  _maybeShowGrammarMigrationModal() {
+    if (!this._pendingGrammarMigration) return;
+    const modal = document.getElementById("grammar-migration-modal");
+    if (!modal) return;
+    modal.classList.add("visible");
+
+    const doExport = document.getElementById("grammar-migration-export");
+    const doSkip = document.getElementById("grammar-migration-skip");
+    const doLater = document.getElementById("grammar-migration-later");
+    const runMigration = () => {
+      const migrated = this._migrateGrammarProgressV1toV2(this.grammarProgress);
+      this.grammarProgress = migrated;
+      this.save("grammarProgress", migrated);
+      this.save("grammarProgressSchemaVersion", 2);
+      this._pendingGrammarMigration = false;
+      modal.classList.remove("visible");
+    };
+    const onExport = () => {
+      try { this._exportPreMigrationBackup(); } catch(e) { console.warn("pre-migration export failed:", e); }
+      runMigration();
+    };
+    const onSkip = () => { runMigration(); };
+    const onLater = () => { modal.classList.remove("visible"); };
+    doExport.addEventListener("click", onExport, { once: true });
+    doSkip.addEventListener("click", onSkip, { once: true });
+    doLater.addEventListener("click", onLater, { once: true });
+  }
+
+  /** WP-FE-G-19 — download a JSON snapshot of current state before running migration. */
+  _exportPreMigrationBackup() {
+    const payload = {
+      _format: "uebersetzungswerkstatt-pre-migration",
+      _reason: "WP-FE-G-19 grammarProgress v1→v2 migration backup",
+      exportedAt: new Date().toISOString(),
+      completed: this.completed,
+      customTexts: this.customTexts,
+      grammarProgress: this.grammarProgress,
+      grammarProgressSchemaVersion: 1,
+      grammarUnitProgress: this.grammarUnitProgress,
+      vocabProgress: this.vocabProgress,
+      translationHistory: this._translationHistory,
+      fsrsState: (typeof FSRS !== "undefined" && FSRS.getAllCards) ? FSRS.getAllCards() : null,
+      activeTime: this._activeTimeData,
+      statsAssessment: this.load("llmAssessment") || null,
+      glossSeen: this.glossSeen
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "uebersetzungswerkstatt-pre-migration-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * WP-FE-G-19 — iterate grammarProgress entries tolerantly across v1 (per-attempt)
+   * and v2 (per-(pattern×phase)) shapes. Yields unified records for stats scans.
+   * @returns {Array<{pattern:string,phase:string,correct:number,total:number,lastSeen:number}>}
+   */
+  _iterGrammarProgressEntries() {
+    const out = [];
+    const prog = this.grammarProgress || {};
+    // v1 per-attempt entries keyed by "<pattern>:<phase>:<sessionId>:<idx>" get aggregated
+    // on-the-fly; v2 per-(pattern×phase) entries pass through.
+    const v1Agg = {};
+    for (const [key, entry] of Object.entries(prog)) {
+      if (!entry || typeof entry !== "object") continue;
+      const segs = key.split(":");
+      if (segs.length === 2) {
+        out.push({
+          pattern: entry.pattern || segs[0],
+          phase: entry.phase || segs[1],
+          correct: Number(entry.correct) || 0,
+          total: Number(entry.total) || 0,
+          lastSeen: Number(entry.lastSeen) || 0
+        });
+      } else if (segs.length === 4) {
+        const aggKey = segs[0] + ":" + segs[1];
+        if (!v1Agg[aggKey]) {
+          v1Agg[aggKey] = { pattern: segs[0], phase: segs[1], correct: 0, total: 0, lastSeen: 0 };
+        }
+        const a = v1Agg[aggKey];
+        a.total += 1;
+        if (entry.correct === true) a.correct += 1;
+        if (entry.timestamp && entry.timestamp > a.lastSeen) a.lastSeen = entry.timestamp;
+      }
+    }
+    for (const k in v1Agg) out.push(v1Agg[k]);
+    return out;
   }
 
   save(key, val) {
@@ -19518,8 +19809,8 @@ class App {
     document.getElementById("reset-confirm-btn").addEventListener("click", () => this._doReset());
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" && e.key !== "Tab") return;
-      const modalIds = ["reset-confirm-overlay", "settings-modal", "import-modal", "stats-modal", "sync-modal"];
-      const active = modalIds.map(id => document.getElementById(id)).find(el => el.classList.contains("visible"));
+      const modalIds = ["reset-confirm-overlay", "settings-modal", "import-modal", "stats-modal", "sync-modal", "grammar-migration-modal"];
+      const active = modalIds.map(id => document.getElementById(id)).filter(Boolean).find(el => el.classList.contains("visible"));
       if (!active) return;
       if (e.key === "Escape") {
         e.preventDefault();
@@ -19528,6 +19819,7 @@ class App {
         else if (active.id === "import-modal") this.closeImport();
         else if (active.id === "stats-modal") this.closeStats();
         else if (active.id === "sync-modal") this.closeSync();
+        else if (active.id === "grammar-migration-modal") active.classList.remove("visible");
         return;
       }
       const inner = active.querySelector(".modal");
@@ -19714,6 +20006,9 @@ class App {
       }, { passive: true });
     }
     this.render();
+
+    // WP-FE-G-19 — pre-migration export modal on first boot after WP lands.
+    this._maybeShowGrammarMigrationModal();
   }
 
   get texts() { return this.allTexts; }
@@ -21297,6 +21592,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.grammarUnitProgress = {};
     this.vocabProgress = {};
     this.save("grammarProgress", this.grammarProgress);
+    // WP-FE-G-19 — reset stamps v2; migration modal skipped on next boot for empty store.
+    this.save("grammarProgressSchemaVersion", 2);
     this.save("grammarUnitProgress", this.grammarUnitProgress);
     this.save("vocabProgress", this.vocabProgress);
     this.glossSeen = { words: {} };
@@ -21347,6 +21644,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       completed: this.completed,
       customTexts: this.customTexts,
       grammarProgress: this.grammarProgress,
+      grammarProgressSchemaVersion: this.load("grammarProgressSchemaVersion") || 1,
       grammarUnitProgress: this.grammarUnitProgress,
       vocabProgress: this.vocabProgress,
       translationHistory: this._translationHistory,
@@ -21423,6 +21721,13 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
             }
           }
           if (grammarMerged > 0) this.save("grammarProgress", this.grammarProgress);
+        }
+        // WP-FE-G-19 — honor exported schemaVersion when importing (take the max seen).
+        if (typeof data.grammarProgressSchemaVersion === "number") {
+          const cur = this.load("grammarProgressSchemaVersion") || 1;
+          if (data.grammarProgressSchemaVersion > cur) {
+            this.save("grammarProgressSchemaVersion", data.grammarProgressSchemaVersion);
+          }
         }
         // Merge grammar unit progress
         let unitsMerged = 0;
@@ -22406,12 +22711,13 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   getGrammarPatternStats(pattern) {
+    // WP-FE-G-19 — v1/v2 tolerant: iterate via unified helper so deferred-migration
+    // users see the same totals as post-migration users.
     let correct = 0, total = 0;
-    for (const key in this.grammarProgress) {
-      if (key.startsWith(pattern + ":")) {
-        total++;
-        if (this.grammarProgress[key].correct) correct++;
-      }
+    for (const rec of this._iterGrammarProgressEntries()) {
+      if (rec.pattern !== pattern) continue;
+      correct += rec.correct;
+      total += rec.total;
     }
     return { correct, total };
   }
@@ -23163,15 +23469,22 @@ Lesson: ${ex.profile.description}`;
   }
 
   recordGrammarProgress(ex, isCorrect) {
-    const key = ex.profile.pattern + ":" + this.grammarPhase + ":" + (this.grammarSessionId || 0) + ":" + this.grammarCurrentIdx;
-    // Only record first attempt (don't overwrite with retry)
-    if (!this.grammarProgress[key]) {
-      this.grammarProgress[key] = {
-        correct: isCorrect,
-        phase: this.grammarPhase,
-        pattern: ex.profile.pattern,
-        timestamp: Date.now()
-      };
+    // WP-FE-G-19 — write Spanish-shape v2 aggregate directly.
+    // Key shape: "<pattern>:<phase>"; value: { correct, total, phase, pattern, lastSeen }.
+    // Retry-attempt guard preserved via per-idx first-attempt dedupe key.
+    const pattern = ex.profile.pattern;
+    const phase = this.grammarPhase;
+    const sessionId = this.grammarSessionId || 0;
+    const firstAttemptKey = pattern + ":" + phase + ":" + sessionId + ":" + this.grammarCurrentIdx;
+    if (!this._grammarFirstAttempts) this._grammarFirstAttempts = {};
+    if (!this._grammarFirstAttempts[firstAttemptKey]) {
+      this._grammarFirstAttempts[firstAttemptKey] = true;
+      const aggKey = pattern + ":" + phase;
+      const agg = this.grammarProgress[aggKey] || { correct: 0, total: 0, phase: phase, pattern: pattern, lastSeen: 0 };
+      agg.total += 1;
+      if (isCorrect) agg.correct += 1;
+      agg.lastSeen = Date.now();
+      this.grammarProgress[aggKey] = agg;
       this.save("grammarProgress", this.grammarProgress);
       this.renderGrammarSidebar();
     }
@@ -23216,14 +23529,13 @@ Lesson: ${ex.profile.description}`;
     const phases = ["repetition", "cloze", "production"];
     const phaseLabels = { repetition: "Repetition", cloze: "Cloze", production: "Production" };
 
-    // Collect stats per pattern per phase
+    // Collect stats per pattern per phase (WP-FE-G-19 — v1/v2 tolerant iter helper).
     const stats = {};
-    for (const key in this.grammarProgress) {
-      const entry = this.grammarProgress[key];
-      if (!stats[entry.pattern]) stats[entry.pattern] = {};
-      if (!stats[entry.pattern][entry.phase]) stats[entry.pattern][entry.phase] = { correct: 0, total: 0 };
-      stats[entry.pattern][entry.phase].total++;
-      if (entry.correct) stats[entry.pattern][entry.phase].correct++;
+    for (const rec of this._iterGrammarProgressEntries()) {
+      if (!stats[rec.pattern]) stats[rec.pattern] = {};
+      if (!stats[rec.pattern][rec.phase]) stats[rec.pattern][rec.phase] = { correct: 0, total: 0 };
+      stats[rec.pattern][rec.phase].correct += rec.correct;
+      stats[rec.pattern][rec.phase].total += rec.total;
     }
 
     if (Object.keys(stats).length === 0) return;
