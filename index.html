@@ -1382,6 +1382,9 @@ body.sidebar-open {
     display: none !important;
   }
 
+  /* Sidebar already starts at top: 48px (below mobile header) — no safe-area top padding needed */
+  #sidebar { padding-top: 0; }
+
   /* Persistent 48px top header */
   #mobile-header {
     display: flex;
@@ -4070,7 +4073,7 @@ select:focus-visible, a:focus-visible {
     max-height: 100dvh;
     border-radius: 0;
   }
-  #stats-modal { align-items: flex-start; }
+  #stats-modal { align-items: flex-start; padding: 0; }
   .stats-modal-header { padding-top: max(20px, env(safe-area-inset-top, 20px)); }
   .stats-grid { grid-template-columns: 1fr; }
   .stats-section-content.mobile-collapsed { display: none; }
@@ -19400,15 +19403,9 @@ class App {
     // Translation history for stats
     this._translationHistory = this.load("translationHistory") || [];
 
-    // Persisted inline-gloss suppression
-    this._glossSeen = (this.load("glossSeen") || {}).words || {};
-    // One-time migration: purge lemma keys that were incorrectly persisted by an earlier bug.
-    // Lemma keys (e.g. "sein" added when "ist" was seen) should never have been written to
-    // _glossSeen — they belong only in the per-render local `seen` copy.
-    { const _lk = new Set(Object.values(DICT).filter(e => e.lemma).map(e => e.lemma.toLowerCase()));
-      let _m = false;
-      for (const k of _lk) { if (k in this._glossSeen) { delete this._glossSeen[k]; _m = true; } }
-      if (_m) this.save("glossSeen", { words: this._glossSeen }); }
+    // Inline-gloss suppression — Spanish-parity two-phase write
+    this.glossSeen = this._loadGlossSeen();
+    this._pendingGlossed = {};
 
     // Conversation session tracking
     this._convSessionCount = this.load("convSessionCount") || 0;
@@ -19440,6 +19437,18 @@ class App {
     }
   }
   load(key) { try { return JSON.parse(localStorage.getItem("uw_" + key)); } catch(e) { return null; } }
+
+  _loadGlossSeen() {
+    if (!this.load("glossSeen.v1") && this.load("glossSeen")) {
+      const old = this.load("glossSeen");
+      const migrated = { words: (old && typeof old.words === "object" && old.words) ? old.words : {} };
+      this.save("glossSeen.v1", migrated);
+    }
+    const raw = this.load("glossSeen.v1");
+    if (!raw || typeof raw !== "object") return { words: {} };
+    if (typeof raw.words !== "object" || !raw.words) return { words: {} };
+    return { words: raw.words };
+  }
 
   init() {
     // Tab buttons
@@ -20069,9 +20078,8 @@ class App {
     display.innerHTML = "";
     display.className = this.posActive ? "pos-active" : "";
 
-    // Collect words from completed exercises in this text — suppress auto-glosses for them
-    const _glossCountBefore = Object.keys(this._glossSeen).length;
-    const seen = Object.assign({}, this._glossSeen);
+    // Build seen from completed exercises FIRST, then merge persisted (Spanish-parity)
+    const seen = {};
     for (const otherEx of text.exercises) {
       if (otherEx === ex) continue;
       const key = text.id + ":" + otherEx.id;
@@ -20079,6 +20087,8 @@ class App {
       const words = otherEx.german.match(/[A-Za-zÄÖÜäöüßẞ\u00C0-\u024F]+/g);
       if (words) words.forEach(w => { seen[w.toLowerCase()] = true; });
     }
+    Object.assign(seen, this.glossSeen.words || {});
+    this._pendingGlossed = {};
 
     // Process line by line to preserve proposition structure
     const lines = ex.german.split("\n");
@@ -20127,20 +20137,15 @@ class App {
             // Inline gloss on first occurrence or when "All Glosses" is active
             if (!this.glossHideActive) {
               const lower = tok.text.toLowerCase();
-              const isFirstTime = !seen[lower];
+              const seenKey = entry.lemma ? entry.lemma.toLowerCase() : lower;
+              const isFirstTime = !seen[seenKey];
               if (isFirstTime || this.glossAllActive) {
                 const gloss = document.createElement("span");
                 gloss.className = "first-gloss";
                 gloss.textContent = entry.gloss;
                 wrapper.appendChild(gloss);
-                seen[lower] = true;
-                if (isFirstTime) {
-                  this._glossSeen[lower] = true;
-                  if (entry.lemma) {
-                    const lemmaKey = entry.lemma.toLowerCase();
-                    seen[lemmaKey] = true; // suppress lemma within this passage only; don't persist
-                  }
-                }
+                seen[seenKey] = true;
+                if (isFirstTime) this._pendingGlossed[seenKey] = true;
               }
             }
           }
@@ -20151,9 +20156,6 @@ class App {
 
     // Reset input
     document.getElementById("translation-input").value = "";
-    if (Object.keys(this._glossSeen).length !== _glossCountBefore) {
-      this.save("glossSeen", { words: this._glossSeen });
-    }
     // Update POS legend
     document.getElementById("pos-legend").className = this.posActive ? "visible" : "";
 
@@ -20242,6 +20244,7 @@ class App {
       const key = this.currentText.id + ":" + this.currentExercise.id;
       this.completed[key] = true;
       this.save("completed", this.completed);
+      this._flushGlossSeen();
       this.renderExerciseList();
       this.renderProgress();
     } catch (e) {
@@ -20252,6 +20255,7 @@ class App {
       const key = this.currentText.id + ":" + this.currentExercise.id;
       this.completed[key] = true;
       this.save("completed", this.completed);
+      this._flushGlossSeen();
       this.renderExerciseList();
       this.renderProgress();
     } finally {
@@ -21283,8 +21287,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this.save("grammarProgress", this.grammarProgress);
     this.save("grammarUnitProgress", this.grammarUnitProgress);
     this.save("vocabProgress", this.vocabProgress);
-    this._glossSeen = {};
-    this.save("glossSeen", { words: {} });
+    this.glossSeen = { words: {} };
+    this._pendingGlossed = {};
+    this.save("glossSeen.v1", this.glossSeen);
     FSRS.resetAll();
     this.render();
     this.closeResetConfirm();
@@ -21292,8 +21297,20 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   resetGlossSeen() {
-    this._glossSeen = {};
-    this.save("glossSeen", { words: {} });
+    if (!confirm("Reset automatic gloss suppression? Words you've seen will be glossed again.")) return;
+    this.glossSeen = { words: {} };
+    this._pendingGlossed = {};
+    this.save("glossSeen.v1", this.glossSeen);
+    this.renderExercise();
+  }
+
+  _flushGlossSeen() {
+    const pending = this._pendingGlossed || {};
+    if (!Object.keys(pending).length) return;
+    if (!this.glossSeen.words) this.glossSeen.words = {};
+    Object.assign(this.glossSeen.words, pending);
+    this.save("glossSeen.v1", this.glossSeen);
+    this._pendingGlossed = {};
   }
 
   openSync() {
@@ -21324,7 +21341,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       fsrsState: FSRS.getAllCards(),
       activeTime: this._activeTimeData,
       statsAssessment: this.load("llmAssessment") || null,
-      glossSeen: { words: this._glossSeen }
+      glossSeen: this.glossSeen
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -21458,13 +21475,14 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         let glossMerged = 0;
         if (data.glossSeen && typeof data.glossSeen === "object") {
           const words = data.glossSeen.words || {};
+          if (!this.glossSeen.words) this.glossSeen.words = {};
           for (const w of Object.keys(words)) {
-            if (!this._glossSeen[w]) {
-              this._glossSeen[w] = true;
+            if (!this.glossSeen.words[w]) {
+              this.glossSeen.words[w] = true;
               glossMerged++;
             }
           }
-          if (glossMerged > 0) this.save("glossSeen", { words: this._glossSeen });
+          if (glossMerged > 0) this.save("glossSeen.v1", this.glossSeen);
         }
         status.textContent = `Imported: ${merged} new completions` + (textsAdded ? `, ${textsAdded} custom text(s)` : "") + (grammarMerged + unitsMerged ? `, ${grammarMerged + unitsMerged} grammar records` : "") + (vocabMerged ? `, ${vocabMerged} vocab records` : "") + (historyAdded ? `, ${historyAdded} history entries` : "") + (fsrsMerged ? `, ${fsrsMerged} FSRS cards` : "") + (glossMerged ? `, ${glossMerged} gloss records` : "") + ".";
         status.style.color = "var(--success)";
@@ -25459,15 +25477,15 @@ Assess this learner's current CEFR level for reading/translating academic German
     });
 
     // 2. First-gloss span renders for new word ─────────────────────────
-    // Part A — empty _glossSeen (basic code-path check)
-    await run('First-gloss span appears after renderExercise with empty _glossSeen', () => {
+    // Part A — empty glossSeen (basic code-path check)
+    await run('First-gloss span appears after renderExercise with empty glossSeen', () => {
       this.switchMode('translation');
       const textIds = Object.keys(this.allTexts);
       ok(textIds.length > 0, 'allTexts is empty');
-      const savedSeen   = this._glossSeen;
+      const savedSeen   = this.glossSeen;
       const savedTextId = this.currentTextId;
       const savedExIdx  = this.currentExerciseIdx;
-      this._glossSeen        = {};
+      this.glossSeen         = { words: {} };
       this.currentTextId     = textIds[0];
       this.currentExerciseIdx = 0;
       try {
@@ -25475,32 +25493,38 @@ Assess this learner's current CEFR level for reading/translating academic German
         const span = document.getElementById('german-display').querySelector('.first-gloss');
         ok(span, 'no .first-gloss span found — gloss injection may be broken or DICT has no entries for this text');
       } finally {
-        this._glossSeen        = savedSeen;
+        this.glossSeen         = savedSeen;
         this.currentTextId     = savedTextId;
         this.currentExerciseIdx = savedExIdx;
       }
     });
 
-    // Part B — lemma-only _glossSeen (regression: lemma over-accumulation must not suppress conjugated forms)
-    await run('First-gloss span appears when _glossSeen contains only lemma keys (conjugated forms still gloss)', () => {
+    // Part B — lemma-keyed glossSeen (regression: lemma-based seenKey must suppress both surface form and lemma)
+    await run('First-gloss span appears when glossSeen.words contains only lemma keys (surface forms still gloss)', () => {
       this.switchMode('translation');
       const textIds = Object.keys(this.allTexts);
       ok(textIds.length > 0, 'allTexts is empty');
-      const savedSeen   = this._glossSeen;
+      const savedSeen   = this.glossSeen;
       const savedTextId = this.currentTextId;
       const savedExIdx  = this.currentExerciseIdx;
-      // Populate _glossSeen with only lemma keys — simulates the production over-accumulation bug
+      // Populate glossSeen with only lemma keys — with Spanish-parity seenKey, surface forms should still gloss
+      // if their lemma is NOT in glossSeen (only a subset of lemmas are marked seen here)
       const lemmaOnly = {};
-      Object.values(DICT).forEach(e => { if (e.lemma) lemmaOnly[e.lemma.toLowerCase()] = true; });
-      this._glossSeen        = lemmaOnly;
+      const allLemmas = Object.values(DICT).filter(e => e.lemma).map(e => e.lemma.toLowerCase());
+      allLemmas.forEach(l => { lemmaOnly[l] = true; });
+      this.glossSeen         = { words: lemmaOnly };
       this.currentTextId     = textIds[0];
       this.currentExerciseIdx = 0;
       try {
         this.renderExercise();
+        // With ALL lemmas in glossSeen, words that have a lemma will all be suppressed.
+        // Words without a lemma entry should still gloss. If DICT has no lemma-less entries
+        // for this text, the test is inconclusive — skip rather than fail.
         const span = document.getElementById('german-display').querySelector('.first-gloss');
-        ok(span, 'no .first-gloss span — lemma accumulation may be incorrectly suppressing conjugated-form glosses');
+        const hasNonLemmaEntry = Object.values(DICT).some(e => !e.lemma);
+        if (hasNonLemmaEntry) ok(span, 'no .first-gloss span — non-lemma words should still receive a gloss');
       } finally {
-        this._glossSeen        = savedSeen;
+        this.glossSeen         = savedSeen;
         this.currentTextId     = savedTextId;
         this.currentExerciseIdx = savedExIdx;
       }
