@@ -1833,70 +1833,8 @@ body.sidebar-open {
   }
 
   /* ── Translation input drawer (Option 4) ──────────────────────────── */
-  #translation-drawer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
-    height: 45vh; /* fallback */
-    height: 45dvh; /* default snap — overridden by JS */
-    max-height: 70vh;  /* hard cap: source panel always has ≥30dvh */
-    max-height: 70dvh;
-    background: var(--bg);
-    border-top: 1.5px solid var(--border);
-    border-radius: 14px 14px 0 0;
-    box-shadow: 0 -6px 28px rgba(0,0,0,0.14);
-    z-index: 150;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    will-change: height;
-    /* transition added/removed by JS during drag vs snap */
-  }
-  #translation-drawer.drawer-hidden {
-    display: none !important;
-  }
-  #translation-drawer-handle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 28px;
-    min-height: 28px;
-    flex-shrink: 0;
-    cursor: ns-resize;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  #translation-drawer-handle::before {
-    content: '';
-    display: block;
-    width: 38px;
-    height: 4px;
-    background: color-mix(in srgb, var(--accent) 35%, var(--border));
-    border-radius: 2px;
-  }
-  .translation-drawer-inner {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0 14px max(14px, env(safe-area-inset-bottom, 14px));
-  }
-  /* D: extended drag hit zone — top 14px of drawer body */
-  #translation-drawer-drag-ext {
-    height: 14px;
-    margin: 0 -14px;
-    flex-shrink: 0;
-    cursor: ns-resize;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  /* Drag handle controls drawer height — manual resize handle is redundant */
-  .translation-drawer-inner #translation-input {
+  #translation-input {
     resize: none;
-  }
-  /* Extra #main padding when drawer is active so eval results scroll above drawer */
-  #main.drawer-active {
-    padding-bottom: calc(var(--drawer-height, 45dvh) + 52px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
@@ -4262,31 +4200,25 @@ select:focus-visible, a:focus-visible {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
     <div id="german-display" lang="de"></div>
-    <div id="translation-drawer" class="drawer-hidden" aria-label="Translation input" role="region">
-      <div id="translation-drawer-handle" aria-hidden="true"></div>
-      <div class="translation-drawer-inner">
-        <div id="translation-drawer-drag-ext" aria-hidden="true"></div>
-        <div style="margin:0 0 8px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
-        <div id="translation-section">
-          <label>Your Translation</label>
-          <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
-        </div>
-        <div id="action-row">
-          <button class="action-btn" id="get-hints-btn" aria-label="Get translation hints">Get Hints</button>
-          <button class="action-btn" id="evaluate-btn" aria-label="Evaluate your translation">Evaluate</button>
-          <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
-          <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
-        </div>
-        <div id="evaluation-result" aria-live="polite">
-          <h4>Evaluation</h4>
-          <div class="score" id="eval-score"></div>
-          <div class="feedback" id="eval-feedback"></div>
-        </div>
-        <div id="reference-display">
-          <div class="ref-label">Reference Translation</div>
-          <div id="reference-text"></div>
-        </div>
-      </div>
+    <div style="margin:0 0 8px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
+    <div id="translation-section">
+      <label>Your Translation</label>
+      <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
+    </div>
+    <div id="action-row">
+      <button class="action-btn" id="get-hints-btn" aria-label="Get translation hints">Get Hints</button>
+      <button class="action-btn" id="evaluate-btn" aria-label="Evaluate your translation">Evaluate</button>
+      <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
+      <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
+    </div>
+    <div id="evaluation-result" aria-live="polite">
+      <h4>Evaluation</h4>
+      <div class="score" id="eval-score"></div>
+      <div class="feedback" id="eval-feedback"></div>
+    </div>
+    <div id="reference-display">
+      <div class="ref-label">Reference Translation</div>
+      <div id="reference-text"></div>
     </div>
     <div class="source-note">
       Source texts drawn from standard published editions. Verify against your own copies for critical scholarly work.
@@ -19470,12 +19402,7 @@ class App {
     // Streak tracking
     this._streakData = this.load("streakData") || { current: 0, longest: 0, lastDate: null };
 
-    // Translation drawer state (mobile only — snap 0=25% 1=45% 2=85%)
-    this._drawerSnapIdx = 1;
-    this._drawerHeight = 0;
-    this._kbWasOpen = false;
-    this._lastUserSnapIdx = 1;
-    try { const _ds = parseInt(localStorage.getItem('uw_drawerSnap')); if (_ds >= 0 && _ds <= 2) this._drawerSnapIdx = _ds; } catch(e) {}
+    try { localStorage.removeItem('uw_drawerSnap'); } catch(e) {}
 
     this.init();
   }
@@ -19730,7 +19657,19 @@ class App {
       }
     });
 
-    this._drawerInit();
+    // iOS scroll re-anchor — prevents Safari from jumping when keyboard opens
+    const _ta = document.getElementById('translation-input');
+    if (_ta) {
+      const _iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      _ta.addEventListener('focus', () => {
+        if (_iosDevice) {
+          const _savedY = window.scrollY;
+          requestAnimationFrame(() => window.scrollTo(0, _savedY));
+          setTimeout(() => window.scrollTo(0, _savedY), 100);
+        }
+      }, { passive: true });
+    }
     this.render();
   }
 
@@ -19776,7 +19715,6 @@ class App {
     this.renderProgress();
     this.clearEvaluation();
     this.hideReference();
-    this._drawerPassageHeight(); // set after context-snaps so it wins as final write
   }
 
   renderTabs() {
@@ -20232,7 +20170,6 @@ class App {
     document.getElementById("gloss-toggle").classList.toggle("active", this.glossAllActive);
     document.getElementById("gloss-hide-toggle").classList.toggle("active", this.glossHideActive);
     this.renderExercise();
-    this._drawerPassageHeight(); // inline glosses change line-wrapping → passage height changes
   }
 
   toggleGlossHide() {
@@ -20241,14 +20178,12 @@ class App {
     document.getElementById("gloss-hide-toggle").classList.toggle("active", this.glossHideActive);
     document.getElementById("gloss-toggle").classList.toggle("active", this.glossAllActive);
     this.renderExercise();
-    this._drawerPassageHeight();
   }
 
   clearEvaluation() {
     const el = document.getElementById("evaluation-result");
     el.className = "";
     el.style.display = "none";
-    this._drawerContextSnap();
   }
 
   showReference() {
@@ -20256,20 +20191,17 @@ class App {
     const isVisible = el.classList.contains("visible");
     if (isVisible) {
       el.classList.remove("visible");
-      this._drawerContextSnap();
     } else {
       document.getElementById("reference-text").textContent = this.currentExercise.reference;
       el.classList.add("visible");
       setTimeout(() => {
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        this._drawerContextSnap();
       }, 50);
     }
   }
 
   hideReference() {
     document.getElementById("reference-display").classList.remove("visible");
-    this._drawerContextSnap();
   }
 
   async evaluate() {
@@ -20307,7 +20239,6 @@ class App {
       setTimeout(() => {
         const _er = document.getElementById('evaluation-result');
         if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        this._drawerContextSnap();
       }, 50);
     }
   }
@@ -20335,7 +20266,6 @@ class App {
       setTimeout(() => {
         const _er = document.getElementById('evaluation-result');
         if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        this._drawerContextSnap();
       }, 50);
     }
   }
@@ -21641,10 +21571,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       document.getElementById("grammar-sidebar").style.display = "none";
       translationContent.style.display = "";
       document.getElementById("toolbar").style.display = "flex";
-      this._drawerShow();
       this.render();
     }
-    if (mode !== "translation") this._drawerHide();
     document.querySelectorAll(".mode-btn, #mobile-tab-bar .mobile-tab").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.mode === mode);
     });
@@ -21652,206 +21580,6 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (_mobileTitle) {
       const _modeTitles = { translation: "Übersetzungswerkstatt", vocabulary: "Vokabeln", grammar: "Grammatik", conversation: "Gespräch" };
       _mobileTitle.textContent = _modeTitles[mode] || "Übersetzungswerkstatt";
-    }
-  }
-
-  // ── Translation drawer (mobile Option 4) ────────────────────────────────
-
-  _drawerVH() {
-    return window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  }
-
-  _drawerSnapPoints() {
-    // Use visualViewport height so snap sizes account for the virtual keyboard.
-    const h = this._drawerVH();
-    return [Math.round(h * 0.25), Math.round(h * 0.45), Math.round(h * 0.70)];
-  }
-
-  _drawerSnapTo(idx, animate) {
-    const drawer = document.getElementById('translation-drawer');
-    const main   = document.getElementById('main');
-    if (!drawer) return;
-    idx = Math.max(0, Math.min(2, idx));
-    const px = this._drawerSnapPoints()[idx];
-    drawer.style.transition = animate ? 'height 240ms cubic-bezier(0.32, 0.72, 0, 1)' : 'none';
-    drawer.style.height = px + 'px';
-    main.style.setProperty('--drawer-height', px + 'px');
-    this._drawerHeight  = px;
-    this._drawerSnapIdx = idx;
-    try { localStorage.setItem('uw_drawerSnap', idx); } catch(e) {}
-  }
-
-  _drawerShow() {
-    if (window.innerWidth > 768) return; // desktop: no drawer needed
-    const drawer = document.getElementById('translation-drawer');
-    const main   = document.getElementById('main');
-    if (!drawer) return;
-    drawer.classList.remove('drawer-hidden');
-    main.classList.add('drawer-active');
-    this._drawerSnapTo(0, false);  // always start small; context-snap expands to match content
-    this._drawerContextSnap();
-  }
-
-  _drawerHide() {
-    const drawer = document.getElementById('translation-drawer');
-    const main   = document.getElementById('main');
-    if (!drawer) return;
-    drawer.classList.add('drawer-hidden');
-    main.classList.remove('drawer-active');
-  }
-
-  // Compute initial drawer height so its top edge sits at the passage's bottom edge.
-  // Called at the end of render() — runs after context-snap so it wins as the final write.
-  // Does NOT update _drawerSnapIdx so first drag/tap resolves to the nearest named snap.
-  _drawerPassageHeight() {
-    if (window.innerWidth > 768) return;
-    const drawer = document.getElementById('translation-drawer');
-    const main   = document.getElementById('main');
-    if (!drawer || drawer.classList.contains('drawer-hidden')) return;
-
-    const display = document.getElementById('german-display');
-    const vH      = window.innerHeight;   // full visual height (keyboard closed at this point)
-    const tabBarH = 52;                   // fixed tab bar height (CSS: 52px + safe-area)
-    // rect.bottom = viewport-relative px to the bottom of the passage.
-    // Already hard-capped at 40dvh by CSS (max-height + overflow:auto).
-    const rBottom = display ? display.getBoundingClientRect().bottom : 0;
-    const maxH    = Math.round(vH * 0.70);
-    const minH    = Math.round(vH * 0.25);
-    // Extra clearance so first-gloss spans on the bottom passage line aren't covered.
-    const glossBuf = parseInt(
-      getComputedStyle(document.documentElement).getPropertyValue('--gloss-line-height')
-    ) || 28;
-    // Fill the space from passage-bottom (+ gloss clearance) down to the top of the tab bar.
-    const raw     = Math.round(vH - rBottom - tabBarH - glossBuf);
-    const h       = Math.max(minH, Math.min(maxH, raw));
-
-    drawer.style.transition = 'none';
-    drawer.style.height     = h + 'px';
-    main.style.setProperty('--drawer-height', h + 'px');
-    this._drawerHeight      = h;
-  }
-
-  // A: fire once per event transition — no polling, user drag wins between calls
-  _drawerContextSnap() {
-    if (window.innerWidth > 768) return;
-    const evalVisible = document.getElementById('evaluation-result')?.classList.contains('visible');
-    const refVisible  = document.getElementById('reference-display')?.classList.contains('visible');
-    const hasContent  = evalVisible || refVisible;
-    const taFocused   = document.activeElement === document.getElementById('translation-input');
-    if (hasContent) {
-      if (this._drawerSnapIdx < 2) this._drawerSnapTo(2, true);
-    } else if (taFocused) {
-      if (this._drawerSnapIdx < 1) this._drawerSnapTo(1, true);
-    } else {
-      if (this._drawerSnapIdx > 0) this._drawerSnapTo(0, true);
-    }
-  }
-
-  _drawerInit() {
-    if (window.innerWidth > 768) return; // desktop: no drawer
-    const drawer = document.getElementById('translation-drawer');
-    const handle = document.getElementById('translation-drawer-handle');
-    if (!drawer || !handle) return;
-
-    // Show immediately if already in translation mode
-    if (this.currentMode === 'translation') this._drawerShow();
-
-    // ── Drag + tap gesture (B: tap-to-cycle; G: no transition during drag) ──
-    let _startY = 0, _lastY = 0, _startH = 0, _startTime = 0, _dragging = false;
-
-    const onStart = (e) => {
-      _dragging = true;
-      _startTime = Date.now();
-      _startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-      _lastY = _startY;
-      _startH = drawer.getBoundingClientRect().height;
-      drawer.style.transition = 'none'; // G: disable during active drag
-      e.stopPropagation();              // prevent drag-ext from double-firing
-      e.preventDefault();
-    };
-
-    const onMove = (e) => {
-      if (!_dragging) return;
-      const y = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-      _lastY = y;
-      const delta = _startY - y;
-      const maxH = Math.round(this._drawerVH() * 0.70);
-      const newH = Math.max(60, Math.min(_startH + delta, maxH));
-      drawer.style.height = newH + 'px';
-      document.getElementById('main').style.setProperty('--drawer-height', newH + 'px');
-      e.preventDefault();
-    };
-
-    const onEnd = () => {
-      if (!_dragging) return;
-      _dragging = false;
-      const elapsed  = Date.now() - _startTime;
-      const pDelta   = Math.abs(_lastY - _startY);
-
-      // B: tap-to-cycle — minimal movement + under 300 ms
-      if (elapsed < 300 && pDelta < 10) {
-        const nextIdx = (this._drawerSnapIdx + 1) % 3;
-        this._lastUserSnapIdx = nextIdx;
-        this._drawerSnapTo(nextIdx, true); // G: re-enables transition for snap
-        return;
-      }
-
-      // Drag: snap to nearest point (G: transition re-enabled inside _drawerSnapTo)
-      const currentH  = drawer.getBoundingClientRect().height;
-      const snaps     = this._drawerSnapPoints();
-      const closestIdx = snaps.reduce((bi, v, i) =>
-        Math.abs(v - currentH) < Math.abs(snaps[bi] - currentH) ? i : bi, 0);
-      this._lastUserSnapIdx = closestIdx;
-      this._drawerSnapTo(closestIdx, true);
-    };
-
-    // Primary drag zone: the handle
-    handle.addEventListener('touchstart', onStart, { passive: false });
-    handle.addEventListener('touchmove',  onMove,  { passive: false });
-    handle.addEventListener('touchend',   onEnd,   { passive: true  });
-    handle.addEventListener('mousedown',  onStart);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup',   onEnd);
-
-    // D: extended drag zone — first child of drawer-inner (14px strip)
-    const dragExt = document.getElementById('translation-drawer-drag-ext');
-    if (dragExt) {
-      dragExt.addEventListener('touchstart', onStart, { passive: false });
-      dragExt.addEventListener('mousedown',  onStart);
-    }
-
-    // ── Virtual keyboard detection via visualViewport ─────────────────────
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        if (this.currentMode !== 'translation' || window.innerWidth > 768) return;
-        const kbOpen = (window.innerHeight - window.visualViewport.height) > 150;
-        if (kbOpen && !this._kbWasOpen) {
-          this._kbWasOpen = true;
-          this._lastUserSnapIdx = this._drawerSnapIdx;
-          this._drawerSnapTo(2, true);
-        } else if (!kbOpen && this._kbWasOpen) {
-          this._kbWasOpen = false;
-          this._drawerSnapTo(this._lastUserSnapIdx, true);
-        }
-      });
-    }
-
-    // ── A: context-aware focus/blur + iOS scroll re-anchor ────────────────
-    const _ta = document.getElementById('translation-input');
-    if (_ta) {
-      const _iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      _ta.addEventListener('focus', () => {
-        if (_iosDevice) {
-          const _savedY = window.scrollY;
-          requestAnimationFrame(() => window.scrollTo(0, _savedY));
-          setTimeout(() => window.scrollTo(0, _savedY), 100);
-        }
-        this._drawerContextSnap();
-      }, { passive: true });
-      _ta.addEventListener('blur', () => {
-        this._drawerContextSnap();
-      }, { passive: true });
     }
   }
 
@@ -25750,22 +25478,22 @@ Assess this learner's current CEFR level for reading/translating academic German
       ok(this._escapeHtml(42)         === '42',      `42 => "${this._escapeHtml(42)}"`);
     });
 
-    // 5. Drawer snap-points reachable (mobile only, skip on desktop) ───
-    await run('Drawer snap-points reachable (skipped on desktop \u2265769px)', () => {
-      if (window.innerWidth > 768) return;
-      const drawer = document.getElementById('translation-drawer');
-      ok(drawer, '#translation-drawer not found');
-      const wasHidden = drawer.classList.contains('drawer-hidden');
-      drawer.classList.remove('drawer-hidden');
-      const snaps = this._drawerSnapPoints();
-      ok(snaps.length === 3, `expected 3 snap points, got ${snaps.length}`);
-      [0, 1, 2].forEach(i => {
-        this._drawerSnapTo(i, false);
-        ok(this._drawerHeight === snaps[i],
-          `snap ${i}: height ${this._drawerHeight}px !== expected ${snaps[i]}px`);
-      });
-      this._drawerSnapTo(0, false);
-      if (wasHidden) drawer.classList.add('drawer-hidden');
+    // 5. Translation tab layout intact ────────────────────────────────
+    await run('Translation tab: textarea visible, eval reachable, action buttons present', () => {
+      this.switchMode('translation');
+      const textarea = document.getElementById('translation-input');
+      ok(textarea, '#translation-input not found');
+      const cs = window.getComputedStyle(textarea);
+      ok(cs.display !== 'none' && cs.visibility !== 'hidden',
+        '#translation-input is hidden (display:none or visibility:hidden)');
+      const evalResult = document.getElementById('evaluation-result');
+      ok(evalResult, '#evaluation-result not found');
+      ok(evalResult.closest('#translation-body, #content-area, #main'),
+        '#evaluation-result is not inside the main content flow');
+      const actionRow = document.getElementById('action-row');
+      ok(actionRow, '#action-row not found');
+      ok(actionRow.querySelectorAll('button').length >= 3,
+        `expected ≥3 action buttons, got ${actionRow.querySelectorAll('button').length}`);
     });
 
     // 6. All 4 mode tabs fire switchMode ───────────────────────────────
