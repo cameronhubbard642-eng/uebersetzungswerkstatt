@@ -23378,7 +23378,7 @@ Lesson: ${ex.profile.description}`;
       if (!area.isConnected) return;
       area.style.fontStyle = "normal";
       area.style.color = "var(--text)";
-      area.innerHTML = `<strong style="font-size:11px;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px;">Why this is wrong</strong>${text}`;
+      area.innerHTML = `<strong style="font-size:11px;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px;">Why this is wrong</strong>${this._renderSimpleMarkdown(text)}`;
     } catch (e) {
       if (area.isConnected) area.remove();
     }
