@@ -1472,10 +1472,12 @@ body.sidebar-open {
     transition: color 0.15s;
   }
   .tab-icon {
-    font-size: 18px;
-    line-height: 1;
+    width: 20px;
+    height: 20px;
     display: block;
+    flex-shrink: 0;
   }
+  .tab-icon svg { width: 100%; height: 100%; display: block; }
   .mobile-tab.active { color: #fff; }
   .mobile-tab:active { color: #fff; opacity: 0.7; }
 }
@@ -1896,6 +1898,7 @@ body.sidebar-open {
 .exercise-item { border-left-color: transparent; }
 .review-item { border-left-color: transparent; }
 .item-icon { font-size: 0.9rem; flex-shrink: 0; }
+.icon-inline { width: 1em; height: 1em; vertical-align: -0.15em; display: inline-block; flex-shrink: 0; }
 .item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item-checkmark { color: var(--success); font-weight: bold; flex-shrink: 0; }
 .item-score { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; }
@@ -4419,10 +4422,10 @@ select:focus-visible, a:focus-visible {
 </div>
 
 <div id="mobile-tab-bar">
-  <button class="mobile-tab active" data-mode="translation" aria-label="Übersetzungsmodus"><span class="tab-icon">&#x1F4DD;</span>Übersetzung</button>
-  <button class="mobile-tab" data-mode="vocabulary" aria-label="Vokabelmodus"><span class="tab-icon">&#x1F4D6;</span>Vokabeln</button>
-  <button class="mobile-tab" data-mode="grammar" aria-label="Grammatikmodus"><span class="tab-icon">&#x1F4D0;</span>Grammatik</button>
-  <button class="mobile-tab" data-mode="conversation" aria-label="Gesprächsmodus"><span class="tab-icon">&#x1F4AC;</span>Gespräch</button>
+  <button class="mobile-tab active" data-mode="translation" aria-label="Übersetzungsmodus"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg></span>Übersetzung</button>
+  <button class="mobile-tab" data-mode="vocabulary" aria-label="Vokabelmodus"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6.878V6a2.25 2.25 0 0 1 2.25-2.25h7.5A2.25 2.25 0 0 1 18 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 0 0 4.5 9v.878m13.5-3A2.25 2.25 0 0 1 19.5 9v.878m0 0a2.246 2.246 0 0 0-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0 1 21 12v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6c0-.98.626-1.813 1.5-2.122"/></svg></span>Vokabeln</button>
+  <button class="mobile-tab" data-mode="grammar" aria-label="Grammatikmodus"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg></span>Grammatik</button>
+  <button class="mobile-tab" data-mode="conversation" aria-label="Gesprächsmodus"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg></span>Gespräch</button>
 </div>
 
 <script>
@@ -19161,6 +19164,109 @@ const FSRS = (() => {
 // ============================================================
 const API_TIMEOUT_MS = 30000; // Timeout for all external API fetch calls (ms)
 
+// ── Icon System ──────────────────────────────────────────────────────────────
+// Option α: change ICON_SET to 'A' to revert to house style (16×16 / stroke-width 1.3)
+// Direction B = Heroicons Outline (24×24 / stroke-width 1.5) — MIT © Tailwind Labs
+const ICON_SET = 'B';
+const _SVG_A = `fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+const _SVG_B = `fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"`;
+
+const ICON_BOOK_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M2 3.5h5a1.5 1.5 0 0 1 1.5 1.5v8a1 1 0 0 0-1-1H2z"/><path d="M14 3.5H9a1.5 1.5 0 0 0-1.5 1.5v8a1 1 0 0 1 1-1H14z"/></svg>`;
+const ICON_BOOK_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg>`;
+const ICON_BOOK    = ICON_SET === 'A' ? ICON_BOOK_A : ICON_BOOK_B;
+
+const ICON_PENCIL_A = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M3 2h6l3 3v8.5A1.5 1.5 0 0 1 10.5 15h-7A1.5 1.5 0 0 1 2 13.5v-10A1.5 1.5 0 0 1 3.5 2z"/><path d="M9 2v3h3"/><path d="M5 9l2.5 2.5L11 8"/></svg>`;
+const ICON_PENCIL_B = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>`;
+const ICON_PENCIL   = ICON_SET === 'A' ? ICON_PENCIL_A : ICON_PENCIL_B;
+
+const ICON_REVIEW_A = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M2.5 8a5.5 5.5 0 0 1 9.5-3.8"/><path d="M12 2v3h-3"/><path d="M13.5 8a5.5 5.5 0 0 1-9.5 3.8"/><path d="M4 14v-3h3"/></svg>`;
+const ICON_REVIEW_B = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>`;
+const ICON_REVIEW   = ICON_SET === 'A' ? ICON_REVIEW_A : ICON_REVIEW_B;
+
+const ICON_LOCK_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>`;
+const ICON_LOCK_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/></svg>`;
+const ICON_LOCK    = ICON_SET === 'A' ? ICON_LOCK_A : ICON_LOCK_B;
+
+const ICON_BULB_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M8 2a4.5 4.5 0 0 0-3 7.8V11a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V9.8A4.5 4.5 0 0 0 8 2z"/><path d="M6.5 14h3"/></svg>`;
+const ICON_BULB_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/></svg>`;
+const ICON_BULB    = ICON_SET === 'A' ? ICON_BULB_A : ICON_BULB_B;
+
+const ICON_SEND_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M2 8h11"/><path d="M9.5 4.5L13 8l-3.5 3.5"/></svg>`;
+const ICON_SEND_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/></svg>`;
+const ICON_SEND    = ICON_SET === 'A' ? ICON_SEND_A : ICON_SEND_B;
+
+const ICON_BOLT_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M9 1.5L3 9h4l-1 5.5L12 7H8z"/></svg>`;
+const ICON_BOLT_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`;
+const ICON_BOLT    = ICON_SET === 'A' ? ICON_BOLT_A : ICON_BOLT_B;
+
+// Scenario icon pairs — A: 16×16/stroke-1.3 (house style); B: 24×24/stroke-1.5 (coordinates ×1.5)
+const _scenIcon = (a, b) => ICON_SET === 'A'
+  ? `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}>${a}</svg>`
+  : `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}>${b}</svg>`;
+const _SC_BIERGARTEN = _scenIcon(
+  `<rect x="3" y="3" width="8" height="11" rx="1"/><path d="M11 6h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2"/><path d="M5.5 6v5M8.5 6v5"/>`,
+  `<rect x="4.5" y="4.5" width="12" height="16.5" rx="1.5"/><path d="M16.5 9h3a1.5 1.5 0 0 1 1.5 1.5v4.5a1.5 1.5 0 0 1-1.5 1.5h-3"/><path d="M8.25 9v7.5M12.75 9v7.5"/>`);
+const _SC_DIRECTIONS = _scenIcon(
+  `<path d="M8 1.5a4.5 4.5 0 0 1 4.5 4.5c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5z"/><circle cx="8" cy="6" r="1.5"/>`,
+  `<path d="M12 2.25a6.75 6.75 0 0 1 6.75 6.75c0 5.25-6.75 12.75-6.75 12.75S5.25 14.25 5.25 9A6.75 6.75 0 0 1 12 2.25z"/><circle cx="12" cy="9" r="2.25"/>`);
+const _SC_WOCHENMARKT = _scenIcon(
+  `<path d="M1 1h2l1.6 8h7.8l2-6H4"/><circle cx="6" cy="13" r="1"/><circle cx="12" cy="13" r="1"/>`,
+  `<path d="M1.5 1.5h3l2.4 12h11.7l3-9H6"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="18" cy="19.5" r="1.5"/>`);
+const _SC_INTRODUCTIONS = _scenIcon(
+  `<circle cx="8" cy="5" r="3"/><path d="M2.5 14.5a5.5 5.5 0 0 1 11 0"/>`,
+  `<circle cx="12" cy="7.5" r="4.5"/><path d="M3.75 21.75a8.25 8.25 0 0 1 16.5 0"/>`);
+const _SC_DAILY_ROUTINES = _scenIcon(
+  `<circle cx="8" cy="6" r="3"/><path d="M8 1v1M8 10v1M3.5 6H2.5M13.5 6h-1M4.7 3l-.7-.7M12 3l.7-.7M4.7 9l-.7.7M12 9l.7.7"/><path d="M1 13h14"/>`,
+  `<circle cx="12" cy="9" r="4.5"/><path d="M12 1.5v1.5M12 15v1.5M5.25 9H3.75M20.25 9h-1.5M7.05 4.5l-1.05-1.05M18 4.5l1.05-1.05M7.05 13.5l-1.05 1.05M18 13.5l1.05 1.05"/><path d="M1.5 19.5h21"/>`);
+const _SC_ARZT = _scenIcon(
+  `<path d="M8 4v8M4 8h8"/><circle cx="8" cy="8" r="6.5"/>`,
+  `<path d="M12 6v12M6 12h12"/><circle cx="12" cy="12" r="9.75"/>`);
+const _SC_INTERRAIL = _scenIcon(
+  `<rect x="2" y="3" width="12" height="9" rx="2"/><path d="M2 8h12"/><path d="M5 12v2M11 12v2M6 5.5h4"/>`,
+  `<rect x="3" y="4.5" width="18" height="13.5" rx="3"/><path d="M3 12h18"/><path d="M7.5 18v3M16.5 18v3M9 8.25h6"/>`);
+const _SC_BUCH_DISKUSSION = _scenIcon(
+  `<path d="M2 2.5h4.5a2 2 0 0 1 2 2v9a1.5 1.5 0 0 0-1.5-1.5H2z"/><path d="M14 2.5H9.5a2 2 0 0 0-2 2v9a1.5 1.5 0 0 1 1.5-1.5H14z"/>`,
+  `<path d="M3 3.75h6.75a3 3 0 0 1 3 3v13.5a2.25 2.25 0 0 0-2.25-2.25H3z"/><path d="M21 3.75h-6.75a3 3 0 0 0-3 3v13.5a2.25 2.25 0 0 1 2.25-2.25H21z"/>`);
+const _SC_WOHNUNGSSUCHE = _scenIcon(
+  `<path d="M2 8l6-6 6 6"/><path d="M3.5 9v5.5h3.5v-4h2v4h3.5V9"/>`,
+  `<path d="M3 12l9-9 9 9"/><path d="M5.25 13.5v8.25h5.25v-6h3v6h5.25V13.5"/>`);
+const _SC_WETTER = _scenIcon(
+  `<path d="M12 10a3.5 3.5 0 0 0-1-6.9A5 5 0 0 0 1.5 6a3.5 3.5 0 0 0 .5 7h10z"/><path d="M6 14v2M10 13v2"/>`,
+  `<path d="M18 15a5.25 5.25 0 0 0-1.5-10.35A7.5 7.5 0 0 0 2.25 9a5.25 5.25 0 0 0 .75 10.5h15z"/><path d="M9 21v3M15 19.5v3"/>`);
+const _SC_BROT_KULTUR = _scenIcon(
+  `<ellipse cx="8" cy="8" rx="6" ry="4"/><path d="M5 6.5v3M8 6v4M11 6.5v3"/>`,
+  `<ellipse cx="12" cy="12" rx="9" ry="6"/><path d="M7.5 9.75v4.5M12 9v6M16.5 9.75v4.5"/>`);
+const _SC_VORSTELLUNGSGESPRAECH = _scenIcon(
+  `<rect x="1.5" y="5" width="13" height="9" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><path d="M1.5 9h13"/>`,
+  `<rect x="2.25" y="7.5" width="19.5" height="13.5" rx="2.25"/><path d="M7.5 7.5V5.25A2.25 2.25 0 0 1 9.75 3h4.5A2.25 2.25 0 0 1 16.5 5.25V7.5"/><path d="M2.25 13.5h19.5"/>`);
+const _SC_WIEDERSEHEN = _scenIcon(
+  `<path d="M14 7.5a6 6 0 0 1-6 6h-3l-3 2v-2a6 6 0 1 1 12-6z"/><path d="M5.5 7h.01M10.5 7h.01"/><path d="M6 9.5a2.5 2.5 0 0 0 4 0"/>`,
+  `<path d="M21 11.25a9 9 0 0 1-9 9h-4.5l-4.5 3v-3a9 9 0 1 1 18-9z"/><path d="M8.25 10.5h.015M15.75 10.5h.015"/><path d="M9 14.25a3.75 3.75 0 0 0 6 0"/>`);
+const _SC_DEUTSCHE_BAHN = _scenIcon(
+  `<rect x="1" y="4" width="14" height="8" rx="2"/><path d="M1 9h14"/><circle cx="4.5" cy="14" r="1"/><circle cx="11.5" cy="14" r="1"/><path d="M4 6.5h3"/>`,
+  `<rect x="1.5" y="6" width="21" height="12" rx="3"/><path d="M1.5 13.5h21"/><circle cx="6.75" cy="21" r="1.5"/><circle cx="17.25" cy="21" r="1.5"/><path d="M6 9.75h4.5"/>`);
+const _SC_GOETHE_SCHILLER = _scenIcon(
+  `<path d="M3 1.5h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H3"/><path d="M3 1.5v13"/><path d="M6 5h4M6 8h3"/>`,
+  `<path d="M4.5 2.25h12a3 3 0 0 1 3 3v13.5a3 3 0 0 1-3 3H4.5"/><path d="M4.5 2.25v19.5"/><path d="M9 7.5h6M9 12h4.5"/>`);
+const _SC_ENERGIEWENDE = _scenIcon(
+  `<circle cx="8" cy="8" r="6.5"/><path d="M2 6h12M2 10h12"/><ellipse cx="8" cy="8" rx="3" ry="6.5"/>`,
+  `<circle cx="12" cy="12" r="9.75"/><path d="M3 9h18M3 15h18"/><ellipse cx="12" cy="12" rx="4.5" ry="9.75"/>`);
+const _SC_FREIER_WILLE = _scenIcon(
+  `<circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l3 2"/>`,
+  `<circle cx="12" cy="12" r="9.75"/><path d="M12 6v6l4.5 3"/>`);
+const _SC_KULTURELLE_IDENTITAET = _scenIcon(
+  `<circle cx="5.5" cy="6" r="3"/><circle cx="10.5" cy="6" r="3"/><path d="M3 13a4 4 0 0 1 5-3.8A4 4 0 0 1 13 13"/>`,
+  `<circle cx="8.25" cy="9" r="4.5"/><circle cx="15.75" cy="9" r="4.5"/><path d="M4.5 19.5a6 6 0 0 1 7.5-5.7A6 6 0 0 1 19.5 19.5"/>`);
+const _SC_BEUYS_KUNST = _scenIcon(
+  `<path d="M8 1.5a6.5 6.5 0 0 0-1 12.9v-2.4a2 2 0 1 1 2 0v2.4a6.5 6.5 0 0 0-1-12.9z"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="5" r="1" fill="currentColor"/><circle cx="11" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="9" r="1" fill="currentColor"/>`,
+  `<path d="M12 2.25a9.75 9.75 0 0 0-1.5 19.35v-3.6a3 3 0 1 1 3 0v3.6a9.75 9.75 0 0 0-1.5-19.35z"/><circle cx="7.5" cy="9" r="1.5" fill="currentColor"/><circle cx="12" cy="7.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="9" r="1.5" fill="currentColor"/><circle cx="9" cy="13.5" r="1.5" fill="currentColor"/>`);
+const _SC_KI_GESELLSCHAFT = _scenIcon(
+  `<rect x="2" y="2" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11v3"/>`,
+  `<rect x="3" y="3" width="18" height="13.5" rx="2.25"/><path d="M7.5 21h9M12 16.5v4.5"/>`);
+const _SC_OKTOBERFEST = _scenIcon(
+  `<path d="M3 14h10"/><path d="M4 14V8M12 14V8"/><path d="M2 8h12l-1-6H3z"/><path d="M8 2v6"/>`,
+  `<path d="M4.5 21h15"/><path d="M6 21V12M18 21V12"/><path d="M3 12h18l-1.5-9H4.5z"/><path d="M12 3v9"/>`);
+
 class App {
   constructor() {
     this.currentMode = "translation";
@@ -23098,7 +23204,7 @@ Lesson: ${ex.profile.description}`;
                                  this.grammarActiveItem?.itemId === lessonId;
 
           html += `<div class="unit-item lesson-item ${isLessonActive ? "active" : ""}" data-type="lesson" data-unit-id="${unitId}" data-item-id="${lessonId}">`;
-          html += '<span class="item-icon">📖</span>';
+          html += `<span class="item-icon">${ICON_BOOK}</span>`;
           html += `<span class="item-title">${lesson.title}</span>`;
           if (isLessonComplete) html += '<span class="item-checkmark">✓</span>';
           html += `</div>`;
@@ -23115,7 +23221,7 @@ Lesson: ${ex.profile.description}`;
                                    this.grammarActiveItem?.itemId === exerciseId;
 
           html += `<div class="unit-item exercise-item ${isExerciseActive ? "active" : ""}" data-type="exercise" data-unit-id="${unitId}" data-item-id="${exerciseId}">`;
-          html += '<span class="item-icon">📝</span>';
+          html += `<span class="item-icon">${ICON_PENCIL}</span>`;
           html += `<span class="item-title">${exercise.title || ("Exercise " + (exerciseIndex + 1))}</span>`;
           if (exerciseData) {
             html += `<span class="item-score">${exerciseData.correct}/${exerciseData.total}</span>`;
@@ -23133,10 +23239,10 @@ Lesson: ${ex.profile.description}`;
                               this.grammarActiveItem?.type === "review";
 
         html += `<div class="unit-item review-item ${isReviewLocked ? "locked" : ""} ${isReviewActive ? "active" : ""}" data-type="review" data-unit-id="${unitId}" data-item-id="${reviewId}">`;
-        html += '<span class="item-icon">🔄</span>';
+        html += `<span class="item-icon">${ICON_REVIEW}</span>`;
         html += `<span class="item-title">Unit Review</span>`;
         if (isReviewLocked) {
-          html += '<span class="item-lock">🔒</span>';
+          html += `<span class="item-lock">${ICON_LOCK}</span>`;
         } else if (reviewData?.completed) {
           html += `<span class="item-score">${reviewData.score}/${reviewData.total}</span>`;
         }
@@ -23301,7 +23407,7 @@ Lesson: ${ex.profile.description}`;
         html += `</table>`;
         html += `</div>`;
       } else if (block.type === "tip") {
-        html += `<div class="lesson-block tip">💡 ${block.value || block.content || ""}</div>`;
+        html += `<div class="lesson-block tip">${ICON_BULB} ${block.value || block.content || ""}</div>`;
       } else if (block.type === "check") {
         const checkKey = `${unitId}_${lessonId}_check_${blockIndex}`;
         const answered = this.grammarLessonCheckAnswers[checkKey];
@@ -24358,9 +24464,9 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
       <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
       <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
       <p style="margin-bottom:10px;">Each unit contains:</p>
-      <p style="margin-bottom:5px;"><strong>📖 Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
-      <p style="margin-bottom:5px;"><strong>📝 Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
-      <p style="margin-bottom:10px;"><strong>🔄 Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
+      <p style="margin-bottom:5px;"><strong>${ICON_BOOK} Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
+      <p style="margin-bottom:5px;"><strong>${ICON_PENCIL} Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
+      <p style="margin-bottom:10px;"><strong>${ICON_REVIEW} Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
       <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
     </div>`;
     this._injectReviewBanner("grammar");
@@ -24387,42 +24493,42 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   _getConversationScenarios() {
     return [
       // ── Beginner ─────────────────────────────────────────────
-      { id: "biergarten_order", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="11" rx="1"/><path d="M11 6h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2"/><path d="M5.5 6v5M8.5 6v5"/></svg>', label: "Ordering at a Biergarten", level: "A2",
+      { id: "biergarten_order", cat: "Beginner", icon: _SC_BIERGARTEN, label: "Ordering at a Biergarten", level: "A2",
         setup: "You are at a traditional Biergarten in Munich. The server approaches. Order a beer and a meal, ask about the specials, and request the bill.",
         vocab: ["die Speisekarte", "Was empfehlen Sie?", "Ich hätte gerne…", "Die Rechnung, bitte", "ohne / mit", "Ist der Service inbegriffen?"],
         keyPhrases: ["Ich hätte gerne ein Helles, bitte.", "Was empfehlen Sie heute?", "Die Rechnung, bitte."],
         opening: "Grüß Gott! Haben Sie schon gewählt?",
         sysPrompt: "You are a friendly server at a traditional Biergarten in Munich. Speak in warm, natural German — a little Bavarian flavour is welcome. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end in this exact format: [Korrektur: «X» → «Y»]. Start by greeting the guest and asking if they are ready to order." },
 
-      { id: "directions_berlin", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5a4.5 4.5 0 0 1 4.5 4.5c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5z"/><circle cx="8" cy="6" r="1.5"/></svg>', label: "Asking directions in Berlin", level: "A2",
+      { id: "directions_berlin", cat: "Beginner", icon: _SC_DIRECTIONS, label: "Asking directions in Berlin", level: "A2",
         setup: "You are lost in Berlin-Mitte and need to find the Brandenburger Tor. Stop a local and ask for directions.",
         vocab: ["Entschuldigung", "Wie komme ich zum…?", "geradeaus", "rechts / links abbiegen", "überqueren", "die Ecke", "ungefähr… Minuten"],
         keyPhrases: ["Entschuldigung, wo ist das Brandenburger Tor?", "Ist es weit?", "Vielen Dank, sehr freundlich!"],
         opening: "Guten Morgen! Kann ich Ihnen helfen?",
         sysPrompt: "You are a helpful Berliner giving directions to the Brandenburger Tor. Speak in clear, natural German. Give simple directions using landmarks and walking time. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by responding warmly when approached." },
 
-      { id: "wochenmarkt", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1h2l1.6 8h7.8l2-6H4"/><circle cx="6" cy="13" r="1"/><circle cx="12" cy="13" r="1"/></svg>', label: "Shopping at the Wochenmarkt", level: "A2",
+      { id: "wochenmarkt", cat: "Beginner", icon: _SC_WOCHENMARKT, label: "Shopping at the Wochenmarkt", level: "A2",
         setup: "You are at an open-air market (Wochenmarkt) in Hamburg. Browse, ask about prices, and buy some fruit and vegetables.",
         vocab: ["Was kostet das?", "das Kilo", "Haben Sie…?", "günstiger", "mitnehmen", "das Wechselgeld", "frisch"],
         keyPhrases: ["Was kosten die Tomaten?", "Ein Kilo, bitte.", "Haben Sie etwas Günstigeres?"],
         opening: "Hereinspaziert! Frisches Gemüse, frisches Obst — schauen Sie mal rein!",
         sysPrompt: "You are a cheerful vendor at a Wochenmarkt in Hamburg. Speak in natural German. Suggest produce, quote prices, be friendly. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by calling out to the passing customer." },
 
-      { id: "introductions_berlin", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="3"/><path d="M2.5 14.5a5.5 5.5 0 0 1 11 0"/></svg>', label: "Introductions", level: "A2",
+      { id: "introductions_berlin", cat: "Beginner", icon: _SC_INTRODUCTIONS, label: "Introductions", level: "A2",
         setup: "You are at a language exchange meetup in Berlin. Introduce yourself, ask where people are from, and talk about why you're learning German.",
         vocab: ["Freut mich", "Schön, Sie kennenzulernen", "Woher kommen Sie?", "Ich bin von Beruf…", "Ich lerne Deutsch, weil…", "Was machen Sie beruflich?", "die Sprache"],
         keyPhrases: ["Ich heiße… und komme aus…", "Ich lerne Deutsch, weil…", "Und Sie, was machen Sie?"],
         opening: "Hallo! Willkommen beim Sprachaustausch. Sind Sie zum ersten Mal hier?",
         sysPrompt: "You are a friendly German speaker at a language exchange in Berlin. Speak in clear, natural German. Ask about the other person's name, origin, job, and reasons for learning German. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by welcoming them to the event." },
 
-      { id: "daily_routines", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="3"/><path d="M8 1v1M8 10v1M3.5 6H2.5M13.5 6h-1M4.7 3l-.7-.7M12 3l.7-.7M4.7 9l-.7.7M12 9l.7.7"/><path d="M1 13h14"/></svg>', label: "Daily routines", level: "A2",
+      { id: "daily_routines", cat: "Beginner", icon: _SC_DAILY_ROUTINES, label: "Daily routines", level: "A2",
         setup: "A new friend asks about your typical day. Describe your morning routine, work or study schedule, and what you do in the evenings.",
         vocab: ["aufstehen", "frühstücken", "zur Arbeit / zur Uni gehen", "zu Mittag essen", "am Nachmittag", "sich entspannen", "schlafen gehen", "meistens"],
         keyPhrases: ["Normalerweise stehe ich um… Uhr auf.", "Zum Frühstück esse ich meistens…", "Abends gehe ich gerne…"],
         opening: "Sag mal, wie sieht bei dir ein normaler Tag aus? Erzähl mal!",
         sysPrompt: "You are a curious German-speaking friend chatting over coffee. Speak in natural, friendly German. Ask follow-up questions about the other person's routine — when they get up, what they eat, how they get to work, what they do after. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking about their typical day." },
 
-      { id: "arzt", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v8M4 8h8"/><circle cx="8" cy="8" r="6.5"/></svg>', label: "Doctor visit", level: "A2",
+      { id: "arzt", cat: "Beginner", icon: _SC_ARZT, label: "Doctor visit", level: "A2",
         setup: "You have a headache and a sore throat. Visit a doctor at a clinic in Germany and describe your symptoms.",
         vocab: ["mir tut … weh", "der Hals", "der Kopf", "das Fieber", "seit … Tagen", "der Arzt / die Ärztin", "das Rezept", "Tabletten nehmen"],
         keyPhrases: ["Mir tut der Hals seit zwei Tagen weh.", "Ich habe leichtes Fieber.", "Was empfehlen Sie?"],
@@ -24430,56 +24536,56 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         sysPrompt: "You are a kind doctor at a medical practice in Germany. Speak in clear, natural German. Ask about the patient's symptoms, duration, and any other relevant details. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what brings the patient in today." },
 
       // ── Intermediate ──────────────────────────────────────────
-      { id: "interrail_trip", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="2"/><path d="M2 8h12"/><path d="M5 12v2M11 12v2M6 5.5h4"/></svg>', label: "Planning an Interrail trip", level: "B1",
+      { id: "interrail_trip", cat: "Intermediate", icon: _SC_INTERRAIL, label: "Planning an Interrail trip", level: "B1",
         setup: "You and a friend are planning an Interrail trip through Germany, Austria, and Switzerland. Discuss destinations, budget, activities, and logistics.",
         vocab: ["der Reiseplan", "das Budget", "übernachten", "der Anschlusszug", "ein Muss", "im Freien", "frühmorgens", "ausnutzen"],
         keyPhrases: ["Was hältst du davon, wenn wir in München anfangen?", "Man sollte die Unterkünfte im Voraus buchen.", "Was wird das wohl kosten?"],
         opening: "Ich freue mich so auf die Reise! Wo sollen wir eigentlich anfangen?",
         sysPrompt: "You are an enthusiastic friend planning an Interrail trip through German-speaking Europe. Speak in natural German. Suggest destinations (München, Wien, Zürich, Salzburg, Heidelberg), discuss budget and logistics, debate priorities. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by expressing excitement and asking where to begin." },
 
-      { id: "buch_diskussion", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5h4.5a2 2 0 0 1 2 2v9a1.5 1.5 0 0 0-1.5-1.5H2z"/><path d="M14 2.5H9.5a2 2 0 0 0-2 2v9a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>', label: "Book discussion", level: "B1",
+      { id: "buch_diskussion", cat: "Intermediate", icon: _SC_BUCH_DISKUSSION, label: "Book discussion", level: "B1",
         setup: "You have both just finished a German novel. Discuss the plot, characters, and what you thought of the ending.",
         vocab: ["der Protagonist", "die Handlung", "das Ende", "Ich fand es…", "die Ich-Erzählung", "die Wendung", "bewegend", "vorhersehbar"],
         keyPhrases: ["Was mir am besten gefallen hat, war…", "Ich habe die Stelle nicht ganz verstanden, wo…", "Glaubst du, das Ende macht Sinn?"],
         opening: "Gestern Nacht hab ich's endlich fertig gelesen. Ich bin gespannt, was du denkst! Wie fandst du's?",
         sysPrompt: "You are a reader who just finished a German novel and wants to discuss it. Invent a plausible book called 'Das verschwundene Haus' about a family mystery in postwar Germany. Speak in natural German. Share opinions, ask for the other person's views, and explore themes and characters. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what the other person thought." },
 
-      { id: "wohnungssuche_berlin", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l6-6 6 6"/><path d="M3.5 9v5.5h3.5v-4h2v4h3.5V9"/></svg>', label: "Wohnungssuche in Berlin", level: "B1",
+      { id: "wohnungssuche_berlin", cat: "Intermediate", icon: _SC_WOHNUNGSSUCHE, label: "Wohnungssuche in Berlin", level: "B1",
         setup: "You are calling about an apartment listing in Berlin. Ask about rent, utilities, the neighbourhood, and arrange a viewing.",
         vocab: ["die Miete", "die Nebenkosten", "die Kaution", "der Mietvertrag", "möbliert", "das Viertel", "besichtigen", "verfügbar"],
         keyPhrases: ["Sind die Nebenkosten inklusive?", "Wann könnte ich die Wohnung besichtigen?", "Sind Haustiere erlaubt?"],
         opening: "Guten Tag, hier Müller. Rufen Sie wegen der Wohnung in der Kastanienallee an?",
         sysPrompt: "You are the landlord of an apartment in Berlin Prenzlauer Berg. Speak in natural German. The apartment has 2 rooms, costs 950€ Kaltmiete, Nebenkosten not included (~150€), and is available from next month. Answer questions naturally and try to arrange a viewing. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by confirming they're calling about the apartment." },
 
-      { id: "wetter_plaene", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a3.5 3.5 0 0 0-1-6.9A5 5 0 0 0 1.5 6a3.5 3.5 0 0 0 .5 7h10z"/><path d="M6 14v2M10 13v2"/></svg>', label: "Weather & weekend plans", level: "B1",
+      { id: "wetter_plaene", cat: "Intermediate", icon: _SC_WETTER, label: "Weather & weekend plans", level: "B1",
         setup: "Chat with a friend about the weekend weather forecast and make plans that depend on it — outdoor vs indoor options.",
         vocab: ["die Wettervorhersage", "es wird regnen / sonnig sein", "falls es schlechtes Wetter gibt", "wenn es schön ist", "der Schauer", "absagen / verschieben", "eine Alternative", "das macht nichts"],
         keyPhrases: ["Man sagt, am Samstag soll es regnen.", "In dem Fall könnten wir ins Museum gehen.", "Wenn es schön ist, gehe ich lieber in den Park."],
         opening: "Hast du schon das Wetter für das Wochenende gesehen? Sieht nach Regen aus…",
         sysPrompt: "You are a friend making weekend plans. Speak in natural, conversational German. The forecast is rain Saturday, sunny Sunday. Suggest contingency plans and react to the other person's ideas. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by mentioning the forecast." },
 
-      { id: "brot_kultur", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="8" cy="8" rx="6" ry="4"/><path d="M5 6.5v3M8 6v4M11 6.5v3"/></svg>', label: "Food & Brot culture", level: "B1",
+      { id: "brot_kultur", cat: "Intermediate", icon: _SC_BROT_KULTUR, label: "Food & Brot culture", level: "B1",
         setup: "Discuss German food traditions — especially Brot culture, regional specialties, and Kaffee und Kuchen — with someone who loves cooking.",
         vocab: ["die Gastronomie", "die Zutat", "das Rezept", "würzen", "lecker", "der Geschmack", "typisch aus der Region", "berühmt für"],
         keyPhrases: ["In Deutschland ist es typisch, abends Brot zu essen.", "Was ist dein Lieblingsgericht?", "Dieses Rezept braucht… und man macht es so…"],
         opening: "Ich liebe die deutsche Küche — allein schon die Brotvielfalt ist unglaublich. Was kennst du so?",
         sysPrompt: "You are a passionate home cook who loves German and Austrian cuisine. Speak in natural German. Discuss dishes from different German-speaking regions (Brezel, Sauerbraten, Wiener Schnitzel, Schwarzwälder Kirschtorte, regional breads), ask about the other person's favorites, share recipes and traditions. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by asking what dishes they know." },
 
-      { id: "vorstellungsgespraech", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="5" width="13" height="9" rx="1.5"/><path d="M5 5V3.5A1.5 1.5 0 0 1 6.5 2h3A1.5 1.5 0 0 1 11 3.5V5"/><path d="M1.5 9h13"/></svg>', label: "Job interview", level: "B2",
+      { id: "vorstellungsgespraech", cat: "Intermediate", icon: _SC_VORSTELLUNGSGESPRAECH, label: "Job interview", level: "B2",
         setup: "You are interviewing for a position at a company in Frankfurt. Answer questions and ask about the role. The formal Sie register is required.",
         vocab: ["die Stelle / Position", "die Berufserfahrung", "die Anforderungen", "das Unternehmen", "meine Stärken", "im Team arbeiten", "die Ziele", "langfristig"],
         keyPhrases: ["Ich habe Erfahrung in…", "Meine größte Stärke ist…", "Welche Entwicklungsmöglichkeiten gibt es?"],
         opening: "Guten Tag, nehmen Sie bitte Platz. Hatten Sie eine gute Anreise?",
         sysPrompt: "You are an HR manager at a German company in Frankfurt interviewing for a marketing role. Speak in formal but natural German using Sie throughout. Ask about experience, skills, why they want the role, and where they see themselves in five years. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by welcoming them." },
 
-      { id: "wiedersehen", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7.5a6 6 0 0 1-6 6h-3l-3 2v-2a6 6 0 1 1 12-6z"/><path d="M5.5 7h.01M10.5 7h.01"/><path d="M6 9.5a2.5 2.5 0 0 0 4 0"/></svg>', label: "Catching up with a friend", level: "B1",
+      { id: "wiedersehen", cat: "Intermediate", icon: _SC_WIEDERSEHEN, label: "Catching up with a friend", level: "B1",
         setup: "You haven't seen a good friend in six months. Catch up on what's been happening in your lives — work, relationships, travel, plans.",
         vocab: ["Was hast du so getrieben?", "schon lange nicht mehr…", "die Neuigkeit", "so viel ist passiert", "was … betrifft", "übrigens", "Erzähl!"],
         keyPhrases: ["Lange nicht gesehen! Wie geht's dir?", "Also, weißt du was passiert ist…", "Und du? Was gibt's Neues bei dir?"],
         opening: "Na endlich! Wie lange haben wir uns nicht gesehen! Du siehst super aus. Wie geht's?",
         sysPrompt: "You are a close friend who hasn't seen the other person in six months. Speak in warm, natural German. Share some news (new job, a trip you took, a relationship update — you can invent details) and ask about their life. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by expressing excitement at seeing them." },
 
-      { id: "deutsche_bahn", cat: "Intermediate", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="8" rx="2"/><path d="M1 9h14"/><circle cx="4.5" cy="14" r="1"/><circle cx="11.5" cy="14" r="1"/><path d="M4 6.5h3"/></svg>', label: "Deutsche Bahn — buying a ticket", level: "B1",
+      { id: "deutsche_bahn", cat: "Intermediate", icon: _SC_DEUTSCHE_BAHN, label: "Deutsche Bahn — buying a ticket", level: "B1",
         setup: "You are at a train station trying to buy a ticket to Hamburg. The next ICE is nearly full. Navigate the ticket counter — and the famous Verspätung.",
         vocab: ["der Bahnsteig", "die Hin- und Rückfahrkarte", "der Fahrplan", "einen Sitzplatz reservieren", "erste / zweite Klasse", "Ankunft / Abfahrt", "die Verspätung", "gültig"],
         keyPhrases: ["Ich hätte gerne eine Fahrkarte nach Hamburg.", "Wann fährt der nächste Zug?", "Gibt es noch freie Plätze?"],
@@ -24487,49 +24593,49 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
         sysPrompt: "You are a ticket agent at a German train station. Speak in natural German. The next ICE to Hamburg departs at 14:32 and has only 2 seats left in second class. There is also a regional train (slower, no reservation needed) at 15:05. Help the customer buy a ticket. Keep responses 1–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by greeting the customer." },
 
       // ── Advanced ──────────────────────────────────────────────
-      { id: "goethe_schiller", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1.5h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H3"/><path d="M3 1.5v13"/><path d="M6 5h4M6 8h3"/></svg>', label: "Literary debate: Goethe vs. Schiller", level: "C1",
+      { id: "goethe_schiller", cat: "Advanced", icon: _SC_GOETHE_SCHILLER, label: "Literary debate: Goethe vs. Schiller", level: "C1",
         setup: "Debate the literary merits of Goethe versus Schiller with a fellow reader. Defend a position on whose work is more significant for German culture.",
         vocab: ["die Klassik", "das Erhabene", "die Tragödie", "die Weltliteratur", "das Menschenbild", "die Prosa", "das literarische Erbe", "beeinflussen"],
         keyPhrases: ["Meiner Meinung nach überragt Goethe Schiller, was … betrifft.", "Dennoch muss man zugeben, dass…", "Was sie voneinander unterscheidet, ist…"],
         opening: "Ich habe gerade 'Die Leiden des jungen Werthers' nochmal gelesen und frage mich, ob Goethe wirklich bedeutender ist als Schiller. Was meinst du?",
         sysPrompt: "You are a well-read literary critic who passionately prefers Schiller over Goethe. Speak in educated, natural German. Defend Schiller's dramatic power, moral idealism, and political courage; acknowledge Goethe's breadth but argue Schiller resonates more deeply with the human condition. Engage seriously with counterarguments. Keep responses 2–4 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by framing the debate." },
 
-      { id: "energiewende", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M2 6h12M2 10h12"/><ellipse cx="8" cy="8" rx="3" ry="6.5"/></svg>', label: "Energiewende & climate responsibility", level: "B2",
+      { id: "energiewende", cat: "Advanced", icon: _SC_ENERGIEWENDE, label: "Energiewende & climate responsibility", level: "B2",
         setup: "Debate who bears more responsibility for the climate crisis — individuals, corporations, or governments — and discuss Germany's Energiewende as a case study.",
         vocab: ["die Mitverantwortung", "der CO2-Ausstoß", "die Energiewende", "der Konsum", "nachhaltig", "die Klimapolitik", "das Greenwashing", "auf globaler Ebene"],
         keyPhrases: ["Es ist ein strukturelles Problem, das über den Einzelnen hinausgeht.", "Dennoch spielt das kollektive Verhalten eine Rolle.", "Die Politik muss den Wandel fördern."],
         opening: "Glaubst du, dass individuelle Verhaltensänderungen beim Klimaschutz wirklich etwas bringen, oder liegt alles an der Politik?",
         sysPrompt: "You are an engaged German citizen debating climate responsibility and the Energiewende. Speak in natural German. Argue that systemic change matters more than individual action, but acknowledge nuance. Reference German energy policy concretely. Challenge the other person's points and ask follow-up questions. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by posing the debate question." },
 
-      { id: "freier_wille", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M8 4v4l3 2"/></svg>', label: "Free will & determinism", level: "C1",
+      { id: "freier_wille", cat: "Advanced", icon: _SC_FREIER_WILLE, label: "Free will & determinism", level: "C1",
         setup: "Discuss whether humans truly have free will, or whether our choices are determined by biology, upbringing, and circumstance — in the German philosophical tradition.",
         vocab: ["der freie Wille", "der Determinismus", "der Kompatibilismus", "das Bewusstsein", "bedingt durch", "die moralische Verantwortung", "der Zufall", "die Illusion der Kontrolle"],
         keyPhrases: ["Wenn alles determiniert ist, hat Verantwortung dann noch einen Sinn?", "Der Kompatibilismus behauptet, dass…", "Ich glaube, Freiheit ist eine Frage des Grades."],
         opening: "Ich grübele seit Wochen über eine Frage nach: Treffen wir wirklich freie Entscheidungen, oder sind wir das unvermeidliche Ergebnis unserer Geschichte?",
         sysPrompt: "You are a philosophy enthusiast in the German tradition who leans toward compatibilism. Speak in educated, natural German. Explore the question seriously, draw on ideas from Kant, Schopenhauer, and Nietzsche (without naming them explicitly), and push back thoughtfully. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by posing the question." },
 
-      { id: "kulturelle_identitaet", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="6" r="3"/><circle cx="10.5" cy="6" r="3"/><path d="M3 13a4 4 0 0 1 5-3.8A4 4 0 0 1 13 13"/></svg>', label: "Cultural identity & migration", level: "C1",
+      { id: "kulturelle_identitaet", cat: "Advanced", icon: _SC_KULTURELLE_IDENTITAET, label: "Cultural identity & migration", level: "C1",
         setup: "Discuss how living abroad, the Gastarbeiter history, or globalization affects cultural identity — does it dilute it, enrich it, or create something new?",
         vocab: ["die kulturelle Identität", "die Verwurzelung", "die Diaspora", "das Zusammenleben", "die Akkulturation", "dazugehören", "die Wurzeln", "der Kulturschock", "hybrid"],
         keyPhrases: ["Im Ausland zu leben lässt dich deine eigene Kultur mit anderen Augen sehen.", "Manche sagen, die Globalisierung macht alles gleich.", "Für mich ist Identität nichts Festes, sondern etwas Fließendes."],
         opening: "Glaubst du, dass jemand, der auswandert und sich anpasst, etwas Wesentliches von sich selbst verliert — oder eher gewinnt?",
         sysPrompt: "You are someone who has lived in Germany and one other country and thinks deeply about identity, referencing the Gastarbeiter history and contemporary migration. Speak in natural, thoughtful German. Share personal anecdotes (you can invent them), explore the tension between Verwurzelung and Anpassung, and ask probing questions. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by framing the question." },
 
-      { id: "beuys_kunst", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5a6.5 6.5 0 0 0-1 12.9v-2.4a2 2 0 1 1 2 0v2.4a6.5 6.5 0 0 0-1-12.9z"/><circle cx="5" cy="6" r="1" fill="currentColor"/><circle cx="8" cy="5" r="1" fill="currentColor"/><circle cx="11" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="9" r="1" fill="currentColor"/></svg>', label: "Art criticism: Beuys & German art", level: "C1",
+      { id: "beuys_kunst", cat: "Advanced", icon: _SC_BEUYS_KUNST, label: "Art criticism: Beuys & German art", level: "C1",
         setup: "Debate the purpose of art with a critic — Does art need to be beautiful? Political? Accessible? Discuss German artists like Joseph Beuys or the Neue Sachlichkeit.",
         vocab: ["die Ästhetik", "das Kunstwerk", "der engagierte Künstler", "das Erhabene", "die Provokation", "die Konzeptkunst", "vermitteln / hervorrufen", "die Interpretation"],
         keyPhrases: ["Kunst muss nicht schön sein, um wertvoll zu sein.", "Dieses Werk erzeugt bei mir eine Unbehaglichkeit, die ich für beabsichtigt halte.", "Kann Kunst wirklich unpolitisch sein?"],
         opening: "Ich war gestern auf einer Ausstellung mit Konzeptkunst und bin ehrlich gesagt ziemlich verwirrt rausgegangen. Wozu ist Kunst gut, wenn sie niemand versteht?",
         sysPrompt: "You are a passionate German art critic who believes art must provoke and challenge, not merely please. Reference Joseph Beuys, Neue Sachlichkeit, or Caspar David Friedrich as examples. Speak in articulate, natural German. Defend conceptual and political art, engage with the other person's aesthetics, ask what they want art to do. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by responding to their confusion." },
 
-      { id: "ki_gesellschaft", cat: "Advanced", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11v3"/></svg>', label: "AI & society", level: "B2",
+      { id: "ki_gesellschaft", cat: "Advanced", icon: _SC_KI_GESELLSCHAFT, label: "AI & society", level: "B2",
         setup: "Debate the social effects of AI and automation — on work, creativity, human connection, and what it means to be human.",
         vocab: ["die künstliche Intelligenz", "die Automatisierung", "der Arbeitsplatzverlust", "die Kreativität", "der algorithmische Bias", "die Überwachung", "die Technikethik", "auf lange Sicht"],
         keyPhrases: ["KI kann menschliche Kreativität ergänzen, nicht nur ersetzen.", "Das Problem ist nicht die Technologie selbst, sondern wer sie kontrolliert.", "Was bleibt von uns Menschen, wenn Maschinen alles erledigen?"],
         opening: "Mit all dem KI-Hype frage ich mich, ob in zehn Jahren überhaupt noch jemand Arbeit haben wird. Was glaubst du?",
         sysPrompt: "You are a thoughtful German tech professional with mixed feelings about AI. Speak in natural German. Argue that the key issue is governance and equity, not technology itself; but genuinely engage with fears about work and meaning. Keep responses 2–3 sentences. After each student message, if they made a German error, add a brief correction at the very end: [Korrektur: «X» → «Y»]. Start by acknowledging the concern and complicating it." },
 
-      { id: "oktoberfest", cat: "Beginner", icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h10"/><path d="M4 14V8M12 14V8"/><path d="M2 8h12l-1-6H3z"/><path d="M8 2v6"/></svg>', label: "Oktoberfest small talk", level: "A2",
+      { id: "oktoberfest", cat: "Beginner", icon: _SC_OKTOBERFEST, label: "Oktoberfest small talk", level: "A2",
         setup: "You are at the Oktoberfest in Munich. Chat with someone at your table in a tent — introduce yourself, talk about where you're from, and discuss the festival.",
         vocab: ["Prost!", "das Zelt", "die Tracht", "woher kommen Sie?", "zum ersten Mal", "die Stimmung", "laut / fröhlich"],
         keyPhrases: ["Prost! Auf das Oktoberfest!", "Sind Sie zum ersten Mal hier?", "Die Stimmung hier ist fantastisch!"],
@@ -24637,16 +24743,16 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
           <div>
             <h3>${scenario.icon} ${scenario.label}</h3>
             <p>${scenario.setup}</p>
-            <span class="conv-model-badge">⚡ ${modelLabel}</span>
+            <span class="conv-model-badge">${ICON_BOLT} ${modelLabel}</span>
           </div>
           <button class="conv-end-btn" id="conv-end-btn" aria-label="End conversation">End</button>
         </div>
       </div>
       <div class="conv-messages" id="conv-messages">${msgsHtml}</div>
       <div class="conv-input-area">
-        <button class="conv-hint-btn" id="conv-hint-btn" title="Get a suggestion" aria-label="Get a conversation hint">💡</button>
+        <button class="conv-hint-btn" id="conv-hint-btn" title="Get a suggestion" aria-label="Get a conversation hint">${ICON_BULB}</button>
         <textarea id="conv-input" placeholder="Schreib auf Deutsch…" rows="1"${this._convLoading ? " disabled" : ""} aria-label="Type your German message"></textarea>
-        <button class="conv-send-btn" id="conv-send-btn"${this._convLoading ? " disabled" : ""} aria-label="Send message">➤</button>
+        <button class="conv-send-btn" id="conv-send-btn"${this._convLoading ? " disabled" : ""} aria-label="Send message">${ICON_SEND}</button>
       </div>
     </div>`;
 
