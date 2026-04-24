@@ -4194,7 +4194,7 @@ select:focus-visible, a:focus-visible {
 
 <button id="mobile-menu-btn" aria-label="Toggle menu">&#9776;</button>
 <div id="sidebar-overlay"></div>
-<div id="sidebar">
+<nav id="sidebar" aria-label="Navigation">
   <div id="mode-switcher" class="mode-switcher">
     <button class="mode-btn active" data-mode="translation" aria-label="Switch to translation mode">Translation</button>
     <button class="mode-btn" data-mode="vocabulary" aria-label="Switch to vocabulary mode">Vocabulary</button>
@@ -4222,9 +4222,9 @@ select:focus-visible, a:focus-visible {
     <button class="sidebar-btn" id="stats-btn" aria-label="Open statistics">&#9776; Statistics &amp; Assessment</button>
     <button class="sidebar-btn" id="settings-btn" aria-label="Open settings">&#9881; Settings</button>
   </div>
-</div>
+</nav>
 
-<div id="main">
+<main id="main">
   <div id="toolbar">
     <div id="toolbar-left">
       <span id="exercise-title"></span>
@@ -4261,7 +4261,7 @@ select:focus-visible, a:focus-visible {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(234,88,12,0.2)"></span>Pres. Part.</div>
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
-    <div id="german-display"></div>
+    <div id="german-display" lang="de"></div>
     <div id="translation-drawer" class="drawer-hidden" aria-label="Translation input" role="region">
       <div id="translation-drawer-handle" aria-hidden="true"></div>
       <div class="translation-drawer-inner">
@@ -4500,7 +4500,7 @@ select:focus-visible, a:focus-visible {
       <button class="modal-btn" id="sync-close-btn" aria-label="Close sync dialog">Close</button>
     </div>
   </div>
-</div>
+</main>
 
 <div id="mobile-tab-bar">
   <button class="mobile-tab active" data-mode="translation" aria-label="Übersetzungsmodus"><span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg></span>Übersetzung</button>
@@ -22135,10 +22135,10 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         const parts = item.german.split(" ");
         const article = parts[0];
         const word = parts.slice(1).join(" ");
-        html += `<div class="vocab-card-article">${article}</div>`;
-        html += `<div class="vocab-card-german">${word}</div>`;
+        html += `<div class="vocab-card-article" lang="de">${article}</div>`;
+        html += `<div class="vocab-card-german" lang="de">${word}</div>`;
       } else {
-        html += `<div class="vocab-card-german">${item.german}</div>`;
+        html += `<div class="vocab-card-german" lang="de">${item.german}</div>`;
       }
       html += `<div class="vocab-card-click-hint">Click to reveal answer</div></div>`;
     } else {
@@ -23047,7 +23047,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (i === ex.wordIndex) return `<span class="grammar-highlight">${w}</span>`;
       return w;
     }).join(" ");
-    return `<div class="grammar-passage">${highlighted}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
+    return `<div class="grammar-passage" lang="de">${highlighted}<span class="grammar-passage-ref" lang="en">${ex.passage.source}</span></div>`;
   }
 
   renderPassageWithBlank(ex) {
@@ -23061,7 +23061,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       }
       return w;
     }).join(" ");
-    return `<div class="grammar-passage">${blanked}<span class="grammar-passage-ref">${ex.passage.source}</span></div>`;
+    return `<div class="grammar-passage" lang="de">${blanked}<span class="grammar-passage-ref" lang="en">${ex.passage.source}</span></div>`;
   }
 
   renderParadigmTable(ex, correctKey) {
@@ -25674,8 +25674,8 @@ window.addEventListener("DOMContentLoaded", () => { window.app = new App(); });
 </div>
 
 <div id="update-banner">
-  Neue Version verfügbar
-  <button id="update-reload-btn">Aktualisieren</button>
+  Update available
+  <button id="update-reload-btn">Refresh</button>
   <button id="update-dismiss-btn">✕</button>
 </div>
 
