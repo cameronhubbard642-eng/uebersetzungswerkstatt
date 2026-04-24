@@ -1865,6 +1865,15 @@ body.sidebar-open {
     -webkit-overflow-scrolling: touch;
     padding: 0 14px max(14px, env(safe-area-inset-bottom, 14px));
   }
+  /* D: extended drag hit zone — top 14px of drawer body */
+  #translation-drawer-drag-ext {
+    height: 14px;
+    margin: 0 -14px;
+    flex-shrink: 0;
+    cursor: ns-resize;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
   /* Drag handle controls drawer height — manual resize handle is redundant */
   .translation-drawer-inner #translation-input {
     resize: none;
@@ -4241,6 +4250,7 @@ select:focus-visible, a:focus-visible {
     <div id="translation-drawer" class="drawer-hidden" aria-label="Translation input" role="region">
       <div id="translation-drawer-handle" aria-hidden="true"></div>
       <div class="translation-drawer-inner">
+        <div id="translation-drawer-drag-ext" aria-hidden="true"></div>
         <div id="translation-section">
           <label>Your Translation</label>
           <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
@@ -20219,6 +20229,7 @@ class App {
     const el = document.getElementById("evaluation-result");
     el.className = "";
     el.style.display = "none";
+    this._drawerContextSnap();
   }
 
   showReference() {
@@ -20226,15 +20237,20 @@ class App {
     const isVisible = el.classList.contains("visible");
     if (isVisible) {
       el.classList.remove("visible");
+      this._drawerContextSnap();
     } else {
       document.getElementById("reference-text").textContent = this.currentExercise.reference;
       el.classList.add("visible");
-      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        this._drawerContextSnap();
+      }, 50);
     }
   }
 
   hideReference() {
     document.getElementById("reference-display").classList.remove("visible");
+    this._drawerContextSnap();
   }
 
   async evaluate() {
@@ -20272,6 +20288,7 @@ class App {
       setTimeout(() => {
         const _er = document.getElementById('evaluation-result');
         if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        this._drawerContextSnap();
       }, 50);
     }
   }
@@ -20299,6 +20316,7 @@ class App {
       setTimeout(() => {
         const _er = document.getElementById('evaluation-result');
         if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        this._drawerContextSnap();
       }, 50);
     }
   }
@@ -21636,7 +21654,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!drawer) return;
     idx = Math.max(0, Math.min(2, idx));
     const px = this._drawerSnapPoints()[idx];
-    drawer.style.transition = animate ? 'height 0.22s ease' : 'none';
+    drawer.style.transition = animate ? 'height 240ms cubic-bezier(0.32, 0.72, 0, 1)' : 'none';
     drawer.style.height = px + 'px';
     main.style.setProperty('--drawer-height', px + 'px');
     this._drawerHeight  = px;
@@ -21662,6 +21680,22 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     main.classList.remove('drawer-active');
   }
 
+  // A: fire once per event transition — no polling, user drag wins between calls
+  _drawerContextSnap() {
+    if (window.innerWidth > 768) return;
+    const evalVisible = document.getElementById('evaluation-result')?.classList.contains('visible');
+    const refVisible  = document.getElementById('reference-display')?.classList.contains('visible');
+    const hasContent  = evalVisible || refVisible;
+    const taFocused   = document.activeElement === document.getElementById('translation-input');
+    if (hasContent) {
+      if (this._drawerSnapIdx < 2) this._drawerSnapTo(2, true);
+    } else if (taFocused) {
+      if (this._drawerSnapIdx < 1) this._drawerSnapTo(1, true);
+    } else {
+      if (this._drawerSnapIdx > 0) this._drawerSnapTo(0, true);
+    }
+  }
+
   _drawerInit() {
     if (window.innerWidth > 768) return; // desktop: no drawer
     const drawer = document.getElementById('translation-drawer');
@@ -21671,21 +21705,25 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     // Show immediately if already in translation mode
     if (this.currentMode === 'translation') this._drawerShow();
 
-    // ── Drag gesture ────────────────────────────────────────────────────
-    let _startY = 0, _startH = 0, _dragging = false;
+    // ── Drag + tap gesture (B: tap-to-cycle; G: no transition during drag) ──
+    let _startY = 0, _lastY = 0, _startH = 0, _startTime = 0, _dragging = false;
 
     const onStart = (e) => {
       _dragging = true;
+      _startTime = Date.now();
       _startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+      _lastY = _startY;
       _startH = drawer.getBoundingClientRect().height;
-      drawer.style.transition = 'none';
+      drawer.style.transition = 'none'; // G: disable during active drag
+      e.stopPropagation();              // prevent drag-ext from double-firing
       e.preventDefault();
     };
 
     const onMove = (e) => {
       if (!_dragging) return;
       const y = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-      const delta = _startY - y; // positive = dragging up = taller
+      _lastY = y;
+      const delta = _startY - y;
       const maxH = Math.round(this._drawerVH() * 0.70);
       const newH = Math.max(60, Math.min(_startH + delta, maxH));
       drawer.style.height = newH + 'px';
@@ -21696,14 +21734,27 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const onEnd = () => {
       if (!_dragging) return;
       _dragging = false;
-      const currentH = drawer.getBoundingClientRect().height;
-      const snaps = this._drawerSnapPoints();
+      const elapsed  = Date.now() - _startTime;
+      const pDelta   = Math.abs(_lastY - _startY);
+
+      // B: tap-to-cycle — minimal movement + under 300 ms
+      if (elapsed < 300 && pDelta < 10) {
+        const nextIdx = (this._drawerSnapIdx + 1) % 3;
+        this._lastUserSnapIdx = nextIdx;
+        this._drawerSnapTo(nextIdx, true); // G: re-enables transition for snap
+        return;
+      }
+
+      // Drag: snap to nearest point (G: transition re-enabled inside _drawerSnapTo)
+      const currentH  = drawer.getBoundingClientRect().height;
+      const snaps     = this._drawerSnapPoints();
       const closestIdx = snaps.reduce((bi, v, i) =>
         Math.abs(v - currentH) < Math.abs(snaps[bi] - currentH) ? i : bi, 0);
       this._lastUserSnapIdx = closestIdx;
       this._drawerSnapTo(closestIdx, true);
     };
 
+    // Primary drag zone: the handle
     handle.addEventListener('touchstart', onStart, { passive: false });
     handle.addEventListener('touchmove',  onMove,  { passive: false });
     handle.addEventListener('touchend',   onEnd,   { passive: true  });
@@ -21711,7 +21762,14 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup',   onEnd);
 
-    // ── Virtual keyboard detection via visualViewport ────────────────────
+    // D: extended drag zone — first child of drawer-inner (14px strip)
+    const dragExt = document.getElementById('translation-drawer-drag-ext');
+    if (dragExt) {
+      dragExt.addEventListener('touchstart', onStart, { passive: false });
+      dragExt.addEventListener('mousedown',  onStart);
+    }
+
+    // ── Virtual keyboard detection via visualViewport ─────────────────────
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
         if (this.currentMode !== 'translation' || window.innerWidth > 768) return;
@@ -21719,26 +21777,30 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (kbOpen && !this._kbWasOpen) {
           this._kbWasOpen = true;
           this._lastUserSnapIdx = this._drawerSnapIdx;
-          this._drawerSnapTo(2, true); // expand to large for typing
+          this._drawerSnapTo(2, true);
         } else if (!kbOpen && this._kbWasOpen) {
           this._kbWasOpen = false;
-          this._drawerSnapTo(this._lastUserSnapIdx, true); // restore user state
+          this._drawerSnapTo(this._lastUserSnapIdx, true);
         }
       });
     }
 
-    // iOS: re-anchor scroll after the OS auto-scrolls for keyboard focus
-    const _iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (_iosDevice) {
-      const _ta = document.getElementById('translation-input');
-      if (_ta) {
-        _ta.addEventListener('focus', () => {
+    // ── A: context-aware focus/blur + iOS scroll re-anchor ────────────────
+    const _ta = document.getElementById('translation-input');
+    if (_ta) {
+      const _iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      _ta.addEventListener('focus', () => {
+        if (_iosDevice) {
           const _savedY = window.scrollY;
           requestAnimationFrame(() => window.scrollTo(0, _savedY));
           setTimeout(() => window.scrollTo(0, _savedY), 100);
-        }, { passive: true });
-      }
+        }
+        this._drawerContextSnap();
+      }, { passive: true });
+      _ta.addEventListener('blur', () => {
+        this._drawerContextSnap();
+      }, { passive: true });
     }
   }
 
