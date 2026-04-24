@@ -359,12 +359,12 @@ body.sidebar-open {
   border-radius: 3px;
   transition: background 0.15s;
 }
-.word-wrapper .tooltip {
-  display: none;
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+/* Inline .tooltip spans are kept in DOM for text reference but never shown;
+   display is managed by #gloss-tip (position:fixed, immune to overflow clipping) */
+.word-wrapper .tooltip { display: none !important; }
+/* #gloss-tip: shared hover/tap tooltip — body-level, not clipped by #german-display overflow */
+#gloss-tip {
+  position: fixed;
   background: #333;
   color: #fff;
   padding: 4px 10px;
@@ -372,12 +372,10 @@ body.sidebar-open {
   font-size: 12px;
   font-family: var(--font-ui);
   white-space: nowrap;
-  z-index: 100;
+  z-index: 1000;
   pointer-events: none;
+  display: none;
 }
-.word-wrapper:hover .tooltip { display: block; }
-/* Touch devices: tap to show tooltip (added via JS class) */
-.word-wrapper.tooltip-active .tooltip { display: block; }
 .word-wrapper .first-gloss {
   display: block;
   font-size: 11px;
@@ -1595,16 +1593,6 @@ body.sidebar-open {
     margin-bottom: 12px;
     overflow-wrap: break-word;
   }
-  .word-wrapper .tooltip {
-    font-size: 11px;
-    max-width: 70vw;
-    white-space: normal;
-    /* Prevent tooltip from going off-screen */
-    left: 0;
-    transform: none;
-    right: auto;
-  }
-
   /* POS legend: stack items */
   #pos-legend.visible {
     gap: 8px;
@@ -19629,15 +19617,58 @@ class App {
       speechSynthesis.addEventListener("voiceschanged", () => speechSynthesis.getVoices());
     }
 
-    // Touch-friendly tooltips: tap to show/hide on touch devices
-    document.getElementById("german-display").addEventListener("click", (e) => {
-      const wrapper = e.target.closest(".word-wrapper");
-      if (!wrapper) return;
-      // Clear any other active tooltip
-      document.querySelectorAll(".word-wrapper.tooltip-active").forEach(el => {
-        if (el !== wrapper) el.classList.remove("tooltip-active");
-      });
-      wrapper.classList.toggle("tooltip-active");
+    // Shared gloss tip — position:fixed so it's never clipped by #german-display overflow
+    const _glossTip = document.createElement('div');
+    _glossTip.id = 'gloss-tip';
+    document.body.appendChild(_glossTip);
+
+    const _showGlossTip = (wrapper) => {
+      const inlineTip = wrapper.querySelector('.tooltip');
+      if (!inlineTip) return;
+      const text = inlineTip.textContent;
+      if (!text) return;
+      _glossTip.textContent = text;
+      _glossTip.style.visibility = 'hidden';
+      _glossTip.style.display = 'block';
+      const r  = wrapper.getBoundingClientRect();
+      const tw = _glossTip.offsetWidth;
+      const th = _glossTip.offsetHeight;
+      let left = r.left + r.width / 2 - tw / 2;
+      let top  = r.top - th - 4;
+      left = Math.max(4, Math.min(left, window.innerWidth - tw - 4));
+      if (top < 0) top = r.bottom + 4; // flip below if no room above viewport
+      _glossTip.style.left = left + 'px';
+      _glossTip.style.top  = top  + 'px';
+      _glossTip.style.visibility = '';
+    };
+    const _hideGlossTip = () => { _glossTip.style.display = 'none'; };
+
+    // Desktop: hover
+    let _tipWrapper = null;
+    const _gd = document.getElementById('german-display');
+    _gd.addEventListener('mouseover', (e) => {
+      const w = e.target.closest('.word-wrapper');
+      if (w && w !== _tipWrapper) { _tipWrapper = w; _showGlossTip(w); }
+      else if (!w) { _tipWrapper = null; _hideGlossTip(); }
+    }, { passive: true });
+    _gd.addEventListener('mouseleave', () => { _tipWrapper = null; _hideGlossTip(); }, { passive: true });
+
+    // Touch: tap to toggle
+    _gd.addEventListener('click', (e) => {
+      const wrapper = e.target.closest('.word-wrapper');
+      if (!wrapper) {
+        _hideGlossTip();
+        document.querySelectorAll('.word-wrapper.tooltip-active').forEach(el => el.classList.remove('tooltip-active'));
+        return;
+      }
+      const wasActive = wrapper.classList.contains('tooltip-active');
+      document.querySelectorAll('.word-wrapper.tooltip-active').forEach(el => el.classList.remove('tooltip-active'));
+      if (wasActive) {
+        _hideGlossTip();
+      } else {
+        wrapper.classList.add('tooltip-active');
+        _showGlossTip(wrapper);
+      }
     });
 
     // Consolidated global click handler for delegated events
