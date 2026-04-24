@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Philosophische Übersetzungswerkstatt</title>
 <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.elevenlabs.io; worker-src 'self'; manifest-src 'self'; object-src 'none'; form-action 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1824,6 +1824,8 @@ body.sidebar-open {
     bottom: calc(52px + env(safe-area-inset-bottom, 0px));
     height: 45vh; /* fallback */
     height: 45dvh; /* default snap — overridden by JS */
+    max-height: 70vh;  /* hard cap: source panel always has ≥30dvh */
+    max-height: 70dvh;
     background: var(--bg);
     border-top: 1.5px solid var(--border);
     border-radius: 14px 14px 0 0;
@@ -4249,16 +4251,16 @@ select:focus-visible, a:focus-visible {
           <button class="action-btn" id="show-reference-btn" aria-label="Show reference translation">Show Reference</button>
           <button class="action-btn" id="next-btn" aria-label="Go to next exercise">Next &#8594;</button>
         </div>
+        <div id="evaluation-result" aria-live="polite">
+          <h4>Evaluation</h4>
+          <div class="score" id="eval-score"></div>
+          <div class="feedback" id="eval-feedback"></div>
+        </div>
+        <div id="reference-display">
+          <div class="ref-label">Reference Translation</div>
+          <div id="reference-text"></div>
+        </div>
       </div>
-    </div>
-    <div id="evaluation-result" aria-live="polite">
-      <h4>Evaluation</h4>
-      <div class="score" id="eval-score"></div>
-      <div class="feedback" id="eval-feedback"></div>
-    </div>
-    <div id="reference-display">
-      <div class="ref-label">Reference Translation</div>
-      <div id="reference-text"></div>
     </div>
     <div class="source-note">
       Source texts drawn from standard published editions. Verify against your own copies for critical scholarly work.
@@ -20227,6 +20229,7 @@ class App {
     } else {
       document.getElementById("reference-text").textContent = this.currentExercise.reference;
       el.classList.add("visible");
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
     }
   }
 
@@ -20266,6 +20269,10 @@ class App {
     } finally {
       btn.disabled = false;
       btn.textContent = "Evaluate";
+      setTimeout(() => {
+        const _er = document.getElementById('evaluation-result');
+        if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
     }
   }
 
@@ -20289,6 +20296,10 @@ class App {
       if (el) el.innerHTML += `<br><small style="color:var(--text-muted)">(Hint request failed: ${this._escapeHtml(e.message)})</small>`;
     } finally {
       btn.disabled = false; btn.textContent = "Get Hints";
+      setTimeout(() => {
+        const _er = document.getElementById('evaluation-result');
+        if (_er) _er.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
     }
   }
 
@@ -21614,10 +21625,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   }
 
   _drawerSnapPoints() {
-    // Snap fractions relative to full window height so percentages stay
-    // consistent regardless of whether the virtual keyboard is open.
-    const h = window.innerHeight;
-    return [Math.round(h * 0.25), Math.round(h * 0.45), Math.round(h * 0.85)];
+    // Use visualViewport height so snap sizes account for the virtual keyboard.
+    const h = this._drawerVH();
+    return [Math.round(h * 0.25), Math.round(h * 0.45), Math.round(h * 0.70)];
   }
 
   _drawerSnapTo(idx, animate) {
@@ -21676,7 +21686,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (!_dragging) return;
       const y = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
       const delta = _startY - y; // positive = dragging up = taller
-      const maxH = Math.round(this._drawerVH() * 0.92);
+      const maxH = Math.round(this._drawerVH() * 0.70);
       const newH = Math.max(60, Math.min(_startH + delta, maxH));
       drawer.style.height = newH + 'px';
       document.getElementById('main').style.setProperty('--drawer-height', newH + 'px');
@@ -21715,6 +21725,20 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
           this._drawerSnapTo(this._lastUserSnapIdx, true); // restore user state
         }
       });
+    }
+
+    // iOS: re-anchor scroll after the OS auto-scrolls for keyboard focus
+    const _iosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (_iosDevice) {
+      const _ta = document.getElementById('translation-input');
+      if (_ta) {
+        _ta.addEventListener('focus', () => {
+          const _savedY = window.scrollY;
+          requestAnimationFrame(() => window.scrollTo(0, _savedY));
+          setTimeout(() => window.scrollTo(0, _savedY), 100);
+        }, { passive: true });
+      }
     }
   }
 
