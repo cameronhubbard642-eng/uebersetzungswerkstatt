@@ -1,0 +1,12 @@
+# Cloudflare Pages headers — WP-DEP-G-8 migration
+# Plan: plans/work-packages/WP-DEP-G-8_engineer-brief.md
+
+/*
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.anthropic.com https://api.openai.com https://generativelanguage.googleapis.com https://api.elevenlabs.io; worker-src 'self'; manifest-src 'self'; object-src 'none'; form-action 'none'; base-uri 'self'; frame-ancestors 'none'; report-uri https://api.glossolalia.dev/csp-report; report-to csp
+  Report-To: {"group":"csp","max_age":10886400,"endpoints":[{"url":"https://api.glossolalia.dev/csp-report"}]}
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+
+/sw.js
+  Cache-Control: no-cache

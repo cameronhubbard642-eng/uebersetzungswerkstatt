@@ -727,43 +727,44 @@ There is **no pre-generated MP3 tier** (Spanish's tier 1). German has no `audio/
 
 ### 8.1 Hosting
 
-The app is hosted on **GitHub Pages**, from the repository `https://github.com/cameronhubbard642-eng/uebersetzungswerkstatt.git`.
+The app is hosted on **Cloudflare Pages**, Git-integrated against `https://github.com/cameronhubbard642-eng/uebersetzungswerkstatt.git` `main`. Cutover from GitHub Pages landed 2026-04-24 (WP-DEP-G-8).
 
 **Branch topology:**
 
-- `origin/main` — the only branch on origin. Confirmed via `git ls-remote --heads origin`: `refs/heads/main` is the sole ref returned. Local HEAD is `f79e45c94ec07a58e3854f6cde6943f7c35a88d6` ("Bump SW to v10 with skipWaiting on install to force update"), matching `origin/main` exactly.
-- No `gh-pages` branch exists on origin or locally. No orphan deploy branch. No alternate publishing branch.
+- `origin/main` — the only branch on origin. CF Pages subscribes to this branch; every push produces an immutable deployment with a SHA-tagged preview URL, and the production alias advances on success.
+- No `gh-pages` branch, no orphan deploy branch. Unified source+deploy repository, unchanged from the prior GH Pages posture.
 
-This is a **unified source+deploy repository**. Every change is a single commit on `main`; GitHub Pages publishes from `main`. This is the topology the Spanish team is trying to move toward (see Spanish §10.3 row "Two-branch hand-commit ritual — High severity"); German is already there.
+**Live URL (production alias):** `https://uebersetzungswerkstatt.glossolalia.dev/` — CF Pages custom domain, TLS terminated at Cloudflare edge.
 
-**Pages source:** `[UNVERIFIED]` — inferred to be `main` branch, root directory (`/`), because no other branch exists and the serving artifacts (`index.html`, `sw.js`, `manifest.json`, `icon-192.png`, `icon-512.png`, the precache-listed `German Icon I–V.jpeg` files) all live at the repo root on `main`. Confirmation from the GitHub Settings → Pages tab is pending from Principal (Appendix B #B-1).
+**Legacy URL (dual-serve):** `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/` — frozen at the pre-cutover tree (`origin/main` at cutover SHA). Kept live for 3 days post-cutover (through 2026-04-27) to catch A2HS icons and bookmarks still targeting the `*.github.io` origin, then Pages source disabled in repo Settings. No further pushes propagate to the legacy URL.
 
-**Custom domain:** none. No `CNAME` file at the repo root. The site is therefore served at the default `*.github.io` URL — `[UNVERIFIED]` — most plausibly `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/` based on the repo name. Confirmation is Appendix B #B-2.
+**Jekyll:** no longer applicable under CF Pages (CF Pages is a static-file CDN with no markup preprocessing). The absence of `.nojekyll` in the repo is now moot; it remains absent and unneeded.
 
-**Jekyll:** no `.nojekyll` file at the repo root. GitHub Pages runs its default Jekyll build on the published branch. For the current file layout (no paths beginning with `_`, no Liquid templates, no YAML front matter), Jekyll is a no-op pass-through, but this is implicit and latent — identical to the Spanish posture.
+**`_headers` file** (repo root, introduced WP-DEP-G-8): CF Pages edge-delivered HTTP headers per [Cloudflare Pages `_headers` grammar](https://developers.cloudflare.com/pages/configuration/headers/). Delivers CSP-Report-Only, Referrer-Policy, X-Content-Type-Options, Permissions-Policy, and Report-To on every response (`/*`), plus a `Cache-Control: no-cache` override on `/sw.js` to prevent CDN caching of the service-worker byte stream. See §8.5 for CSP reporting specifics.
 
 ### 8.2 Build process
 
-**There is no build process.** There is no `.github/workflows/` directory at the repo root on `main` (or anywhere — see §7.2), no Makefile, no `deploy.sh` / `publish.sh` / `push.sh`, no `package.json` scripts, no `Procfile`, no Netlify / Vercel / Cloudflare configuration, no `.gitlab-ci.yml`, and no configured git hooks beyond Git's defaults. No automation transforms source into a deploy artifact, because the source *is* the deploy artifact. Unlike Spanish, the German repo does **not** have an inert legacy workflow file (Spanish has `REVIEW/.github/workflows/deploy.yml`; German has no `.github/` directory at all).
+**Still no build process in the conventional sense** — no Makefile, no `deploy.sh`, no `package.json` scripts. CF Pages treats the repo root as the publish directory directly (no framework preset configured). The `_headers` and `_redirects` files are the only CF-specific configuration; both are plain-text declarative.
 
-**The deploy ritual (observed, not prescribed):**
+`.github/workflows/` now carries two CI workflows (WP-DEP-G-4 / WP-DEP-G-5) that run on push — a pre-deploy smoke test and a post-deploy parity probe. These are unchanged by the CF Pages cutover as source files, though the probe's `PAGES_URL` still points at the legacy GH Pages origin as of the cutover commit and requires a follow-up migration.
 
-1. Author edits `index.html` (and sometimes `sw.js`) locally.
-2. Author hand-increments the `CACHE_NAME` constant in `sw.js` line 4 (`'werkstatt-vN'` → `'werkstatt-v(N+1)'`).
-3. `git add && git commit && git push origin main`.
-4. GitHub Pages picks up the push and republishes within ~1 minute.
+**The deploy ritual (post-cutover):**
 
-There is no second-branch commit. The Spanish two-branch hand-commit pattern has no German analogue.
+1. Author edits files locally on a worktree branch.
+2. Author hand-increments the `CACHE_NAME` constant in `sw.js` (`'werkstatt-cf-vN'` → `'werkstatt-cf-v(N+1)'`) for any SW-touching change. Same-commit rule.
+3. Author updates `_headers` `connect-src` for any new external host added to a call site (same commit, per `plans/ARCHITECTURE.md §3.4`).
+4. `git add && git commit && git push origin main`.
+5. CF Pages picks up within ~30 s and publishes to the production alias within 60–90 s typical.
 
-**Rollback plan: re-clone from origin; the GitHub repository is the source of truth for re-establishing app state** (inherited from Principal's policy for Spanish, applied here). Because `main` has a linear history, the canonical revert is either `git revert <sha> && git push origin main`, or `git push --force-with-lease origin <prior-sha>:main` — the latter is destructive to any intervening commit and should not be used casually. Neither is written down; a runbook is noted for later.
+**Rollback plan.** Preferred path is CF Pages' native "Rollback to this deployment" action in the dashboard — immutable SHA-tagged deployments mean rollback is a pointer swap at the edge. Git-path rollback (`git revert <sha> && git push origin main`) remains available and produces the same byte result. Force-push + CACHE_NAME bump is the last-resort destructive option. Full procedure in `plans/runbooks/deploy-and-rollback.md`.
 
 **Local repository-integrity notice (not deploy-affecting).** `git fsck` on the mounted working copy reports: `missing commit 933dd38b077754b54c0e39870bd5b07bed21f592`, `dangling commit 446c83b59d50a489fce3c21033e94776a0c2b0ce`, `broken link from commit 86664ae5…` to the missing commit, and broken tree→blob links. Current `main` tip matches `origin/main` exactly; the corrupt objects lie in unreachable regions of the local object store. `git log HEAD` traverses 18 commits before failing on the missing object, so history older than `6646dff` is locally unreadable. **No impact on the deploy surface.** Origin carries the full history; a fresh clone resolves it. Recorded here to reinforce the "re-clone from origin" rollback posture.
 
 ### 8.3 PWA / offline
 
-**Manifest:** `manifest.json` at the repo root declares `name: "Philosophische Übersetzungswerkstatt"`, `short_name: "Übersetzungs"`, `description: "German philosophical translation practice"`, `start_url: "./index.html"`, `display: "standalone"`, `background_color: "#faf8f5"`, `theme_color: "#faf8f5"`, and two icon entries referencing `icon-192.png` (192×192) and `icon-512.png` (512×512). The German manifest is **single-file**: there is no `manifest-1.json` through `manifest-5.json`, no runtime manifest swap, no alternate icon set, no `lang` field, no `orientation` field, and no `maskable` icon variants. All of these are present in the Spanish baseline and are German gaps scored in `plans/PARITY_GAP.md` §11.7.
+**Manifest:** `manifest.json` at the repo root declares `name: "Philosophische Übersetzungswerkstatt"`, `short_name: "Übersetzungs"`, `description: "German philosophical translation practice"`, `start_url: "/index.html"`, `scope: "/"`, `display: "standalone"`, `background_color: "#faf8f5"`, `theme_color: "#faf8f5"`, and two icon entries referencing `icon-192.png` and `icon-512.png`. WP-DEP-G-8 (2026-04-24) changed `start_url` from relative `./index.html` to absolute `/index.html` and added explicit `scope: "/"`, matching CF Pages' root-served topology. `manifest-1.json` through `manifest-5.json` are per-icon-theme variants (added by earlier WPs) carrying the same `start_url` / `scope` post-cutover; `lang`, `orientation`, and `maskable` icon variants on `manifest-{1..5}` are covered by WP-FE-G-14.
 
-**Service worker:** `sw.js`, served from the repo root, scope `./`. Registration in `index.html` uses `navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })` inside a `window.addEventListener('load', …)` IIFE — `{ updateViaCache: 'none' }` prevents iOS Safari from serving stale `sw.js` from the HTTP cache. See §8.3.1 for the full registration flow.
+**Service worker:** `sw.js`, served from the repo root, scope `./`. Registration in `index.html` uses `navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })` inside a `window.addEventListener('load', …)` IIFE — `{ updateViaCache: 'none' }` prevents iOS Safari from serving stale `sw.js` from the HTTP cache. Post-WP-DEP-G-8, this is paired with a CF-Pages-delivered `Cache-Control: no-cache` on `/sw.js` (via `_headers`) so the CDN cache also never holds a stale SW byte stream — both layers point the same direction, eliminating the update-stuck failure mode at the edge as well as at the browser. See §8.3.1 for the registration flow and §8.5 for the `_headers` wiring.
 
 **Caching strategy** (observed from `sw.js`, full file 73 lines):
 
@@ -809,12 +810,14 @@ Service worker registration (IIFE at end of `<body>`). Wrapped in `window.addEve
 There is **no application version number** in any conventional sense. No `version` field in `manifest.json`, no `VERSION` file, no build-time stamp, no git SHA embedded in the artifact, no `package.json` to carry a semver. The one version string in the deploy artifact is `CACHE_NAME` on `sw.js` L4:
 
 ```js
-const CACHE_NAME = 'werkstatt-v19';
+const CACHE_NAME = 'werkstatt-cf-v1';
 ```
 
 **`CACHE_NAME` as the de facto version stamp.** As in Spanish, `CACHE_NAME` serves three roles at once — Cache Storage key, invalidation token (old caches are deleted in the `activate` handler, `sw.js` L27–28), and the only observable version marker a returning user sees. Bumping it is the single mechanism that forces a returning user's browser to fetch fresh copies of precached assets, including `index.html`.
 
-**Bump ritual (observed):** hand-edit the string in `sw.js` before or as part of the deploy commit. No automation, no template substitution, no pre-push hook, no CI verification, no linter. The increment is a single digit (`vN → v(N+1)`), no semver, no date stamp. Identical posture to Spanish.
+**`-cf-` infix post-cutover.** WP-DEP-G-8 introduced a migration-boundary convention: pre-cutover names follow `werkstatt-v{N}` (v1..v63 historical), post-cutover follow `werkstatt-cf-v{N}` starting at `werkstatt-cf-v1`. The infix is a human-readable signal that the cache key crosses a hosting-platform boundary; the SW's `activate` handler deletes any cache whose name is not the current `CACHE_NAME`, so the first post-cutover activation evicts the entire `werkstatt-v*` family in one sweep.
+
+**Bump ritual (observed):** hand-edit the string in `sw.js` before or as part of the deploy commit. No automation, no template substitution, no pre-push hook. WP-DEP-G-4's pre-deploy smoke test (`.github/workflows/pre-deploy-smoke.yml`) flags an unbumped `CACHE_NAME` on a precache-affecting change; WP-DEP-G-5's post-deploy probe cross-checks the served byte stream (pending URL migration post-WP-DEP-G-8). The increment is a single digit (`vN → v(N+1)`), no semver, no date stamp. Identical posture to Spanish.
 
 **Historical bump lineage** (from `git log -p -- sw.js`, traversable history only):
 
@@ -833,6 +836,41 @@ const CACHE_NAME = 'werkstatt-v19';
 The Spanish-style "amnesia" pattern (where follow-up commits had to re-bump a version forgotten on the prior commit) does **not appear** in the German traversable history: every content-bearing commit since `6646dff` carries a bump. Discipline-quality win relative to Spanish, but author discipline only — the same failure mode remains available.
 
 **Bump policy (observed):** bump when any file in `PRECACHE_URLS` changes, when `index.html` changes, or when manifest semantics change. Undocumented; exactly the rule a CI check could mechanize.
+
+### 8.5 CSP delivery and violation reporting
+
+*Introduced by WP-DEP-G-8 (2026-04-24).*
+
+**Delivery mechanism.** CSP is delivered as an HTTP response header (`Content-Security-Policy-Report-Only`) via the `_headers` file, applied to `/*`. The previous meta-tag delivery (`<meta http-equiv="Content-Security-Policy-Report-Only">` on `index.html:7`) was removed in the cutover commit. Header delivery is the CSP spec-conformant path for directives like `frame-ancestors`, `base-uri`, and `report-uri`/`report-to`, which are invalid or silently-ignored when delivered via meta.
+
+**Enforcement mode.** Report-Only for an initial 7-day observation window post-cutover. No blocking; violations log only. The enforce flip (rename header to `Content-Security-Policy`) is scheduled after the observation window if no unexpected violations surface.
+
+**Directive set** (unchanged from pre-cutover except for the additions `report-uri` and `report-to`):
+
+```
+default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self';
+connect-src 'self' https://api.anthropic.com https://api.openai.com
+  https://generativelanguage.googleapis.com https://api.elevenlabs.io;
+worker-src 'self'; manifest-src 'self'; object-src 'none';
+form-action 'none'; base-uri 'self'; frame-ancestors 'none';
+report-uri https://api.glossolalia.dev/csp-report;
+report-to csp
+```
+
+A companion `Report-To` header declares the `csp` reporting group pointing at the same endpoint for level-3-aware browsers.
+
+**Reporting endpoint.** `https://api.glossolalia.dev/csp-report` is a shared Cloudflare Worker (Taller + Werkstatt), owned by Senior Dev — Taller. Worker deployment is scheduled as part of the post-sprint sync-backend architecture (`plans/sync-architecture-proposal.md`); in the interim the endpoint does not resolve and `report-uri` POSTs silently 404 under Report-Only. Observation in the interim is manual — exercise the app with DevTools console open and log any `SecurityPolicyViolationEvent` surface.
+
+**Companion headers** (also in `_headers`):
+
+| Header | Value | Purpose |
+|---|---|---|
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Was previously meta-delivered on `index.html:8` (WP-FE-G-12); meta tag preserved for redundancy. |
+| `X-Content-Type-Options` | `nosniff` | New (header-only). |
+| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), payment=()` | Was previously meta-delivered on `index.html:9` (WP-FE-G-12); meta tag preserved for redundancy. |
+
+**Per-path override.** `/sw.js` additionally carries `Cache-Control: no-cache` via a second `_headers` rule block, paired with the existing SW-registration `{ updateViaCache: 'none' }` at §8.3.
 
 ---
 

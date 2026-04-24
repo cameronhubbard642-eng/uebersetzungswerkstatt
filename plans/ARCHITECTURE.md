@@ -117,13 +117,15 @@ The `AudioCache.sanitize()` rule is adopted verbatim from Spanish (`lowercase`, 
 Four invariants, all matching Spanish §1.6 (Amendment 4 aligned German to Spanish parity 2026-04-19; see §6):
 
 1. Cache-first for precached assets; network-first for manifests and cross-origin/non-GET.
-2. `CACHE_NAME` as the version stamp. Currently `'werkstatt-v19'`.
+2. `CACHE_NAME` as the version stamp. Currently `'werkstatt-cf-v1'` (WP-DEP-G-8 migration-boundary cache; see §8.4 in SPEC.md for the `-cf-` infix convention). Pre-cutover sequence `werkstatt-v{1..63}` is frozen history.
 3. `{ updateViaCache: 'none' }` + explicit `reg.update()` at registration.
 4. User-gated activation via `{ type: 'SKIP_WAITING' }` handshake. No install-time `skipWaiting`. `reg.waiting` checked at registration time; `reg.active` used in `updatefound` statechange guard.
 
 **B-4 closed (Amendment 4).** Install-time `self.skipWaiting()` was reactive, not intentional — it caused the banner regression. Removed. Provisional status retired.
 
-**Change conditions.** Switching any of the cache strategies (e.g., making `index.html` network-first) is a Senior Dev Oversight decision because it interacts with offline semantics and update detection. Adding a precache asset requires the `CACHE_NAME` bump.
+**HTTP-cache pairing (WP-DEP-G-8).** `{ updateViaCache: 'none' }` is now paired with a CF-Pages-delivered `Cache-Control: no-cache` on `/sw.js` (via the `_headers` file's per-path rule block). The browser-level override prevented iOS Safari from serving stale SW bytes from its HTTP cache; the edge-level override prevents the CF CDN from holding stale SW bytes upstream of the browser. Both layers point the same direction; the update-stuck failure mode is closed at both edges of the SW byte stream.
+
+**Change conditions.** Switching any of the cache strategies (e.g., making `index.html` network-first) is a Senior Dev Oversight decision because it interacts with offline semantics and update detection. Adding a precache asset requires the `CACHE_NAME` bump. Relaxing the `/sw.js` `Cache-Control` rule in `_headers` is a Senior Dev Oversight decision.
 
 ### 1.7 Content Security Policy as source of truth for allowed network destinations — **adopt-and-enforce**
 
@@ -278,6 +280,22 @@ Failure mode if not enforced: `cache.addAll` rejects atomically on install, the 
 
 Every German conversation `sysPrompt` ends with the exact text `After each student message, if they made a German error, add a brief correction at the very end in this exact format: [Korrektur: «X» → «Y»].` This is German-specific (Spanish has no documented analogue) and is intentional (`PARITY_GAP.md §11.4 row 19`). New scenarios added to `_getConversationScenarios()` (L23878) must carry this directive verbatim. Removing or altering the directive on any scenario requires a ruling.
 
+### 3.9 CSP delivery via HTTP header — enforced
+
+*Introduced by WP-DEP-G-8 (2026-04-24).*
+
+CSP and CSP-adjacent response headers (`Content-Security-Policy-Report-Only`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy`, `Report-To`) are delivered at the CF Pages edge via the `_headers` file at repo root. Meta-tag delivery of `Content-Security-Policy[-Report-Only]` is prohibited — the spec silently drops `frame-ancestors`, `base-uri`, `report-uri`, `report-to`, and `sandbox` when delivered via meta, making it a silently-partial mechanism. `index.html:7` no longer carries a CSP meta tag as of the cutover commit.
+
+Meta-delivered `Referrer-Policy` and `Permissions-Policy` remain on `index.html` (lines 8–9, authored by WP-FE-G-12) as redundant belt-and-suspenders fallbacks; the header delivery is authoritative per [CSP Level 3 §3.1](https://www.w3.org/TR/CSP3/#delivery) and equivalent referrer-policy / permissions-policy specs.
+
+**Change conditions.**
+
+1. Any change to `connect-src`, `script-src`, `style-src`, or any other CSP directive **must** edit the `/*` rule block in `_headers` (not `index.html`). Meta-tag CSP is rejected at review.
+2. Any new external host reached by the client (`fetch(...)`, `<audio src=...>`, cross-origin `<img src=...>`, etc.) must land in the same commit as the `connect-src` allow-list update (per §3.4).
+3. The `report-uri` / `report-to` target (`https://api.glossolalia.dev/csp-report`) is shared with Taller and owned by Senior Dev — Taller. Changing the target is a cross-team operation; escalate before editing.
+4. Relaxing `/sw.js` `Cache-Control: no-cache` (the only per-path rule in the current `_headers`) requires Senior Dev Oversight per §1.6.
+5. Flipping `Content-Security-Policy-Report-Only` → `Content-Security-Policy` (enforce) requires Senior Dev Oversight sign-off after the 7-day observation window.
+
 ---
 
 ## 4. Review conventions
@@ -367,6 +385,7 @@ The remaining items (B-1 hosting source, B-2 published URL, B-6/B-7/B-8 corpus t
 | 2026-04-23 | §1.4 reconciliation complete (WP-ARCH-G-2, docs-only). German FSRS confirmed as v4.5 (19 weights, exp-based `initDifficulty`, mean-reversion `nextDifficulty`); Spanish confirmed as FSRS v4 (17 weights, linear `initDifficulty`, no mean reversion — despite the Spanish comment). No convergence downgrade of German warranted. Card schema field-for-field identical; no data migration. Open item: W[17]/W[18] short-term stability formula not implemented (deferred; Cam convergence call pending). §1.4 status promoted from DIVERGENT-pending to enforced (v4.5). PARITY_GAP §11.2 row 9 DIVERGENT justification updated to verified. | Senior Dev Oversight Engineer |
 | 2026-04-23 | §1.4 FSRS v4.5 complete — Cam greenlit W[17]/W[18] short-term stability formula. `_nextShortTermStability(s, rating)` added at L18777; Learning/Relearning non-Again path now uses `S × e^(W[17]×(G−3+W[18]))` instead of long-term `_nextRecallStability`. All 19 weights active. Stored card values unaffected (formula only runs on explicit `review()` call; `_load()` is pure JSON parse). CACHE_NAME bumped v28→v29. §1.4 status updated to enforced (canonical v4.5). PARITY_GAP §11.2 row 9 rescored DIVERGENT→MATCH. | Senior Dev Oversight Engineer |
 | 2026-04-24 | Grammar data model restructured from two-structure `GRAMMAR_PROFILES` + `GRAMMAR_UNITS` to a single `GRAMMAR_LESSONS` array per Principal Q4 ruling 2026-04-23 (Wave E plan). Each of the 48 paradigm profiles becomes a Spanish-shape lesson (category=unit id, lessonContent={introduction, keyPoints:[], comparison:"", historicalNote:""}, exercises:[], thematicSentences:[]); German pedagogy plumbing (generateForms/paradigmGrid/forms/nouns/baseForm/generateFormsForMatch) preserved on the row alongside Spanish fields. `GRAMMAR_PROFILES` retained as a computed shim view (legacy topical category restored) so downstream render sites keep working; `GRAMMAR_UNITS` untouched (carries independent unit-tree content). Boot-time grammarProgress v1→v2 migration shim with pre-migration JSON export modal (role=dialog, Escape/Tab trap via existing modal plumbing). `_iterGrammarProgressEntries` helper refactors the two stats scan sites for v1/v2 tolerance during the deferred-migration window. `uw_grammarProgressSchemaVersion=2` flag guards idempotency; exportProgress/importProgress carry the flag for round-trip transfers. CACHE_NAME bumped v62→v63. | Frontend (WP-FE-G-19) |
+| 2026-04-24 | Hosting migrated from GitHub Pages to Cloudflare Pages (WP-DEP-G-8). New `_headers` file at repo root delivers `Content-Security-Policy-Report-Only`, `Report-To`, `Referrer-Policy`, `X-Content-Type-Options`, and `Permissions-Policy` on `/*`, plus per-path `Cache-Control: no-cache` on `/sw.js`. Meta-tag CSP removed from `index.html:7` (spec-invalid for `frame-ancestors`/`base-uri`/`report-uri`/`report-to`). Manifests updated: `start_url` absolute `/index.html`, explicit `scope: "/"`. `CACHE_NAME` migrated v63→`werkstatt-cf-v1` (migration-boundary cache; §1.6 invariant #2 updated with `-cf-` infix convention). §1.6 amended with HTTP-cache pairing paragraph; new §3.9 "CSP delivery via HTTP header — enforced" added. Production alias `https://uebersetzungswerkstatt.glossolalia.dev/`. 3-day dual-serve window through 2026-04-27 preserves the legacy GH Pages origin frozen at pre-cutover state. 7-day Report-Only observation window before enforce flip. CSP reports → `https://api.glossolalia.dev/csp-report` (shared Worker, Taller-owned, deployment pending; interim 404s silent under Report-Only). | DevOps (WP-DEP-G-8) |
 
 ---
 

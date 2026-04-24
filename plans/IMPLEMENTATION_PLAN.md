@@ -65,13 +65,14 @@ Quick-scan table. Detailed cards in §§1–4.
 | WP-FE-G-14 | 4 | Manifest `lang: "en"` and `orientation` fields | Frontend | Low | ¼ day | — (B-12 resolved 2026-04-19) |
 | WP-FE-G-16 | 4 | `_escapeHtml` perf rewrite (DOM→pure-string) | Frontend | Low | ½ day | — |
 | WP-FE-G-17 | 4 | Remove `uw_uw_vocabProgress` migration shim | Frontend | Low | ¼ day | Deprecation-window calendar |
-| WP-DEP-G-4 | 4 | GitHub Actions pre-deploy smoke test | DevOps | Medium | 2 days | — |
-| WP-DEP-G-5 | 4 | Post-deploy verification (`CACHE_NAME` parity probe) | DevOps | Medium | 1 day | WP-DEP-G-4 |
-| WP-DEP-G-6 | 4 | Deploy + rollback runbook | DevOps | Low | ½ day | — |
+| WP-DEP-G-4 | 4 | GitHub Actions pre-deploy smoke test | DevOps | Medium | 2 days | **CLOSED** (shipped commit `3fcb607`) |
+| WP-DEP-G-5 | 4 | Post-deploy verification (`CACHE_NAME` parity probe) | DevOps | Medium | 1 day | **CLOSED** (shipped commit `18202fc`; probe URL migration flagged follow-up post-WP-DEP-G-8) |
+| WP-DEP-G-6 | 4 | Deploy + rollback runbook | DevOps | Low | ½ day | **CLOSED** (shipped commit `cf27ce8`; amended by WP-DEP-G-8 for CF Pages sections) |
 | WP-DEP-G-7 | 4 | `.DS_Store` cleanup + `.gitignore` rule | DevOps | Low | ¼ day | — |
+| WP-DEP-G-8 | 4 | Hosting migration: GitHub Pages → Cloudflare Pages (CSP header delivery, CSP reporting, manifest scope/start_url, `_headers`) | DevOps | Medium | 1 day | **CLOSED** (2026-04-24, cutover commit) |
 | WP-ARCH-G-4 | 4 | LLM-key proxy decision (and implementation if Principal accepts) | Senior Dev (decision); Principal | Med–High | 1 week if greenlighted | Appendix B Q1 |
 
-Total: 30 WPs across 4 phases. Phase 1: 4 WPs, ≤1 week aggregate. Phase 2: 15 WPs (10 of which gate on `WP-CON-G-1`'s audio-scope decision; WP-FE-G-15 added 2026-04-19 per B-13). Phase 3: 3 WPs. Phase 4: 11 WPs (WP-FE-G-15 promoted out per B-13).
+Total: 31 WPs across 4 phases. Phase 1: 4 WPs, ≤1 week aggregate. Phase 2: 15 WPs (10 of which gate on `WP-CON-G-1`'s audio-scope decision; WP-FE-G-15 added 2026-04-19 per B-13). Phase 3: 3 WPs. Phase 4: 12 WPs (WP-DEP-G-8 added 2026-04-24).
 
 ---
 
@@ -646,6 +647,40 @@ The remaining `adopt-and-enforce` items are the genuine Phase-3 work.
 **Priority:** Low.
 
 **Scope.** Add `.DS_Store` to `.gitignore`. Remove the tracked `.DS_Store` from the working tree and from history if convenient (tradeoff: history rewrite vs. one-time leak; recommend the simpler removal-without-history-rewrite — the metadata it leaks is low-sensitivity).
+
+### WP-DEP-G-8 — Hosting migration: GitHub Pages → Cloudflare Pages — CLOSED (2026-04-24)
+
+**Owner:** DevOps.
+**Source:** Gate-2 Principal routing 2026-04-24 (hybrid sprint sequencing; 2–3 day dual-serve window; 7-day Report-Only observation).
+**Priority:** Medium.
+**Closed:** 2026-04-24 (cutover commit on rebase after origin/main advanced past the original worktree base).
+
+**Motivation.** CSP enforcement and CSP violation reporting require HTTP response headers (`Content-Security-Policy-Report-Only`, `Report-To`, `report-uri`) that GitHub Pages cannot deliver at the edge. The `_headers` file mechanism on Cloudflare Pages is the simplest path to spec-conformant CSP delivery while keeping the static-hosting posture of §1.1 / §1.2 invariants.
+
+**Scope (delivered in the cutover commit — 13-file atomic bundle):**
+
+- `_headers` (NEW at repo root) — CF Pages edge-delivered response headers: `Content-Security-Policy-Report-Only`, `Report-To`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy` on `/*`; `Cache-Control: no-cache` on `/sw.js`.
+- `sw.js` — `CACHE_NAME` migrated `werkstatt-v63` → `werkstatt-cf-v1` (migration-boundary cache; old `werkstatt-v*` family evicted on activation).
+- `index.html` — meta-tag `Content-Security-Policy-Report-Only` removed from line 7 (spec-invalid for `frame-ancestors` / `base-uri` / `report-uri` / `report-to`). Meta-tag `Referrer-Policy` and `Permissions-Policy` preserved (WP-FE-G-12, redundant belt-and-suspenders).
+- `manifest.json` + `manifest-{1..5}.json` — `start_url` relative `./index.html` → absolute `/index.html`; explicit `scope: "/"` added. All 6 manifests validated.
+- `plans/runbooks/deploy-and-rollback.md` — WP-DEP-G-6 runbook amended: §1 rewritten for CF Pages deploy flow, §1b added (CF native rollback + emergency disable), §6.1 rewritten for CF Pages deploy stuck, Appendix URLs updated. §§2–5, §6.2, §6.3, §7 preserved (platform-neutral cache-invalidation and escalation content).
+- `SPEC.md` — §8.1 rewritten for CF Pages hosting; §8.2 rewritten for CF Pages deploy ritual; §8.3 manifest paragraph updated for `scope`/`start_url`; §8.3 SW paragraph amended with HTTP-cache pairing; §8.4 CACHE_NAME convention updated with `-cf-` infix; NEW §8.5 CSP delivery and violation reporting.
+- `plans/ARCHITECTURE.md` — §1.6 invariant #2 updated with `werkstatt-cf-v1`; §1.6 amended with HTTP-cache pairing paragraph; NEW §3.9 "CSP delivery via HTTP header — enforced"; §6 change log entry dated 2026-04-24.
+- `plans/PARITY_GAP.md` — §11.7 row 1 DIVERGENT-intentional (platform migration), row 7 N/A (Jekyll not applicable), new row 8 MATCH (CSP delivery mechanism); supplementary A5/A6/A7 MISSING→MATCH (housekeeping reconciliation for shipped sibling WPs); score summary recomputed to `6 | 0 | 0 | 1 | 1 | 8` / totals `34 | 21 | 14 | 5 | 2 | 76`.
+- `plans/IMPLEMENTATION_PLAN.md` — WP-DEP-G-4/G-5/G-6 marked CLOSED in index (they shipped on their own, not absorbed by this WP); WP-DEP-G-8 row added; this card.
+
+**Observation windows.**
+
+- **3-day dual-serve** (2026-04-24 → 2026-04-27): legacy GH Pages origin `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/` stays live at frozen pre-cutover state to catch A2HS icons and bookmarks, then Pages source disabled in repo Settings.
+- **7-day Report-Only observation** (2026-04-24 → 2026-05-01): CSP is `Report-Only`; violations log but do not block. Enforce flip (`Content-Security-Policy` header name) after observation window + Senior Dev Oversight sign-off.
+
+**Known follow-ups (out of this WP's scope, flagged here for routing):**
+
+1. **WP-DEP-G-5 probe URL migration.** `post-deploy-verify.yml` still polls the GH Pages URL with pattern `werkstatt-v{N}`; post-cutover it fails on every push. Needs migration to the CF Pages URL and pattern `werkstatt-(cf-)?v{N}`.
+2. **CSP violation reporting endpoint.** `https://api.glossolalia.dev/csp-report` does not resolve at cutover time; Worker deployment is scheduled post-sprint (`plans/sync-architecture-proposal.md`, shared Taller/Werkstatt). Interim `report-uri` POSTs 404 silently under Report-Only; manual DevTools-console observation is the interim gate.
+3. **Enforce flip.** At cutover + 7 days, rename `Content-Security-Policy-Report-Only` → `Content-Security-Policy` in `_headers` if no unexpected violations surface.
+
+**Verification.** V1–V20 matrix executed post-deploy; log at `plans/migration/cutover-verification.log`.
 
 ### WP-ARCH-G-4 — LLM-key proxy decision (and implementation if Principal accepts)
 

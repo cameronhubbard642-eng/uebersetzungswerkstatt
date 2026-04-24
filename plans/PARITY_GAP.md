@@ -21,9 +21,9 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 | §11.4 Content | 6 | 6 | 6 | 3 | 1 | 22 |
 | §11.5 UI/UX | 3 | 3 | 0 | 0 | 0 | 6 |
 | §11.6 Dependencies | 1 | 1 | 1 | 0 | 0 | 3 |
-| §11.7 Deployment | 4 | 0 | 3 | 0 | 0 | 7 |
+| §11.7 Deployment | 6 | 0 | 0 | 1 | 1 | 8 |
 | §11.8 Configuration | 1 | 1 | 1 | 0 | 0 | 3 |
-| **Totals** | **32** | **21** | **17** | **4** | **1** | **75** |
+| **Totals** | **34** | **21** | **14** | **5** | **2** | **76** |
 
 **Headline read.** German is at full parity on ~25% of scored rows, partially aligned on ~33%, missing capabilities on ~32%, and intentionally divergent on ~8%. The largest single concentration of `MISSING` is §11.4 Content (the entire pre-generated audio pipeline accounts for 8 of 24 MISSINGs across all sections).
 
@@ -143,13 +143,14 @@ Counts across all §11 sections. Detailed per-row evidence in the §§11.1–11.
 
 | # | Row | Score | Evidence / justification |
 |---|---|---|---|
-| 1 | GitHub Pages static hosting | **MATCH** | German served by GH Pages from `main` (single-branch); confirmed via `git ls-remote --heads origin`. |
-| 2 | Unified source+deploy repository (avoid the two-branch hand-commit ritual in Spanish) | **MATCH (parity exceeds Spanish baseline in the direction Spanish is trying to move)** | German has only `main`. No `gh-pages` branch on origin or locally. German does not inherit the Spanish two-branch ritual and has no migration debt. |
-| 3 | SW registered with `{ updateViaCache: 'none' }` and explicit `reg.update()` | **MATCH** | `{ updateViaCache: 'none' }` is present. Explicit `reg.update()` restored by WP-ARCH-G-3 Amendment 4 inside `window.addEventListener('load', …)` IIFE — deferred past register resolution to avoid the Chrome double-install race. Divergence from Spanish §1.6 closed. |
-| 4 | `CACHE_NAME` as the de facto version stamp, bumped per content/code deploy | **MATCH** | `sw.js:4` `const CACHE_NAME = 'werkstatt-v10';`. Ten bumps across the traversable history; every content-bearing commit carries a bump. Discipline informal but currently functional. |
+| 1 | Static-asset hosting with auto-deploy from `main` | **DIVERGENT (intentional, WP-DEP-G-8)** | German migrated to Cloudflare Pages 2026-04-24; Spanish remains on GitHub Pages. Platform divergent; invariants preserved (static hosting, auto-deploy on push, immutable deployments, custom domain with TLS). Live URL `https://uebersetzungswerkstatt.glossolalia.dev/`. *Intentional because:* §7 compliance required CSP + reporting-endpoint headers (`Report-To`, `report-uri`) that GH Pages cannot deliver — `_headers`-based edge delivery was the binding constraint. See `plans/runbooks/deploy-and-rollback.md` §1, `SPEC.md §8.1`. |
+| 2 | Unified source+deploy repository (avoid the two-branch hand-commit ritual in Spanish) | **MATCH (parity exceeds Spanish baseline in the direction Spanish is trying to move)** | German has only `main`. No `gh-pages` branch on origin or locally. German does not inherit the Spanish two-branch ritual and has no migration debt. CF Pages reads `main` directly; unchanged by WP-DEP-G-8. |
+| 3 | SW registered with `{ updateViaCache: 'none' }` and explicit `reg.update()` | **MATCH** | `{ updateViaCache: 'none' }` is present. Explicit `reg.update()` restored by WP-ARCH-G-3 Amendment 4 inside `window.addEventListener('load', …)` IIFE — deferred past register resolution to avoid the Chrome double-install race. WP-DEP-G-8 added paired CF-edge `Cache-Control: no-cache` on `/sw.js` via `_headers` — see §3.9 / §1.6 HTTP-cache pairing. Divergence from Spanish §1.6 closed. |
+| 4 | `CACHE_NAME` as the de facto version stamp, bumped per content/code deploy | **MATCH** | `sw.js:4` `const CACHE_NAME = 'werkstatt-cf-v1';` (WP-DEP-G-8 migration boundary; pre-cutover sequence `werkstatt-v{1..63}` frozen — see `ARCHITECTURE.md §1.6` invariant #2). Every content-bearing commit carries a bump. Discipline informal but currently functional. |
 | 5 | iOS Safari update-detection hardening (`reg.waiting` check at registration, `reg.active` instead of `controller`, `updatefound` handler) | **MATCH** | `reg.waiting` cold-load check and `reg.active`-guarded statechange handler restored by WP-ARCH-G-3 Amendment 4 (Spanish IIFE pattern ported verbatim). `GET_CACHE_NAME` / `uw_lastSeenCacheName` / `uw_diag_controllerchange_timeout` machinery removed. Divergence from Spanish §1.6 closed. |
 | 6 | `{ type: 'SKIP_WAITING' }` client→SW handshake with in-app update banner | **MATCH** | `waitingSW.postMessage({ type: 'SKIP_WAITING' })` in reload-button handler. `sw.js` listens and calls `self.skipWaiting()`. `#update-banner` with German copy and dismiss button (`✕`) added by Amendment 4. Parity with Spanish. |
-| 7 | `.nojekyll` present on the deploy branch (Spanish baseline lacks this — parity here may exceed baseline by design) | **MISSING (parity-shared with Spanish)** | No `.nojekyll` at repo root on `main`. GitHub Pages runs default Jekyll. Latent trap if any future path starts with `_`. |
+| 7 | `.nojekyll` present on the deploy branch (Spanish baseline lacks this — parity here may exceed baseline by design) | **N/A (post-WP-DEP-G-8)** | Cloudflare Pages is a static-file CDN with no markup preprocessing. Jekyll does not run against the German repo. `.nojekyll` is unneeded and remains absent. Was **MISSING (parity-shared)** pre-cutover; retired to N/A by the platform migration. |
+| 8 | CSP delivery mechanism (header vs meta, reporting wired) | **MATCH** | Post-WP-DEP-G-8, German delivers `Content-Security-Policy-Report-Only` at the CF edge via `_headers` on `/*`, with `Report-To` + `report-uri` pointing at shared Worker `https://api.glossolalia.dev/csp-report`. Meta-tag CSP removed from `index.html:7` (spec-invalid for `frame-ancestors`/`base-uri`/`report-uri`). See `ARCHITECTURE.md §3.9`. Spanish CSP delivery mechanism is similarly header-appropriate (Spanish §7.3.2 reference); both apps now land CSP via spec-conformant channel. |
 
 ### §11.7 supplementary rows (DevOps-flagged for §11.9 / IMPLEMENTATION_PLAN consideration)
 
@@ -161,9 +162,9 @@ These do not have explicit Spanish §11.7 checkboxes but map to Spanish §8.3 ha
 | A2 | Runtime-swappable alternate PWA manifests (Spanish has 5) | **MISSING** | Single `manifest.json`; no boot-script swap. Duplicate of §11.1 row 4. |
 | A3 | Maskable icon variants for iOS A2HS | **MISSING** | `manifest.json` icons reference only `icon-192.png` / `icon-512.png`. |
 | A4 | Manifest `lang` and `orientation` fields | **MISSING** | German `manifest.json` has neither. **Principal confirmed 2026-04-19 (Appendix B #B-12 resolution): `lang: "en"` matches the intentional `<html lang="en">` chrome-led convention for both apps.** Add `lang: "en"` and `orientation: "any"` per WP-FE-G-14. |
-| A5 | Pre-deploy smoke test (headless browser, SW register, manifest parse) | **MISSING (parity-shared)** | No `.github/workflows/` at all in German repo. |
-| A6 | Post-deploy verification (fetch `/sw.js`, assert served `CACHE_NAME` matches committed value) | **MISSING (parity-shared)** | No automation. |
-| A7 | Rollback runbook | **MISSING (parity-shared)** | Undocumented. |
+| A5 | Pre-deploy smoke test (headless browser, SW register, manifest parse) | **MATCH** | Shipped by WP-DEP-G-4 (commit `3fcb607`): `.github/workflows/pre-deploy-smoke.yml` — static-file checks + SW-install headless probe. Runs on push and PR against `main`. (Score reconciled by WP-DEP-G-8 housekeeping; sibling WP shipped without touching this table.) |
+| A6 | Post-deploy verification (fetch `/sw.js`, assert served `CACHE_NAME` matches committed value) | **MATCH (with caveat)** | Shipped by WP-DEP-G-5 (commit `18202fc`): `.github/workflows/post-deploy-verify.yml` — polls live SW for up to 5 minutes. **Caveat:** probe's `PAGES_URL` still targets the legacy GH Pages origin and expects pattern `werkstatt-v{N}`; post-WP-DEP-G-8 it will fail until migrated to CF Pages URL + `werkstatt-(cf-)?v{N}` pattern. Flagged follow-up WP. (Score reconciled by WP-DEP-G-8 housekeeping.) |
+| A7 | Rollback runbook | **MATCH** | Shipped by WP-DEP-G-6 (commit `cf27ce8`): `plans/runbooks/deploy-and-rollback.md`. WP-DEP-G-8 amended §1 (CF Pages deploy flow), added §1b (CF native rollback), rewrote §6.1 (CF deploy stuck), and preserved §§2–5, §6.2, §6.3, §7, Appendix. |
 | A8 | Precache filename integrity (`PRECACHE_URLS` entries resolve against deployed file names) | **PARTIAL — `[UNVERIFIED]` — P0 candidate pending live verification** | `sw.js:6–14` lists hyphenated `German-Icon-I.jpeg`. Tracked-on-`main` filenames per `git ls-files`: space-separated `German Icon I.jpeg`. Hyphenated copies are untracked working-copy duplicates only. If GH Pages does not silently alias these, `cache.addAll` rejects atomically and SW v10 has not been installing for new visitors since `f79e45c`. **Routes to Principal/Auditor as Appendix B #B-3 / SPEC §10 G-15.** |
 
 ---

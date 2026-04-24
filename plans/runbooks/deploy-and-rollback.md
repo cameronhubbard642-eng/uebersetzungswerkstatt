@@ -1,23 +1,36 @@
 # Deploy and Rollback Runbook — Philosophische Übersetzungswerkstatt
 
 **Repo:** `cameronhubbard642-eng/uebersetzungswerkstatt`
-**Live URL:** `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/`
-**Deploy model:** GitHub Pages — "Deploy from a branch", source: `main` root.
-**Authored:** 2026-04-24. **Owner:** DevOps / Senior Dev Oversight (Cam).
+**Live URL:** `https://uebersetzungswerkstatt.glossolalia.dev/` (Cloudflare Pages, post-WP-DEP-G-8 cutover 2026-04-24).
+**Legacy URL (dual-serve, 3 days):** `https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/` — GH Pages origin, frozen at pre-cutover state, torn down 2026-04-27.
+**Deploy model:** Cloudflare Pages, Git-integrated against `main`. Prior model was GitHub Pages "Deploy from a branch"; sections below that still reference that flow are preserved for dual-serve-window context and §5 edge-case precedent.
+**Authored:** 2026-04-24 (WP-DEP-G-6). **Amended:** 2026-04-24 (WP-DEP-G-8 cutover). **Owner:** DevOps / Senior Dev Oversight (Cam).
 
 ---
 
-## §1 Normal Deploy Flow
+## §1 Normal Deploy Flow — Cloudflare Pages (post-cutover)
 
-Every commit pushed to `main` triggers an automatic GitHub Pages deploy.
+Every commit pushed to `main` triggers an automatic Cloudflare Pages deploy. Git integration replaces the prior GH Pages flow; no build step (static source).
 
 **Steps:**
 
 1. Developer pushes to `main` (direct push or merge from a worktree branch).
-2. GitHub Pages picks up the new tree. Build time is zero (static source). Propagation to the CDN edge: **60–90 seconds** typical, up to 3 minutes under load.
-3. *(Once WP-DEP-G-4 lands)* Pre-deploy smoke test CI runs on the PR before it merges. Merge is blocked on red.
-4. *(Once WP-DEP-G-5 lands)* Post-deploy parity probe runs 90 seconds after the push, curls `sw.js`, asserts the live `CACHE_NAME` matches the committed value, and posts to GitHub Issues on failure.
-5. Verify live: `curl -s https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js | grep CACHE_NAME`
+2. CF Pages picks up within ~30 s and starts a deployment. Build time is zero (static source). Production alias `uebersetzungswerkstatt.glossolalia.dev` updates in **60–90 seconds** typical.
+3. **Pre-deploy smoke test** (WP-DEP-G-4, `.github/workflows/pre-deploy-smoke.yml`) runs on the PR before merge. Merge is blocked on red.
+4. **Post-deploy parity probe** (WP-DEP-G-5, `.github/workflows/post-deploy-verify.yml`) runs after each push to main. ⚠️ Probe currently polls the GH Pages URL and expects pattern `werkstatt-v{N}` — during the 3-day dual-serve window AND until the probe is migrated to the CF Pages URL + `werkstatt-(cf-)?v{N}` pattern, probe failures on post-cutover pushes are **expected and non-blocking** (follow-up WP required). See §6.1.
+5. Verify live: `curl -s https://uebersetzungswerkstatt.glossolalia.dev/sw.js | grep CACHE_NAME`
+
+**CF Pages dashboard verify.** Pages → `uebersetzungswerkstatt` → Deployments. Latest deployment is green within 60–90 s typical; build log clean.
+
+**Post-deploy curl verification for CSP + cache headers:**
+
+```bash
+curl -s https://uebersetzungswerkstatt.glossolalia.dev/sw.js | sed -n '4p'
+curl -sI https://uebersetzungswerkstatt.glossolalia.dev/index.html | grep -i '^content-security-policy\|^report-to'
+curl -sI https://uebersetzungswerkstatt.glossolalia.dev/sw.js | grep -i '^cache-control'
+```
+
+Expected: `CACHE_NAME = 'werkstatt-cf-vN';` matching the committed value; `Content-Security-Policy-Report-Only` + `Report-To` header lines on `index.html`; `Cache-Control: no-cache` on `sw.js` (per `_headers` rule).
 
 **What "deployed" means for users:**
 
@@ -27,13 +40,33 @@ Every commit pushed to `main` triggers an automatic GitHub Pages deploy.
 
 **CACHE_NAME bump rule** (ARCHITECTURE.md §3.7 / §2.6):
 
-Every commit that touches `index.html` or any file in `sw.js` `PRECACHE_URLS` **must** bump `CACHE_NAME` to the next monotone integer slot (e.g., `werkstatt-v62` → `werkstatt-v63`). Parallel sessions consume slots; re-slot at push time if a collision is detected during rebase.
+Every commit that touches `index.html` or any file in `sw.js` `PRECACHE_URLS` **must** bump `CACHE_NAME` to the next monotone integer slot. Post-cutover convention uses the `-cf-` infix: `werkstatt-cf-v1` → `werkstatt-cf-v2` → … The pre-cutover sequence `werkstatt-v{1..63}` is frozen; `werkstatt-cf-v1` is a **migration boundary cache** and the SW's old-cache cleanup (`caches.keys()` → `caches.delete()`) will evict all `werkstatt-v*` entries on activation. Parallel sessions consume slots; re-slot at push time if a collision is detected during rebase.
+
+**Same-commit rule.** Any SW-touching change must bump `CACHE_NAME` in the same commit. Any new external host added to a call site must update `_headers` `connect-src` in the same commit (per `plans/ARCHITECTURE.md §3.4`).
+
+---
+
+## §1b Rollback — CF Pages native (preferred, post-cutover)
+
+**Use when:** the live CF Pages deployment is broken and you want the fastest non-destructive path to a known-good state. Preferred over §3 / §4 for any CF-Pages-hosted commit.
+
+1. CF dashboard → Pages → `uebersetzungswerkstatt` → Deployments.
+2. Select the last known-good deployment (each has an immutable SHA-tagged URL).
+3. Click "Rollback to this deployment" → confirm.
+4. Production alias repoints in seconds; old build is back live.
+5. **Align source of truth:** `git revert <bad-sha>` on `main` + `git push origin main`. The revert-push triggers another CF build; it should produce the same bytes as the rolled-back deployment. Without this step, the next forward push re-introduces the bad commit on top of the rollback.
+
+**Emergency disable.** If CF Pages must be pulled entirely (e.g., a CSP regression exfiltrating data):
+
+1. CF dashboard → Pages → `uebersetzungswerkstatt` → Settings → Pause production deployments.
+2. Alternatively: remove the custom domain binding — DNS survives but TLS + serve fails over to the `.pages.dev` fallback URL.
+3. **Last resort:** CF dashboard → DNS → delete the `uebersetzungswerkstatt` CNAME for `glossolalia.dev`. User gets DNS NXDOMAIN; A2HS icon breaks; fix as urgently as the situation demands. Requires Principal sign-off (§7).
 
 ---
 
 ## §2 Pre-Deploy Smoke Check Expectations
 
-*(Describes WP-DEP-G-4 — CI smoke test, not yet implemented.)*
+*(Describes WP-DEP-G-4 — CI smoke test, shipped at `.github/workflows/pre-deploy-smoke.yml`.)*
 
 **What the smoke test validates (once live):**
 
@@ -196,14 +229,23 @@ If the wrong tip was already serving long enough that active users cached it: bu
 
 ## §6 Common Failure Modes
 
-### §6.1 GitHub Pages deploy stuck
+### §6.1 CF Pages deploy stuck
 
-**Symptom:** push lands on `main` but the live site still returns the old `CACHE_NAME` after 3+ minutes.
+**Symptom:** push lands on `main` but the live site `https://uebersetzungswerkstatt.glossolalia.dev/` still returns the old `CACHE_NAME` after 3+ minutes.
 
 **Recovery:**
-1. Check the Actions tab: `https://github.com/cameronhubbard642-eng/uebersetzungswerkstatt/actions` — look for a failed or queued Pages deploy.
-2. If the deploy job is absent or stuck: navigate to **Settings → Pages → "Re-run" the last deploy** (or push a trivial commit to re-trigger).
-3. If Actions is showing a red workflow: inspect the log; most common cause is a Pages quota or configuration error. Escalate to Cam if it cannot be self-healed.
+1. CF dashboard → Pages → `uebersetzungswerkstatt` → Deployments. Look for a failed or queued deployment.
+2. If the deploy job failed: inspect build log. Free tier quota (500 builds/month) is a common gotcha but unlikely at current cadence. Manual retrigger via dashboard "Retry deployment" button.
+3. If CF Pages dashboard shows a platform incident: check `https://www.cloudflarestatus.com`. If incident confirmed, escalate to Cam and wait.
+4. If all deploys look green but the edge still serves stale bytes: purge CF cache via dashboard → Caching → Configuration → Purge Everything. This is rarely needed (CF Pages invalidates on deploy) but available as an escalation.
+
+**Related: WP-DEP-G-5 parity-probe false-positive failures.** Post-cutover, the probe (`.github/workflows/post-deploy-verify.yml`) will fail on every push until it is migrated to poll the CF Pages URL and accept the `werkstatt-cf-v{N}` pattern. Do NOT treat these failures as deploy stalls — verify manually per §1 step 5 and continue. The probe migration is a flagged follow-up WP.
+
+### §6.1b Legacy: GitHub Pages deploy stuck (pre-cutover reference)
+
+*Retained for dual-serve-window context through 2026-04-27 and for §5 edge-case precedent.*
+
+If the legacy GH Pages origin (`https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/`) is stuck during the dual-serve window: the frozen pre-cutover state is intentional; no action required. If it must be manually advanced, navigate to the repo's Actions tab and inspect the `pages-build-deployment` run.
 
 ### §6.2 CACHE_NAME monotone-bump violation
 
@@ -229,9 +271,9 @@ If the wrong tip was already serving long enough that active users cached it: bu
 
 **Principal sign-off is required before executing any destructive operation** — specifically: force-push to `main`, revert of a commit that touches security-critical paths (CSP, SW caching strategy, API key handling), and any operation that modifies or removes data from the live cache outside the normal `CACHE_NAME` bump cycle.
 
-For non-destructive operations (standard `git revert`, CACHE_NAME bumps, doc updates), no pre-approval is needed. The post-deploy probe (WP-DEP-G-5) is the gate.
+For non-destructive operations (standard `git revert`, CACHE_NAME bumps, doc updates), no pre-approval is needed. Manual curl-verification per §1 step 5 is the gate post-cutover; the WP-DEP-G-5 parity probe returns to gate duty once migrated to the CF Pages URL.
 
-For GitHub Pages outages that are not caused by a code change, check `githubstatus.com` first to rule out a platform incident before escalating.
+For Cloudflare Pages outages not caused by a code change, check `https://www.cloudflarestatus.com` first. For legacy GH Pages outages during the dual-serve window, check `https://www.githubstatus.com`. Rule out platform incidents before escalating.
 
 ---
 
@@ -241,23 +283,26 @@ For GitHub Pages outages that are not caused by a code change, check `githubstat
 # Recent commit history
 git log --oneline -10
 
-# Live CACHE_NAME check
-curl -s https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js | grep CACHE_NAME
+# Live CACHE_NAME check (CF Pages, post-cutover)
+curl -s https://uebersetzungswerkstatt.glossolalia.dev/sw.js | grep CACHE_NAME
 
-# Live index.html CACHE_NAME cross-check (should match sw.js)
-curl -s https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/index.html | grep -o "werkstatt-v[0-9]*" | head -1
+# Live CSP + Report-To header check
+curl -sI https://uebersetzungswerkstatt.glossolalia.dev/index.html | grep -iE '^content-security-policy|^report-to|^referrer-policy'
+
+# Live sw.js cache-control header (should be no-cache per _headers)
+curl -sI https://uebersetzungswerkstatt.glossolalia.dev/sw.js | grep -i '^cache-control'
+
+# Dual-serve legacy GH Pages check (through 2026-04-27)
+curl -s https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/sw.js | grep CACHE_NAME
 
 # Precache filename integrity check (run before any PRECACHE_URLS edit)
 git ls-files | grep -E '\.(html|json|jpeg|JPEG|png|PNG)$'
 
-# Manual pre-deploy smoke trigger (once WP-DEP-G-4 lands)
-gh workflow run pre-deploy-smoke
+# Manual pre-deploy smoke trigger (WP-DEP-G-4)
+gh workflow run pre-deploy-smoke.yml
 
-# Recent post-deploy probe results (once WP-DEP-G-5 lands)
-gh run list --workflow=post-deploy-parity
-
-# GitHub Pages deploy status
-gh run list --workflow=pages-build-deployment | head -5
+# Recent post-deploy probe results (WP-DEP-G-5 — expect failures until probe is migrated to CF Pages URL)
+gh run list --workflow=post-deploy-verify.yml | head -5
 
 # Local worktree status — confirm clean base before editing
 git fetch origin main && git status && git log --oneline origin/main..HEAD
