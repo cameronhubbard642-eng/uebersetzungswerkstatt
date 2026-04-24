@@ -24821,10 +24821,13 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
     return arr;
   }
 
-  _escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
+  _escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   _renderGrammarWelcome() {
