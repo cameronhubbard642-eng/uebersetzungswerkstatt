@@ -59,6 +59,7 @@
   --pos-num: #1e3a5f;
   --font-ui: 'Copperplate', 'Copperplate Gothic Light', 'Copperplate Gothic', serif;
   --font-content: 'Baskerville', 'Libre Baskerville', Georgia, serif;
+  --gloss-line-height: 28px; /* vertical clearance for first-gloss spans below passage baseline */
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 /* Prevent iOS double-tap-to-zoom on all interactive elements */
@@ -21714,8 +21715,12 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const rBottom = display ? display.getBoundingClientRect().bottom : 0;
     const maxH    = Math.round(vH * 0.70);
     const minH    = Math.round(vH * 0.25);
-    // Fill the space from passage-bottom down to the top of the tab bar.
-    const raw     = Math.round(vH - rBottom - tabBarH);
+    // Extra clearance so first-gloss spans on the bottom passage line aren't covered.
+    const glossBuf = parseInt(
+      getComputedStyle(document.documentElement).getPropertyValue('--gloss-line-height')
+    ) || 28;
+    // Fill the space from passage-bottom (+ gloss clearance) down to the top of the tab bar.
+    const raw     = Math.round(vH - rBottom - tabBarH - glossBuf);
     const h       = Math.max(minH, Math.min(maxH, raw));
 
     drawer.style.transition = 'none';
