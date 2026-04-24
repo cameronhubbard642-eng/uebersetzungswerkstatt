@@ -4093,6 +4093,18 @@ select:focus-visible, a:focus-visible {
     --warning: #c4a020;
     --error: #c45050;
   }
+  /* Fix .action-btn: no background set in base rule, UA default is light */
+  .action-btn {
+    background: var(--sidebar-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  /* TTS + Hints: accent bg matches mobile chrome treatment; white contrast 7.38:1 (AAA) */
+  #german-tts-btn, #get-hints-btn, #grammar-tts-btn {
+    background: var(--accent);
+    color: #fff;
+    border-color: transparent;
+  }
 }
 
 #update-banner {
