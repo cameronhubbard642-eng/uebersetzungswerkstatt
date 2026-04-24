@@ -1,0 +1,138 @@
+name: Pre-deploy smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # ── 1. Static file checks — fast, no browser download ──────────────────
+  static:
+    name: Static file checks
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: CACHE_NAME format
+        run: |
+          CACHE=$(sed -n "s/.*CACHE_NAME = '\(werkstatt-v[0-9]*\)'.*/\1/p" sw.js | head -1)
+          [ -n "$CACHE" ] || { echo "::error::CACHE_NAME not found or wrong format in sw.js"; exit 1; }
+          echo "CACHE_NAME: $CACHE"
+
+      - name: Manifests — lang / orientation / theme_color
+        run: |
+          for N in 1 2 3 4 5; do
+            F="manifest-$N.json"
+            [ -f "$F" ] || { echo "::error::$F not found"; exit 1; }
+            L=$(jq -r '.lang'        "$F")
+            O=$(jq -r '.orientation' "$F")
+            T=$(jq -r '.theme_color' "$F")
+            [ "$L" = "en"  ] || { echo "::error::$F: lang='$L' (want 'en')"; exit 1; }
+            [ "$O" = "any" ] || { echo "::error::$F: orientation='$O' (want 'any')"; exit 1; }
+            { [ -n "$T" ] && [ "$T" != "null" ]; } \
+              || { echo "::error::$F: theme_color missing or null"; exit 1; }
+            echo "$F  lang=$L  orientation=$O  theme_color=$T"
+          done
+
+      - name: Icon PNGs — all 30 per-icon files present
+        run: |
+          MISSING=0
+          for N in 1 2 3 4 5; do
+            for PNG in \
+              "apple-touch-icon-$N.png" "icon-$N-favicon.png" \
+              "icon-$N-192.png"         "icon-$N-512.png" \
+              "icon-$N-192-maskable.png" "icon-$N-512-maskable.png"; do
+              [ -f "$PNG" ] || { echo "::error::Missing icon: $PNG"; MISSING=$((MISSING+1)); }
+            done
+          done
+          [ "$MISSING" -eq 0 ] || { echo "$MISSING file(s) missing — see errors above"; exit 1; }
+          echo "All 30 per-icon PNGs present"
+
+      - name: index.html — CSP meta tag present
+        run: |
+          grep -qE 'http-equiv="Content-Security-Policy' index.html \
+            || { echo "::error::No Content-Security-Policy meta tag in <head>"; exit 1; }
+          echo "CSP meta OK"
+
+      - name: index.html — viewport interactive-widget=resizes-content
+        run: |
+          grep -q 'interactive-widget=resizes-content' index.html \
+            || { echo "::error::interactive-widget=resizes-content missing from viewport meta"; exit 1; }
+          echo "Viewport OK"
+
+      - name: index.html — anti-regression identifiers
+        run: |
+          FAIL=0
+          grep -q '_escapeHtml'    index.html \
+            || { echo "::error::_escapeHtml not found — XSS guard may have been deleted"; FAIL=1; }
+          grep -q '_glossSeen'     index.html \
+            || { echo "::error::_glossSeen not found — gloss-persistence may have been deleted"; FAIL=1; }
+          grep -q 'const ICON_SET' index.html \
+            || { echo "::error::const ICON_SET not found — icon-set selector may have been deleted"; FAIL=1; }
+          [ "$FAIL" -eq 0 ] || exit 1
+          echo "_escapeHtml, _glossSeen, const ICON_SET all present"
+
+  # ── 2. Headless ?smoke=1 suite via Playwright ──────────────────────────
+  headless:
+    name: Headless smoke suite (11 tests)
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Playwright Chromium
+        uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-1
+
+      - name: Install Playwright npm package
+        run: npm install playwright
+
+      - name: Install Chromium (skipped on cache hit)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Serve site + run ?smoke=1
+        run: |
+          python3 -m http.server 8080 &
+          sleep 2
+          cat > smoke-runner.cjs << 'RUNNER'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const page    = await browser.newPage();
+            const failed  = [];
+            page.on('console', msg => {
+              const t = msg.text();
+              process.stdout.write(t + '\n');
+              if (t.startsWith('[SMOKE FAIL]')) failed.push(t);
+            });
+            page.on('pageerror', e => console.error('Page error:', e.message));
+            await page.goto('http://localhost:8080/?smoke=1', { timeout: 30000 });
+            await page.waitForSelector('div[style*="border-top"]', { timeout: 30000 });
+            await browser.close();
+            if (failed.length) {
+              console.error(failed.length + ' smoke test(s) failed');
+              process.exit(1);
+            }
+            console.log('All smoke tests passed');
+          })().catch(e => { console.error(e.message); process.exit(1); });
+          RUNNER
+          node smoke-runner.cjs
