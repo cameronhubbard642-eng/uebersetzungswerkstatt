@@ -4187,7 +4187,7 @@ select:focus-visible, a:focus-visible {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
     <div id="german-display"></div>
-    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">&#9654; Listen</button></div>
+    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
     <div id="translation-section">
       <label>Your Translation</label>
       <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
@@ -4336,7 +4336,7 @@ select:focus-visible, a:focus-visible {
 
       <!-- Active Time -->
       <div class="stats-section">
-        <div class="stats-section-title" id="stats-time-toggle"><span class="section-arrow">&#9660;</span> Active Learning Time</div>
+        <div class="stats-section-title" id="stats-time-toggle"><span class="section-arrow"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span> Active Learning Time</div>
         <div class="stats-section-content" id="stats-time-content">
           <div class="stats-grid">
             <div class="stat-card">
@@ -4359,7 +4359,7 @@ select:focus-visible, a:focus-visible {
 
       <!-- Performance Metrics -->
       <div class="stats-section">
-        <div class="stats-section-title" id="stats-perf-toggle"><span class="section-arrow">&#9660;</span> Performance Overview</div>
+        <div class="stats-section-title" id="stats-perf-toggle"><span class="section-arrow"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span> Performance Overview</div>
         <div class="stats-section-content" id="stats-perf-content">
           <div style="margin-bottom:8px;font-size:11px;font-family:var(--font-ui);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">Translation</div>
           <div id="stats-translation-metrics"></div>
@@ -4380,7 +4380,7 @@ select:focus-visible, a:focus-visible {
 
       <!-- LLM Assessment -->
       <div class="stats-section">
-        <div class="stats-section-title" id="stats-assess-toggle"><span class="section-arrow">&#9660;</span> LLM Assessment</div>
+        <div class="stats-section-title" id="stats-assess-toggle"><span class="section-arrow"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></span> LLM Assessment</div>
         <div class="stats-section-content" id="stats-assess-content">
           <button class="stats-assess-btn" id="stats-assess-btn">Generate Assessment</button>
           <div id="stats-assessment-area"></div>
@@ -19199,6 +19199,22 @@ const ICON_BOLT_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><pa
 const ICON_BOLT_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`;
 const ICON_BOLT    = ICON_SET === 'A' ? ICON_BOLT_A : ICON_BOLT_B;
 
+const ICON_PLAY_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M5 3.5l8 4.5-8 4.5z"/></svg>`;
+const ICON_PLAY_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/></svg>`;
+const ICON_PLAY    = ICON_SET === 'A' ? ICON_PLAY_A : ICON_PLAY_B;
+
+const ICON_PAUSE_A = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M6 4v8M10 4v8"/></svg>`;
+const ICON_PAUSE_B = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="M15.75 5.25v13.5m-7.5-13.5v13.5"/></svg>`;
+const ICON_PAUSE   = ICON_SET === 'A' ? ICON_PAUSE_A : ICON_PAUSE_B;
+
+const ICON_CHEVRON_DOWN_A  = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M3.5 6l4.5 4 4.5-4"/></svg>`;
+const ICON_CHEVRON_DOWN_B  = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>`;
+const ICON_CHEVRON_DOWN    = ICON_SET === 'A' ? ICON_CHEVRON_DOWN_A : ICON_CHEVRON_DOWN_B;
+
+const ICON_CHEVRON_RIGHT_A = `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}><path d="M6 3.5l4 4.5-4 4.5"/></svg>`;
+const ICON_CHEVRON_RIGHT_B = `<svg class="icon-inline" viewBox="0 0 24 24" ${_SVG_B}><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>`;
+const ICON_CHEVRON_RIGHT   = ICON_SET === 'A' ? ICON_CHEVRON_RIGHT_A : ICON_CHEVRON_RIGHT_B;
+
 // Scenario icon pairs — A: 16×16/stroke-1.3 (house style); B: 24×24/stroke-1.5 (coordinates ×1.5)
 const _scenIcon = (a, b) => ICON_SET === 'A'
   ? `<svg class="icon-inline" viewBox="0 0 16 16" ${_SVG_A}>${a}</svg>`
@@ -19726,7 +19742,7 @@ class App {
 
       const hdr = document.createElement("div");
       hdr.className = "vocab-group-header" + collapsed;
-      hdr.innerHTML = `<span class="vocab-group-arrow">&#9660;</span><span>${this._escapeHtml(grp)}</span><span class="vocab-group-count">${done}/${total}</span>`;
+      hdr.innerHTML = `<span class="vocab-group-arrow">${ICON_CHEVRON_DOWN}</span><span>${this._escapeHtml(grp)}</span><span class="vocab-group-count">${done}/${total}</span>`;
       hdr.addEventListener("click", () => {
         const nowCollapsed = hdr.classList.toggle("collapsed");
         itemsDiv.classList.toggle("collapsed", nowCollapsed);
@@ -20661,7 +20677,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     // If paused → resume
     if (this._germanTtsPaused) {
       this._germanTtsPaused = false;
-      btn.innerHTML = "&#9646;&#9646; Pause";
+      btn.innerHTML = `${ICON_PAUSE} Pause`;
       if (this._ttsAudio) { this._ttsAudio.play(); return; }
       if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
     }
@@ -20671,13 +20687,13 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (this._ttsAudio && !this._ttsAudio.paused) {
         this._ttsAudio.pause();
         this._germanTtsPaused = true;
-        btn.innerHTML = "&#9654; Resume";
+        btn.innerHTML = `${ICON_PLAY} Resume`;
         return;
       }
       if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
         speechSynthesis.pause();
         this._germanTtsPaused = true;
-        btn.innerHTML = "&#9654; Resume";
+        btn.innerHTML = `${ICON_PLAY} Resume`;
         return;
       }
       // Fallback: stop entirely
@@ -20685,7 +20701,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this._germanTtsActive = false;
       this._germanTtsPaused = false;
       this._germanTtsQueue = [];
-      btn.innerHTML = "&#9654; Listen";
+      btn.innerHTML = `${ICON_PLAY} Listen`;
       return;
     }
 
@@ -20700,14 +20716,14 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this._speakGermanChunked(ex.german, 0.85, btn, () => {
         this._germanTtsActive = false;
         this._germanTtsPaused = false;
-        btn.innerHTML = "&#9654; Listen";
+        btn.innerHTML = `${ICON_PLAY} Listen`;
       });
     } else {
-      btn.innerHTML = "&#9646;&#9646; Pause";
+      btn.innerHTML = `${ICON_PAUSE} Pause`;
       this._browserSpeak(ex.german, "de-DE", 0.85, this._pickDeVoice(), () => {
         this._germanTtsActive = false;
         this._germanTtsPaused = false;
-        btn.innerHTML = "&#9654; Listen";
+        btn.innerHTML = `${ICON_PLAY} Listen`;
       });
     }
   }
@@ -20728,7 +20744,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this._germanTtsQueue = [];
     this._germanTtsQueueIdx = 0;
     const germanBtn = document.getElementById("german-tts-btn");
-    if (germanBtn) germanBtn.innerHTML = "&#9654; Listen";
+    if (germanBtn) germanBtn.innerHTML = `${ICON_PLAY} Listen`;
     // Grammar lesson TTS state
     this._ttsActive = false;
     this._ttsPaused = false;
@@ -20736,13 +20752,13 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     this._ttsIdx = 0;
     this._ttsOpenAIParts = [];
     this._ttsOpenAIIdx = 0;
-    if (this._ttsBtn) { this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; this._ttsBtn = null; }
+    if (this._ttsBtn) { this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`; this._ttsBtn = null; }
     // Inline speak / vocab pronounce state
     this._speakWordActive = false;
     this._speakWordPaused = false;
     if (this._speakWordBtn) {
       const wasPronounce = this._speakWordBtn.classList.contains("vocab-pronounce-btn");
-      this._speakWordBtn.innerHTML = wasPronounce ? "&#9654; Pronounce" : "&#9654;";
+      this._speakWordBtn.innerHTML = wasPronounce ? `${ICON_PLAY} Pronounce` : ICON_PLAY;
       this._speakWordBtn = null;
     }
     this._speakWordText = null;
@@ -20751,9 +20767,9 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
   // Vocabulary word / inline pronunciation (play / pause / resume)
   speakWord(word, btn) {
     const isVocab = btn && btn.classList.contains("vocab-pronounce-btn");
-    const playLabel = isVocab ? "&#9654; Pronounce" : "&#9654;";
-    const pauseLabel = isVocab ? "&#9646;&#9646; Pause" : "&#9646;&#9646;";
-    const resumeLabel = isVocab ? "&#9654; Resume" : "&#9654;";
+    const playLabel = isVocab ? `${ICON_PLAY} Pronounce` : ICON_PLAY;
+    const pauseLabel = isVocab ? `${ICON_PAUSE} Pause` : ICON_PAUSE;
+    const resumeLabel = isVocab ? `${ICON_PLAY} Resume` : ICON_PLAY;
 
     // If same word is paused → resume
     if (this._speakWordPaused && this._speakWordText === word) {
@@ -20801,18 +20817,18 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         text, "nova",
         (result) => {
           if (result === "fallback") {
-            if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause";
+            if (btn && this._germanTtsActive) btn.innerHTML = `${ICON_PAUSE} Pause`;
             this._browserSpeak(text, "de-DE", rate || 0.85, this._pickDeVoice(), () => {
               this._germanTtsActive = false;
               this._germanTtsPaused = false;
-              if (btn) btn.innerHTML = "&#9654; Listen";
+              if (btn) btn.innerHTML = `${ICON_PLAY} Listen`;
               if (onEnd) onEnd();
             });
           } else {
             if (onEnd) onEnd();
           }
         },
-        () => { if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause"; }
+        () => { if (btn && this._germanTtsActive) btn.innerHTML = `${ICON_PAUSE} Pause`; }
       );
       return;
     }
@@ -20829,7 +20845,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       this._germanTtsActive = false;
       this._germanTtsPaused = false;
       const btn = this._germanTtsBtn;
-      if (btn) btn.innerHTML = "&#9654; Listen";
+      if (btn) btn.innerHTML = `${ICON_PLAY} Listen`;
       if (this._germanTtsOnEnd) this._germanTtsOnEnd();
       return;
     }
@@ -20841,11 +20857,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (result === "fallback") {
           const remaining = this._germanTtsQueue.slice(this._germanTtsQueueIdx).join(" ");
           const btn = this._germanTtsBtn;
-          if (btn && this._germanTtsActive) btn.innerHTML = "&#9646;&#9646; Pause";
+          if (btn && this._germanTtsActive) btn.innerHTML = `${ICON_PAUSE} Pause`;
           this._browserSpeak(remaining, "de-DE", this._germanTtsRate || 0.85, this._pickDeVoice(), () => {
             this._germanTtsActive = false;
             this._germanTtsPaused = false;
-            if (btn) btn.innerHTML = "&#9654; Listen";
+            if (btn) btn.innerHTML = `${ICON_PLAY} Listen`;
             if (this._germanTtsOnEnd) this._germanTtsOnEnd();
           });
         } else {
@@ -20854,7 +20870,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         }
       },
       isFirst ? () => {
-        if (this._germanTtsBtn && this._germanTtsActive) this._germanTtsBtn.innerHTML = "&#9646;&#9646; Pause";
+        if (this._germanTtsBtn && this._germanTtsActive) this._germanTtsBtn.innerHTML = `${ICON_PAUSE} Pause`;
       } : null
     );
   }
@@ -20868,7 +20884,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (btn === this._ttsBtn) {
         // Same button — resume
         this._ttsPaused = false;
-        btn.innerHTML = "&#9646;&#9646; Pause";
+        btn.innerHTML = `${ICON_PAUSE} Pause`;
         if (this._ttsAudio) { this._ttsAudio.play(); return; }
         if (typeof speechSynthesis !== "undefined" && speechSynthesis.paused) { speechSynthesis.resume(); return; }
       } else {
@@ -20877,7 +20893,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         this._ttsActive = false;
         this._ttsPaused = false;
         if (this._ttsBtn) {
-          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`;
         }
         // fall through to start fresh playback below
       }
@@ -20891,7 +20907,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         this._ttsActive = false;
         this._ttsPaused = false;
         if (this._ttsBtn) {
-          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+          this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`;
         }
         // fall through to start fresh playback below
       } else {
@@ -20899,20 +20915,20 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (this._ttsAudio && !this._ttsAudio.paused) {
           this._ttsAudio.pause();
           this._ttsPaused = true;
-          btn.innerHTML = "&#9654; Resume";
+          btn.innerHTML = `${ICON_PLAY} Resume`;
           return;
         }
         if (typeof speechSynthesis !== "undefined" && speechSynthesis.speaking && !speechSynthesis.paused) {
           speechSynthesis.pause();
           this._ttsPaused = true;
-          btn.innerHTML = "&#9654; Resume";
+          btn.innerHTML = `${ICON_PLAY} Resume`;
           return;
         }
         // Fallback: stop entirely
         this._stopAllTTS();
         this._ttsActive = false;
         this._ttsPaused = false;
-        btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+        btn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`;
         return;
       }
     }
@@ -20930,7 +20946,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (this._canUseOpenAITTS()) {
       this._lessonTTSWithOpenAI(text);
     } else {
-      btn.innerHTML = "&#9646;&#9646; Pause";
+      btn.innerHTML = `${ICON_PAUSE} Pause`;
       this._ttsReadVerbatim(text);
     }
   }
@@ -20945,8 +20961,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       if (text.length <= MAX_INPUT) {
         await this._openaiTTS(text, "nova", (result) => {
           if (result === "fallback") { this._ttsReadVerbatim(text); }
-          else { this._ttsActive = false; this._ttsPaused = false; if (btn) btn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson"; }
-        }, () => { if (btn && this._ttsActive) btn.innerHTML = "&#9646;&#9646; Pause"; });
+          else { this._ttsActive = false; this._ttsPaused = false; if (btn) btn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`; }
+        }, () => { if (btn && this._ttsActive) btn.innerHTML = `${ICON_PAUSE} Pause`; });
       } else {
         const parts = [];
         let buf = "";
@@ -20957,7 +20973,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
         if (buf.trim()) parts.push(buf.trim());
         this._ttsOpenAIParts = parts;
         this._ttsOpenAIIdx = 0;
-        if (btn) btn.innerHTML = "&#9646;&#9646; Pause";
+        if (btn) btn.innerHTML = `${ICON_PAUSE} Pause`;
         this._playNextOpenAIPart();
       }
     } catch (e) { this._ttsReadVerbatim(text); }
@@ -20967,7 +20983,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!this._ttsActive || this._ttsOpenAIIdx >= this._ttsOpenAIParts.length) {
       this._ttsActive = false;
       this._ttsPaused = false;
-      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`;
       return;
     }
     const part = this._ttsOpenAIParts[this._ttsOpenAIIdx];
@@ -21029,7 +21045,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!this._ttsActive || this._ttsIdx >= this._ttsChunks.length) {
       this._ttsActive = false;
       this._ttsPaused = false;
-      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || "&#9654; Listen to Lesson";
+      if (this._ttsBtn) this._ttsBtn.innerHTML = this._grammarTTSInitialBtnLabel || `${ICON_PLAY} Listen to Lesson`;
       return;
     }
     const chunk = this._ttsChunks[this._ttsIdx];
@@ -21571,7 +21587,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const isExpanded = this.vocabExpandedGroups[grp] === true || (this.vocabExpandedGroups[grp] === undefined && grp === activeGroup);
       const collapsed = isExpanded ? "" : " collapsed";
       let h = `<div class="vocab-group-header${collapsed}" data-group="${grp}">
-        <span class="vocab-group-arrow">&#9660;</span>
+        <span class="vocab-group-arrow">${ICON_CHEVRON_DOWN}</span>
         <span>${groupLabels[grp] || grp}</span>
         <span class="vocab-group-count">${groupDone}/${groupTotal}</span>
       </div>`;
@@ -21600,7 +21616,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     const genExpanded = this.vocabExpandedGroups["_general"] === true || (this.vocabExpandedGroups["_general"] === undefined && activeSection === "_general");
     const genCollapsed = genExpanded ? "" : " collapsed";
     html += `<div class="vocab-section-header${genCollapsed}" data-section="_general">
-      <span class="vocab-group-arrow">&#9660;</span>
+      <span class="vocab-group-arrow">${ICON_CHEVRON_DOWN}</span>
       <span>General Vocabulary</span>
       <span class="vocab-group-count">${genDone}/${genTotal}</span>
     </div>`;
@@ -21616,7 +21632,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const authExpanded = this.vocabExpandedGroups["_author"] === true || (this.vocabExpandedGroups["_author"] === undefined && activeSection === "_author");
       const authCollapsed = authExpanded ? "" : " collapsed";
       html += `<div class="vocab-section-header${authCollapsed}" data-section="_author">
-        <span class="vocab-group-arrow">&#9660;</span>
+        <span class="vocab-group-arrow">${ICON_CHEVRON_DOWN}</span>
         <span>Author Vocabulary</span>
         <span class="vocab-group-count">${authDone}/${authTotal}</span>
       </div>`;
@@ -21788,11 +21804,11 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     if (!isFlipped) {
       html += `<button class="vocab-action-btn" id="vocab-reveal-btn">Reveal</button>`;
-      html += `<button class="vocab-action-btn vocab-pronounce-btn" data-word="${wordAttr}" style="background:var(--white);border:1px solid var(--border);">&#9654; Pronounce</button>`;
+      html += `<button class="vocab-action-btn vocab-pronounce-btn" data-word="${wordAttr}" style="background:var(--white);border:1px solid var(--border);">${ICON_PLAY} Pronounce</button>`;
     } else {
       html += `<button class="vocab-action-btn success" id="vocab-know-btn">Know It</button>`;
       html += `<button class="vocab-action-btn error" id="vocab-dont-know-btn">Don't Know</button>`;
-      html += `<button class="vocab-action-btn vocab-pronounce-btn" data-word="${wordAttr}" style="background:var(--white);border:1px solid var(--border);">&#9654; Pronounce</button>`;
+      html += `<button class="vocab-action-btn vocab-pronounce-btn" data-word="${wordAttr}" style="background:var(--white);border:1px solid var(--border);">${ICON_PLAY} Pronounce</button>`;
     }
 
     html += `</div>`;
@@ -21823,7 +21839,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     } else {
       html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${item.german}</div>`;
     }
-    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:12px;">&#9654; Pronounce</button>`;
+    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:12px;">${ICON_PLAY} Pronounce</button>`;
 
     html += `</div>`;
     html += `<div class="vocab-mc-options">`;
@@ -21849,7 +21865,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     } else {
       html += `<div style="font-size:28px;font-weight:600;margin-bottom:8px;">${item.german}</div>`;
     }
-    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:10px;">&#9654; Pronounce</button>`;
+    html += `<button class="vocab-pronounce-btn" data-word="${item.german.replace(/"/g, "&quot;")}" style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:4px 12px;cursor:pointer;font-size:0.85em;margin-bottom:10px;">${ICON_PLAY} Pronounce</button>`;
 
     html += `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-family:var(--font-ui);">Type the English meaning</div>`;
     html += `</div>`;
@@ -22215,7 +22231,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
       const hdr = document.createElement("div");
       hdr.className = "vocab-group-header" + (isExpanded ? "" : " collapsed");
       const stats = this.getGrammarCategoryStats(cat);
-      hdr.innerHTML = `<span class="vocab-group-arrow">&#9660;</span><span>${catLabels[cat] || cat}</span><span class="vocab-group-count">${stats.correct}/${stats.total}</span>`;
+      hdr.innerHTML = `<span class="vocab-group-arrow">${ICON_CHEVRON_DOWN}</span><span>${catLabels[cat] || cat}</span><span class="vocab-group-count">${stats.correct}/${stats.total}</span>`;
       hdr.addEventListener("click", () => {
         if (!this.grammarExpandedGroups) this.grammarExpandedGroups = {};
         this.grammarExpandedGroups[catKey] = !isExpanded;
@@ -22531,7 +22547,7 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
 
     // Navigation
     html += `<div class="grammar-action-row">`;
-    html += `<button id="grammar-tts-btn" class="action-btn">&#9654; Listen</button>`;
+    html += `<button id="grammar-tts-btn" class="action-btn">${ICON_PLAY} Listen</button>`;
     html += `<button class="action-btn" id="grammar-next-btn" style="margin-left:auto;">Next &#8594;</button>`;
     html += `</div>`;
 
@@ -23183,7 +23199,7 @@ Lesson: ${ex.profile.description}`;
     // Unit header
     html += `<div class="unit-header ${isActive ? "active" : ""}" data-unit-id="${unitId}">`;
     html += `<span class="unit-toggle" data-unit-id="${unitId}">`;
-    html += isExpanded ? '▼' : '▶';
+    html += isExpanded ? ICON_CHEVRON_DOWN : ICON_CHEVRON_RIGHT;
     html += `</span>`;
     html += `<span class="unit-title">Unit ${unit.chapter}: ${unit.title}</span>`;
     html += `<span class="unit-badge badge-${badgeColor}">${progress.lessonsComplete}/${progress.lessonsTotal}</span>`;
@@ -23368,7 +23384,7 @@ Lesson: ${ex.profile.description}`;
   // Progress indicator + TTS
   html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">`;
   html += `<div class="lesson-progress" style="margin-bottom:0;">Lesson ${lessonIdx + 1} of ${unit.lessons.length}</div>`;
-  html += `<button id="grammar-tts-btn" class="action-btn" style="padding:4px 12px;font-size:0.82em;">&#9654; Listen to Lesson</button>`;
+  html += `<button id="grammar-tts-btn" class="action-btn" style="padding:4px 12px;font-size:0.82em;">${ICON_PLAY} Listen to Lesson</button>`;
   html += `</div>`;
 
   // Content blocks
@@ -23381,7 +23397,7 @@ Lesson: ${ex.profile.description}`;
       } else if (block.type === "example") {
         const speakAttr = block.german.replace(/"/g, "&quot;");
         html += `<div class="lesson-block example">`;
-        html += `<div class="example-german">${block.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></div>`;
+        html += `<div class="example-german">${block.german} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></div>`;
         html += `<div class="example-english">— ${block.english}</div>`;
         html += `</div>`;
       } else if (block.type === "table") {
@@ -23558,7 +23574,7 @@ Lesson: ${ex.profile.description}`;
   if (currentItem.type === "translate") {
     const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="exercise-item translate-item">`;
-    html += `<p class="exercise-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="exercise-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<input type="text" class="exercise-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -23574,7 +23590,7 @@ Lesson: ${ex.profile.description}`;
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item identify-item">`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
-    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<div class="exercise-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -23657,7 +23673,7 @@ Lesson: ${ex.profile.description}`;
   } else if (currentItem.type === "parse") {
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="exercise-item parse-item">`;
-    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="exercise-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<p class="exercise-question">${currentItem.question}</p>`;
     html += `<input type="text" class="exercise-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -23781,7 +23797,7 @@ Lesson: ${ex.profile.description}`;
   if (currentItem.type === "translate") {
     const speakAttr = currentItem.german.replace(/"/g, "&quot;");
     html += `<div class="review-item translate-item">`;
-    html += `<p class="review-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="review-question">${currentItem.german} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<input type="text" class="review-input translate-input" placeholder="Enter English translation">`;
     html += `<button class="btn-check-answer" data-item-type="translate">Check</button>`;
     if (state.results[state.currentIdx].feedback) {
@@ -23797,7 +23813,7 @@ Lesson: ${ex.profile.description}`;
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item identify-item">`;
     html += `<p class="review-question">${currentItem.question}</p>`;
-    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<div class="review-options">`;
     if (currentItem.options) {
       currentItem.options.forEach((option, idx) => {
@@ -23879,7 +23895,7 @@ Lesson: ${ex.profile.description}`;
   } else if (currentItem.type === "parse") {
     const speakAttr = currentItem.sentence.replace(/"/g, "&quot;");
     html += `<div class="review-item parse-item">`;
-    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">&#9654;</button></p>`;
+    html += `<p class="review-sentence">${currentItem.sentence} <button class="grammar-speak-btn" data-text="${speakAttr}">${ICON_PLAY}</button></p>`;
     html += `<p class="review-question">${currentItem.question}</p>`;
     html += `<input type="text" class="review-input parse-input" placeholder="Enter your answer">`;
     html += `<button class="btn-check-answer" data-item-type="parse">Check</button>`;
@@ -24728,7 +24744,7 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
       for (const msg of this._convMessages) {
         if (msg.role === "system") continue;
         const cls = msg.role === "user" ? "user" : msg.role === "notice" ? "system" : "assistant";
-        const ttsBtn = msg.role === "assistant" ? ` <button class="conv-tts-btn" data-text="${this._escapeHtml(msg.content).replace(/"/g, '&quot;')}" aria-label="Listen to this message" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;margin-left:4px;">&#9654;</button>` : "";
+        const ttsBtn = msg.role === "assistant" ? ` <button class="conv-tts-btn" data-text="${this._escapeHtml(msg.content).replace(/"/g, '&quot;')}" aria-label="Listen to this message" style="background:none;border:1px solid var(--border);border-radius:3px;padding:1px 7px;cursor:pointer;font-size:0.78em;color:var(--text-muted);vertical-align:middle;margin-left:4px;">${ICON_PLAY}</button>` : "";
         msgsHtml += `<div class="conv-msg ${cls}">${this._escapeHtml(msg.content)}${ttsBtn}</div>`;
       }
     }
