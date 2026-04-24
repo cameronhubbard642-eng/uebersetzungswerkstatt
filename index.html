@@ -1641,6 +1641,19 @@ body.sidebar-open {
     padding: 4px 10px;
     font-size: 0.85em;
   }
+  /* Vocab MC/typed pronounce button — not a vocab-action-btn, needs its own target */
+  .vocab-pronounce-btn {
+    min-height: 44px;
+    padding: 10px 16px !important;
+  }
+  /* Conversation TTS button — overrides inline style; was 1px padding, 0.78em */
+  .conv-tts-btn {
+    min-height: 32px;
+    min-width: 44px;
+    padding: 4px 10px !important;
+    font-size: 0.85em !important;
+    vertical-align: middle;
+  }
 
   /* Evaluation result */
   #evaluation-result {
@@ -4246,11 +4259,11 @@ select:focus-visible, a:focus-visible {
       <div class="legend-item"><span class="legend-swatch" style="background:rgba(180,83,9,0.2)"></span>Past Part.</div>
     </div>
     <div id="german-display"></div>
-    <div style="margin:8px 0 4px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
     <div id="translation-drawer" class="drawer-hidden" aria-label="Translation input" role="region">
       <div id="translation-drawer-handle" aria-hidden="true"></div>
       <div class="translation-drawer-inner">
         <div id="translation-drawer-drag-ext" aria-hidden="true"></div>
+        <div style="margin:0 0 8px;"><button id="german-tts-btn" class="action-btn" style="padding:5px 14px;font-size:0.85em;cursor:pointer;" aria-label="Listen to German text">${ICON_PLAY} Listen</button></div>
         <div id="translation-section">
           <label>Your Translation</label>
           <textarea id="translation-input" placeholder="Enter your English translation here..."></textarea>
@@ -21669,7 +21682,8 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!drawer) return;
     drawer.classList.remove('drawer-hidden');
     main.classList.add('drawer-active');
-    this._drawerSnapTo(this._drawerSnapIdx, false);
+    this._drawerSnapTo(0, false);  // always start small; context-snap expands to match content
+    this._drawerContextSnap();
   }
 
   _drawerHide() {
