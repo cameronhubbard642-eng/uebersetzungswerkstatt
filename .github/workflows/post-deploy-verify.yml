@@ -1,0 +1,124 @@
+# WP-DEP-G-5 — Post-deploy CACHE_NAME parity probe
+#
+# Runs after every push to main.  Polls the live GitHub Pages site until the
+# served sw.js CACHE_NAME matches the value committed to this push, then
+# validates that key static assets are reachable.
+#
+# Timing: polls every 30 s for up to 5 minutes (10 attempts).
+# On persistent mismatch the job fails — surfacing a deploy stall or CDN
+# propagation failure.
+#
+# Concurrency: a new push cancels any in-progress probe for the same job
+# group so only the latest commit's expected value is being verified.
+
+name: Post-deploy parity probe (WP-DEP-G-5)
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: post-deploy-probe
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify Pages matches commit
+    runs-on: ubuntu-latest
+    env:
+      PAGES_URL: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/
+      POLL_INTERVAL_S: 30
+      MAX_ATTEMPTS: 10     # 10 × 30 s = 5-minute ceiling
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 1. Extract expected CACHE_NAME from the committed sw.js ──────────
+      - name: Extract expected CACHE_NAME
+        id: expected
+        run: |
+          val=$(grep "^const CACHE_NAME" sw.js | sed "s/.*'\([^']*\)'.*/\1/")
+          if [ -z "$val" ]; then
+            echo "::error::Could not extract CACHE_NAME from sw.js — grep returned empty"
+            exit 1
+          fi
+          echo "cache_name=$val" >> "$GITHUB_OUTPUT"
+          echo "Expected CACHE_NAME: $val"
+
+      # ── 2. Poll sw.js until served CACHE_NAME matches ────────────────────
+      #
+      # GitHub Pages (Fastly CDN) is invalidated on push but propagation
+      # can take up to ~2 minutes in practice.  We wait up to 5 minutes
+      # before declaring a failure.
+      - name: Poll sw.js — wait for CACHE_NAME parity (max 5 min)
+        id: poll
+        run: |
+          expected="${{ steps.expected.outputs.cache_name }}"
+          for i in $(seq 1 "$MAX_ATTEMPTS"); do
+            raw=$(curl -sSL --max-time 15 \
+              -H "Cache-Control: no-cache" \
+              -H "Pragma: no-cache" \
+              "${PAGES_URL}sw.js" 2>/dev/null || true)
+            served=$(echo "$raw" | grep "^const CACHE_NAME" | sed "s/.*'\([^']*\)'.*/\1/")
+            echo "[$i/$MAX_ATTEMPTS] served='$served'  expected='$expected'"
+            if [ "$served" = "$expected" ]; then
+              echo "matched=true"   >> "$GITHUB_OUTPUT"
+              echo "served=$served" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
+              echo "::error::Pages sw.js still has CACHE_NAME='$served' after $(( $MAX_ATTEMPTS * $POLL_INTERVAL_S ))s — expected '$expected'. Deploy may have stalled or CDN propagation failed."
+              exit 1
+            fi
+            sleep "$POLL_INTERVAL_S"
+          done
+
+      # ── 3. Spot-check key static assets ──────────────────────────────────
+      - name: Verify index.html → HTTP 200
+        run: |
+          code=$(curl -o /dev/null -sSL --max-time 15 \
+            -H "Cache-Control: no-cache" \
+            -w "%{http_code}" "${PAGES_URL}index.html")
+          echo "index.html → HTTP $code"
+          [ "$code" = "200" ] || { echo "::error::index.html returned HTTP $code"; exit 1; }
+
+      - name: Verify manifest-1.json → HTTP 200
+        run: |
+          code=$(curl -o /dev/null -sSL --max-time 15 \
+            -H "Cache-Control: no-cache" \
+            -w "%{http_code}" "${PAGES_URL}manifest-1.json")
+          echo "manifest-1.json → HTTP $code"
+          [ "$code" = "200" ] || { echo "::error::manifest-1.json returned HTTP $code"; exit 1; }
+
+      # ── 4. Validate CACHE_NAME structure ─────────────────────────────────
+      - name: Validate CACHE_NAME pattern werkstatt-v{N}
+        run: |
+          served="${{ steps.poll.outputs.served }}"
+          echo "$served" | grep -qE "^werkstatt-v[0-9]+$" || {
+            echo "::error::CACHE_NAME '$served' does not match pattern werkstatt-v{N}"
+            exit 1
+          }
+          echo "✓ CACHE_NAME pattern OK: $served"
+
+      # ── 5. Job summary ────────────────────────────────────────────────────
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Post-deploy parity probe — WP-DEP-G-5"
+            echo ""
+            echo "**Pages URL:** \`${PAGES_URL}\`  "
+            echo "**Commit:** \`${{ github.sha }}\`"
+            echo ""
+            if [ "${{ steps.poll.outputs.matched }}" = "true" ]; then
+              echo "| Check | Result |"
+              echo "|---|---|"
+              echo "| \`sw.js\` CACHE_NAME | ✅ \`${{ steps.poll.outputs.served }}\` — matches commit |"
+              echo "| \`index.html\` | ✅ HTTP 200 |"
+              echo "| \`manifest-1.json\` | ✅ HTTP 200 |"
+              echo "| Pattern \`werkstatt-v{N}\` | ✅ |"
+            else
+              echo "❌ Probe failed — see step logs above."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
