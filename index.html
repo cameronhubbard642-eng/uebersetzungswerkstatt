@@ -19773,6 +19773,7 @@ class App {
     this.renderProgress();
     this.clearEvaluation();
     this.hideReference();
+    this._drawerPassageHeight(); // set after context-snaps so it wins as final write
   }
 
   renderTabs() {
@@ -20228,6 +20229,7 @@ class App {
     document.getElementById("gloss-toggle").classList.toggle("active", this.glossAllActive);
     document.getElementById("gloss-hide-toggle").classList.toggle("active", this.glossHideActive);
     this.renderExercise();
+    this._drawerPassageHeight(); // inline glosses change line-wrapping → passage height changes
   }
 
   toggleGlossHide() {
@@ -20236,6 +20238,7 @@ class App {
     document.getElementById("gloss-hide-toggle").classList.toggle("active", this.glossHideActive);
     document.getElementById("gloss-toggle").classList.toggle("active", this.glossAllActive);
     this.renderExercise();
+    this._drawerPassageHeight();
   }
 
   clearEvaluation() {
@@ -21692,6 +21695,33 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     if (!drawer) return;
     drawer.classList.add('drawer-hidden');
     main.classList.remove('drawer-active');
+  }
+
+  // Compute initial drawer height so its top edge sits at the passage's bottom edge.
+  // Called at the end of render() — runs after context-snap so it wins as the final write.
+  // Does NOT update _drawerSnapIdx so first drag/tap resolves to the nearest named snap.
+  _drawerPassageHeight() {
+    if (window.innerWidth > 768) return;
+    const drawer = document.getElementById('translation-drawer');
+    const main   = document.getElementById('main');
+    if (!drawer || drawer.classList.contains('drawer-hidden')) return;
+
+    const display = document.getElementById('german-display');
+    const vH      = window.innerHeight;   // full visual height (keyboard closed at this point)
+    const tabBarH = 52;                   // fixed tab bar height (CSS: 52px + safe-area)
+    // rect.bottom = viewport-relative px to the bottom of the passage.
+    // Already hard-capped at 40dvh by CSS (max-height + overflow:auto).
+    const rBottom = display ? display.getBoundingClientRect().bottom : 0;
+    const maxH    = Math.round(vH * 0.70);
+    const minH    = Math.round(vH * 0.25);
+    // Fill the space from passage-bottom down to the top of the tab bar.
+    const raw     = Math.round(vH - rBottom - tabBarH);
+    const h       = Math.max(minH, Math.min(maxH, raw));
+
+    drawer.style.transition = 'none';
+    drawer.style.height     = h + 'px';
+    main.style.setProperty('--drawer-height', h + 'px');
+    this._drawerHeight      = h;
   }
 
   // A: fire once per event transition — no polling, user drag wins between calls
