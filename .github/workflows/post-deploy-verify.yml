@@ -1,17 +1,18 @@
-# WP-DEP-G-5 — Post-deploy CACHE_NAME parity probe
+# WP-DEP-G-8 — Post-deploy CF Pages parity probe
 #
-# Runs after every push to main.  Polls the live GitHub Pages site until the
-# served sw.js CACHE_NAME matches the value committed to this push, then
-# validates that key static assets are reachable.
+# Runs after every push to main.  Polls the live CF Pages site until the
+# served sw.js CACHE_NAME matches the werkstatt-<sha> value stamped by
+# the deploy workflow for this push, then validates key static assets
+# and the CSP-Report-Only header.
 #
-# Timing: polls every 30 s for up to 5 minutes (10 attempts).
-# On persistent mismatch the job fails — surfacing a deploy stall or CDN
-# propagation failure.
+# Timing: polls every 30 s for up to 10 minutes (20 attempts).
+# On persistent mismatch the job fails — surfacing a deploy stall or
+# CDN propagation failure.
 #
 # Concurrency: a new push cancels any in-progress probe for the same job
 # group so only the latest commit's expected value is being verified.
 
-name: Post-deploy parity probe (WP-DEP-G-5)
+name: Post-deploy parity probe (WP-DEP-G-8)
 
 on:
   push:
@@ -23,35 +24,34 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify Pages matches commit
+    name: Verify CF Pages matches commit
     runs-on: ubuntu-latest
     env:
-      PAGES_URL: https://cameronhubbard642-eng.github.io/uebersetzungswerkstatt/
+      PAGES_URL: https://uebersetzungswerkstatt.glossolalia.dev
       POLL_INTERVAL_S: 30
-      MAX_ATTEMPTS: 10     # 10 × 30 s = 5-minute ceiling
+      MAX_ATTEMPTS: 20     # 20 × 30 s = 10-minute ceiling
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── 1. Extract expected CACHE_NAME from the committed sw.js ──────────
-      - name: Extract expected CACHE_NAME
+      # ── 1. Derive expected CACHE_NAME from the short SHA ──────────────────
+      #
+      # The deploy workflow stamps sw.js with werkstatt-<short-sha> at deploy
+      # time, so the source sw.js CACHE_NAME is irrelevant for this check.
+      - name: Derive expected CACHE_NAME
         id: expected
         run: |
-          val=$(grep "^const CACHE_NAME" sw.js | sed "s/.*'\([^']*\)'.*/\1/")
-          if [ -z "$val" ]; then
-            echo "::error::Could not extract CACHE_NAME from sw.js — grep returned empty"
-            exit 1
-          fi
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          val="werkstatt-${SHORT_SHA}"
           echo "cache_name=$val" >> "$GITHUB_OUTPUT"
           echo "Expected CACHE_NAME: $val"
 
       # ── 2. Poll sw.js until served CACHE_NAME matches ────────────────────
       #
-      # GitHub Pages (Fastly CDN) is invalidated on push but propagation
-      # can take up to ~2 minutes in practice.  We wait up to 5 minutes
-      # before declaring a failure.
-      - name: Poll sw.js — wait for CACHE_NAME parity (max 5 min)
+      # CF Pages propagates quickly but we allow up to 10 minutes to cover
+      # any edge-cache delay after the deploy workflow completes.
+      - name: Poll sw.js — wait for CACHE_NAME parity (max 10 min)
         id: poll
         run: |
           expected="${{ steps.expected.outputs.cache_name }}"
@@ -59,7 +59,7 @@ jobs:
             raw=$(curl -sSL --max-time 15 \
               -H "Cache-Control: no-cache" \
               -H "Pragma: no-cache" \
-              "${PAGES_URL}sw.js" 2>/dev/null || true)
+              "${PAGES_URL}/sw.js" 2>/dev/null || true)
             served=$(echo "$raw" | grep "^const CACHE_NAME" | sed "s/.*'\([^']*\)'.*/\1/")
             echo "[$i/$MAX_ATTEMPTS] served='$served'  expected='$expected'"
             if [ "$served" = "$expected" ]; then
@@ -68,7 +68,7 @@ jobs:
               exit 0
             fi
             if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
-              echo "::error::Pages sw.js still has CACHE_NAME='$served' after $(( $MAX_ATTEMPTS * $POLL_INTERVAL_S ))s — expected '$expected'. Deploy may have stalled or CDN propagation failed."
+              echo "::error::CF Pages sw.js still has CACHE_NAME='$served' after $(( MAX_ATTEMPTS * POLL_INTERVAL_S ))s — expected '$expected'. Deploy may have stalled or CDN propagation failed."
               exit 1
             fi
             sleep "$POLL_INTERVAL_S"
@@ -79,7 +79,7 @@ jobs:
         run: |
           code=$(curl -o /dev/null -sSL --max-time 15 \
             -H "Cache-Control: no-cache" \
-            -w "%{http_code}" "${PAGES_URL}index.html")
+            -w "%{http_code}" "${PAGES_URL}/index.html")
           echo "index.html → HTTP $code"
           [ "$code" = "200" ] || { echo "::error::index.html returned HTTP $code"; exit 1; }
 
@@ -87,28 +87,36 @@ jobs:
         run: |
           code=$(curl -o /dev/null -sSL --max-time 15 \
             -H "Cache-Control: no-cache" \
-            -w "%{http_code}" "${PAGES_URL}manifest-1.json")
+            -w "%{http_code}" "${PAGES_URL}/manifest-1.json")
           echo "manifest-1.json → HTTP $code"
           [ "$code" = "200" ] || { echo "::error::manifest-1.json returned HTTP $code"; exit 1; }
 
-      # ── 4. Validate CACHE_NAME structure ─────────────────────────────────
-      - name: Validate CACHE_NAME pattern werkstatt-v{N}
+      # ── 4. Validate CACHE_NAME has werkstatt- prefix ─────────────────────
+      - name: Validate CACHE_NAME has werkstatt- prefix
         run: |
           served="${{ steps.poll.outputs.served }}"
-          echo "$served" | grep -qE "^werkstatt-v[0-9]+$" || {
-            echo "::error::CACHE_NAME '$served' does not match pattern werkstatt-v{N}"
+          echo "$served" | grep -qE "^werkstatt-" || {
+            echo "::error::CACHE_NAME '$served' does not have expected werkstatt- prefix"
             exit 1
           }
-          echo "✓ CACHE_NAME pattern OK: $served"
+          echo "✓ CACHE_NAME prefix OK: $served"
 
-      # ── 5. Job summary ────────────────────────────────────────────────────
+      # ── 5. Verify CSP-Report-Only header delivered by CF Pages ───────────
+      - name: Verify Content-Security-Policy-Report-Only header present
+        run: |
+          headers=$(curl -sI --max-time 15 "${PAGES_URL}/")
+          echo "$headers" | grep -i "content-security-policy-report-only" \
+            || { echo "::error::Content-Security-Policy-Report-Only header not found on ${PAGES_URL}/"; exit 1; }
+          echo "✓ CSP-Report-Only header present"
+
+      # ── 6. Job summary ────────────────────────────────────────────────────
       - name: Job summary
         if: always()
         run: |
           {
-            echo "## Post-deploy parity probe — WP-DEP-G-5"
+            echo "## Post-deploy parity probe — WP-DEP-G-8"
             echo ""
-            echo "**Pages URL:** \`${PAGES_URL}\`  "
+            echo "**Pages URL:** \`${PAGES_URL}\`"
             echo "**Commit:** \`${{ github.sha }}\`"
             echo ""
             if [ "${{ steps.poll.outputs.matched }}" = "true" ]; then
@@ -117,7 +125,8 @@ jobs:
               echo "| \`sw.js\` CACHE_NAME | ✅ \`${{ steps.poll.outputs.served }}\` — matches commit |"
               echo "| \`index.html\` | ✅ HTTP 200 |"
               echo "| \`manifest-1.json\` | ✅ HTTP 200 |"
-              echo "| Pattern \`werkstatt-v{N}\` | ✅ |"
+              echo "| CACHE_NAME prefix \`werkstatt-\` | ✅ |"
+              echo "| CSP-Report-Only header | ✅ |"
             else
               echo "❌ Probe failed — see step logs above."
             fi

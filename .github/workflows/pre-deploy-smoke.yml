@@ -25,8 +25,8 @@ jobs:
 
       - name: CACHE_NAME format
         run: |
-          CACHE=$(sed -n "s/.*CACHE_NAME = '\(werkstatt-v[0-9]*\)'.*/\1/p" sw.js | head -1)
-          [ -n "$CACHE" ] || { echo "::error::CACHE_NAME not found or wrong format in sw.js"; exit 1; }
+          CACHE=$(grep "^const CACHE_NAME = 'werkstatt-" sw.js | sed "s/.*'\([^']*\)'.*/\1/" | head -1)
+          [ -n "$CACHE" ] || { echo "::error::CACHE_NAME not found or wrong format in sw.js (expected werkstatt- prefix)"; exit 1; }
           echo "CACHE_NAME: $CACHE"
 
       - name: Manifests — lang / orientation / theme_color
