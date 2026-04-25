@@ -110,9 +110,10 @@ jobs:
           CACHE=$(grep "^const CACHE_NAME" "$STAGE/sw.js" | sed "s/.*'\([^']*\)'.*/\1/")
           echo "$CACHE" | grep -qE "^werkstatt-[0-9a-f]+" \
             || { echo "::error::CACHE_NAME='$CACHE' not in expected werkstatt-<sha> format"; FAIL=1; }
+          # _headers: CSP delivered via CF Pages header (not meta tag).
+          grep -q "Content-Security-Policy" "$STAGE/_headers" \
+            || { echo "::error::No CSP directive in _headers"; FAIL=1; }
           # index.html checks.
-          grep -q 'http-equiv="Content-Security-Policy' "$STAGE/index.html" \
-            || { echo "::error::No CSP meta tag in index.html"; FAIL=1; }
           grep -q 'interactive-widget=resizes-content' "$STAGE/index.html" \
             || { echo "::error::interactive-widget=resizes-content missing from viewport"; FAIL=1; }
           grep -q '_escapeHtml' "$STAGE/index.html" \
