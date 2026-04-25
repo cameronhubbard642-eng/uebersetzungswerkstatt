@@ -23598,7 +23598,7 @@ Lesson: ${ex.profile.description}`;
     if (!container) return;
 
     const phases = ["repetition", "cloze", "production"];
-    const phaseLabels = { repetition: "Repetition", cloze: "Cloze", production: "Production" };
+    const phaseLabels = { repetition: "Wiederholung", cloze: "Lückentext", production: "Produktion" };
 
     // Collect stats per pattern per phase (WP-FE-G-19 — v1/v2 tolerant iter helper).
     const stats = {};
@@ -23611,12 +23611,12 @@ Lesson: ${ex.profile.description}`;
 
     if (Object.keys(stats).length === 0) return;
 
-    let html = `<div class="grammar-stats-panel"><h4>Progress Summary</h4>`;
-    html += `<table class="grammar-stats-table"><thead><tr><th>Pattern</th>`;
+    let html = `<div class="grammar-stats-panel"><h4>Fortschrittsübersicht</h4>`;
+    html += `<table class="grammar-stats-table"><thead><tr><th>Lektion</th>`;
     for (const p of phases) html += `<th>${phaseLabels[p]}</th>`;
     html += `</tr></thead><tbody>`;
 
-    for (const profile of GRAMMAR_PROFILES) {
+    for (const profile of GRAMMAR_LESSONS) {
       const pStats = stats[profile.pattern];
       if (!pStats) continue;
       html += `<tr><td>${profile.description}</td>`;
