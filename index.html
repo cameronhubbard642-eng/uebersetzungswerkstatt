@@ -1297,6 +1297,34 @@ body.sidebar-open {
 }
 .progression-info p { margin-bottom: 6px; }
 .progression-info p:last-child { margin-bottom: 0; }
+.path-roadmap {
+  margin: 20px auto;
+  max-width: 700px;
+}
+.path-unit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--border);
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.path-unit-row:hover { background: var(--sidebar-bg); }
+.path-unit-row.current { border-left-color: var(--accent); background: rgba(139,69,19,0.04); }
+.path-unit-row.completed { border-left-color: #287c3c; }
+.path-unit-pct {
+  width: 40px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.path-unit-name { flex: 1; color: var(--text); }
+.path-unit-lessons { color: var(--text-muted); font-size: 11px; }
 .grammar-active-selection {
   margin-bottom: 16px;
   padding: 8px 12px;
@@ -24919,18 +24947,142 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
       .replace(/'/g, '&#39;');
   }
 
+  renderGrammarWelcome() {
+    // Build catOrder + catLabels dynamically from GRAMMAR_LESSONS (order of first appearance)
+    const catOrder = [];
+    const catSeen = new Set();
+    for (const l of GRAMMAR_LESSONS) {
+      if (!catSeen.has(l.category)) { catSeen.add(l.category); catOrder.push(l.category); }
+    }
+    const catLabels = {};
+    for (const c of catOrder) {
+      catLabels[c] = c.charAt(0).toUpperCase() + c.slice(1);
+    }
+
+    // Compute progress for each unit
+    let totalLessons = 0, totalCompleted = 0;
+    const unitStats = {};
+    for (const cat of catOrder) {
+      const lessons = GRAMMAR_LESSONS.filter(p => p.category === cat);
+      let done = 0;
+      for (const l of lessons) {
+        const s = this.getGrammarLessonStatus(l.pattern);
+        if (s === "mastered") done++;
+      }
+      unitStats[cat] = { total: lessons.length, done };
+      totalLessons += lessons.length;
+      totalCompleted += done;
+    }
+
+    // Find the "current" unit — first incomplete one
+    let currentUnit = catOrder[catOrder.length - 1];
+    for (const cat of catOrder) {
+      if (unitStats[cat].done < unitStats[cat].total) { currentUnit = cat; break; }
+    }
+
+    let html = '';
+
+    // Overall progress header
+    const overallPct = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+    html += `<div style="text-align:center;margin-bottom:24px;">`;
+    html += `<div style="font-family:var(--font-ui);font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Gesamtfortschritt</div>`;
+    html += `<div style="font-size:28px;font-weight:700;color:var(--text);font-family:var(--font-ui);">${totalCompleted} / ${totalLessons} <span style="font-size:14px;color:var(--text-muted);font-weight:400;">Lektionen abgeschlossen (${overallPct}%)</span></div>`;
+    html += `<div style="max-width:300px;margin:10px auto 0;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">`;
+    html += `<div style="height:100%;width:${overallPct}%;background:var(--accent);border-radius:3px;transition:width 0.3s;"></div></div>`;
+    html += `</div>`;
+
+    // How it works (compact) — German copy preserved
+    html += `<div class="progression-info" style="max-width:700px;">`;
+    html += `<h4>How It Works</h4>`;
+    html += `<p>This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. Each lesson covers a grammar topic with paradigm tables and examples drawn from Wittgenstein.</p>`;
+    html += `<p>Each lesson has three practice phases — <strong>Repetition</strong>, <strong>Cloze</strong>, and <strong>Production</strong>. A lesson is marked <em>mastered</em> when you complete all three phases correctly. Click any unit below to see its lessons.</p>`;
+    html += `</div>`;
+
+    // Path roadmap
+    html += `<div class="path-roadmap">`;
+    for (const cat of catOrder) {
+      const s = unitStats[cat];
+      const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+      const isCurrent = cat === currentUnit;
+      const isComplete = s.done === s.total && s.total > 0;
+      let cls = "path-unit-row";
+      if (isComplete) cls += " completed";
+      else if (isCurrent) cls += " current";
+      html += `<div class="${cls}" data-unitclick="${cat}" role="button" tabindex="0">`;
+      html += `<span class="path-unit-pct">${pct}%</span>`;
+      html += `<span class="path-unit-name">${catLabels[cat]}</span>`;
+      html += `<span class="path-unit-lessons">${s.done}/${s.total} lessons</span>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+
+    // Suggested next lesson
+    const nextLesson = this.getNextRecommendedLesson();
+    if (nextLesson) {
+      html += `<div style="text-align:center;margin-top:20px;">`;
+      html += `<button class="action-btn" id="grammar-start-next" data-pattern="${nextLesson.pattern}" style="padding:10px 24px;background:var(--accent);color:white;">`;
+      html += `Weiter: ${nextLesson.description} &rarr;</button></div>`;
+    }
+
+    // Stats slot
+    html += `<div id="grammar-welcome-stats"></div>`;
+    return html;
+  }
+
+  getNextRecommendedLesson() {
+    const catOrder = [];
+    const catSeen = new Set();
+    for (const l of GRAMMAR_LESSONS) {
+      if (!catSeen.has(l.category)) { catSeen.add(l.category); catOrder.push(l.category); }
+    }
+    for (const cat of catOrder) {
+      const lessons = GRAMMAR_LESSONS.filter(p => p.category === cat);
+      for (const l of lessons) {
+        const status = this.getGrammarLessonStatus(l.pattern);
+        if (status !== "mastered") return l;
+      }
+    }
+    return null;
+  }
+
+  getGrammarLessonStatus(pattern) {
+    // Returns "new", "started", or "mastered"
+    let hasAny = false;
+    let phases = { repetition: false, cloze: false, production: false };
+    for (const key in this.grammarProgress) {
+      if (key.startsWith(pattern + ":")) {
+        hasAny = true;
+        const entry = this.grammarProgress[key];
+        if (entry.correct && entry.phase) {
+          phases[entry.phase] = true;
+        }
+      }
+    }
+    if (!hasAny) return "new";
+    if (phases.repetition && phases.cloze && phases.production) return "mastered";
+    return "started";
+  }
+
+  renderGrammarUnitOverview(unitCat) {
+    // Stub — WP-FE-G-21 ports the full implementation
+    this._renderGrammarWelcome();
+  }
+
   _renderGrammarWelcome() {
-    const el = document.getElementById("grammar-content");
-    if (!el) return;
-    el.innerHTML = `<div class="lesson-view" style="padding:30px;">
-      <h2 style="margin-bottom:12px;">Grammar — Structured Learning Path</h2>
-      <p style="margin-bottom:10px;">This grammar course follows the structure of <em>German Quickly</em> (April Wilson), adapted for philosophical German. It provides 37 units covering pronunciation through advanced syntax, with all examples drawn from Wittgenstein.</p>
-      <p style="margin-bottom:10px;">Each unit contains:</p>
-      <p style="margin-bottom:5px;"><strong>${ICON_BOOK} Lessons</strong> — Interactive instructional content with grammar rules, examples, paradigm tables, and comprehension checks.</p>
-      <p style="margin-bottom:5px;"><strong>${ICON_PENCIL} Exercises</strong> — Practice problems correlated to each lesson (translation, identification, fill-in-the-blank, matching, parsing).</p>
-      <p style="margin-bottom:10px;"><strong>${ICON_REVIEW} Review</strong> — Mixed exercises covering the entire unit, unlocked after completing all lessons.</p>
-      <p>Select a unit from the sidebar to begin. The <strong>Quick Reference</strong> tab provides direct access to morphological paradigm tables for lookup.</p>
-    </div>`;
+    const container = document.getElementById("grammar-content");
+    if (!container) return;
+    container.innerHTML = this.renderGrammarWelcome();
+    container.querySelectorAll("[data-unitclick]").forEach(row => {
+      row.addEventListener("click", () => this.renderGrammarUnitOverview(row.dataset.unitclick));
+      row.addEventListener("keypress", (e) => { if (e.key === "Enter" || e.key === " ") this.renderGrammarUnitOverview(row.dataset.unitclick); });
+    });
+    const nextBtn = container.querySelector("#grammar-start-next");
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const p = GRAMMAR_LESSONS.find(l => l.pattern === nextBtn.dataset.pattern);
+        if (p) { this.grammarSelectedProfile = p; this.grammarViewMode = "lesson"; this.renderGrammarContent(); }
+      });
+    }
     this._injectReviewBanner("grammar");
   }
 
