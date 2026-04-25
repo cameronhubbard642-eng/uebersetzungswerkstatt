@@ -4,7 +4,7 @@
 const CACHE_NAME = 'werkstatt-v44';
 
 const PRECACHE_URLS = [
-  'index.html',
+  './',
   'manifest.json',
   'manifest-1.json',
   'manifest-2.json',
@@ -57,10 +57,30 @@ function isLlmNonAudio(url) {
   return false;
 }
 
+// CF Pages serves /index.html with a 308 redirect to /. Caching a redirected
+// Response causes "Response serviced by service workers has redirections" on iOS
+// standalone PWA cold launch. Strip the redirect flag before writing to cache.
+async function cleanResponse(response) {
+  if (!response.redirected) return response;
+  const body = await response.blob();
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
+}
+
 // Install: precache core assets and immediately take control
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_NAME).then(async cache => {
+      await Promise.all(
+        PRECACHE_URLS.map(async url => {
+          const response = await fetch(url);
+          await cache.put(url, await cleanResponse(response));
+        })
+      );
+    })
   );
 });
 
@@ -82,10 +102,10 @@ self.addEventListener('fetch', event => {
       url.hostname !== location.hostname ||
       event.request.method !== 'GET') {
     event.respondWith(
-      fetch(event.request).then(response => {
+      fetch(event.request).then(async response => {
         if (response.ok && !isLlmNonAudio(url)) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then(async cache => cache.put(event.request, await cleanResponse(clone)));
         }
         return response;
       }).catch(() => caches.match(event.request))
@@ -97,10 +117,10 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
+      return fetch(event.request).then(async response => {
         if (response.ok) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then(async cache => cache.put(event.request, await cleanResponse(clone)));
         }
         return response;
       });
