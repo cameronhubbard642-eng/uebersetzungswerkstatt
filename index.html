@@ -22578,6 +22578,38 @@ Format your response as JSON: {"score": NUMBER, "feedback": "TEXT"}`;
     container.prepend(banner);
   }
 
+  // Returns true if seenKey has already been shown an inline gloss (read-only; does not write glossSeen).
+  _isVocabMastered(seenKey) {
+    return !!(this.glossSeen && this.glossSeen.words && this.glossSeen.words[seenKey]);
+  }
+
+  // Renders a passage with inline glosses for unmastered vocab, skipping the target token.
+  // Does NOT interact with glossSeen tracking — read-only check via _isVocabMastered.
+  _renderGlossedPassage(text, skipToken) {
+    if (!text) return "";
+    const tokens = this.tokenize(text);
+    const skipLower = skipToken ? skipToken.toLowerCase().replace(/[.,;:!?""''„"()\[\]]/g, "") : null;
+    let html = "";
+    for (const tok of tokens) {
+      if (tok.type !== "word") { html += this._escapeHtml(tok.text); continue; }
+      const lower = tok.text.toLowerCase();
+      if (skipLower && lower === skipLower) { html += this._escapeHtml(tok.text); continue; }
+      const entry = this.lookupWord(tok.text);
+      if (entry) {
+        const glossIsUseful = entry.gloss.toLowerCase().trim() !== lower;
+        const seenKey = entry.lemma ? entry.lemma.toLowerCase() : lower;
+        if (glossIsUseful && !this._isVocabMastered(seenKey)) {
+          html += `<span class="word-wrapper"><span class="word-text">${this._escapeHtml(tok.text)}</span>` +
+                  `<span class="tooltip">${this._escapeHtml(entry.gloss)}</span>` +
+                  `<span class="first-gloss">${this._escapeHtml(entry.gloss)}</span></span>`;
+          continue;
+        }
+      }
+      html += this._escapeHtml(tok.text);
+    }
+    return html;
+  }
+
   /** Find the grammar profile with the most overdue FSRS items (for review routing). */
   _getOverdueGrammarProfile() {
     const overdueKeys = FSRS.getOverdueKeys().filter(k => k.startsWith("grammar_"));
