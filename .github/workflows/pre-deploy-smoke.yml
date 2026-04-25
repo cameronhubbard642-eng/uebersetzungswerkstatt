@@ -58,11 +58,11 @@ jobs:
           [ "$MISSING" -eq 0 ] || { echo "$MISSING file(s) missing — see errors above"; exit 1; }
           echo "All 30 per-icon PNGs present"
 
-      - name: index.html — CSP meta tag present
+      - name: _headers — CSP directive present (WP-DEP-G-8)
         run: |
-          grep -qE 'http-equiv="Content-Security-Policy' index.html \
-            || { echo "::error::No Content-Security-Policy meta tag in <head>"; exit 1; }
-          echo "CSP meta OK"
+          grep -q "Content-Security-Policy" _headers \
+            || { echo "::error::No Content-Security-Policy directive in _headers (CSP delivered via CF Pages headers, not meta tag)"; exit 1; }
+          echo "CSP _headers OK"
 
       - name: index.html — viewport interactive-widget=resizes-content
         run: |
