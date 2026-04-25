@@ -1325,6 +1325,130 @@ body.sidebar-open {
 }
 .path-unit-name { flex: 1; color: var(--text); }
 .path-unit-lessons { color: var(--text-muted); font-size: 11px; }
+.path-unit-chapter {
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+/* Unit overview — WP-FE-G-21 */
+.unit-ov-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 4px;
+  margin-bottom: 8px;
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.unit-ov-back:hover { color: var(--text); }
+.unit-ov-chap {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.unit-ov-title {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.unit-ov-subtitle {
+  font-family: var(--font-content);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.unit-ov-section-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 20px 0 6px;
+}
+.unit-ov-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.1s, border-color 0.1s;
+}
+.unit-ov-card:hover { background: var(--sidebar-bg); border-color: var(--accent-light); }
+.unit-ov-card.locked { cursor: default; opacity: 0.65; }
+.unit-ov-card.locked:hover { background: #fff; border-color: var(--border); }
+.unit-ov-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.unit-ov-num.done { background: var(--success); color: #fff; }
+.unit-ov-body { flex: 1; min-width: 0; }
+.unit-ov-card-title {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.unit-ov-card-rule {
+  font-family: var(--font-content);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.unit-ov-badge {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.unit-ov-badge.done { background: rgba(45,106,45,0.12); color: var(--success); }
+.unit-ov-badge.new { background: var(--border); color: var(--text-muted); }
+.unit-ov-prereq {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  font-style: italic;
+}
 .grammar-active-selection {
   margin-bottom: 16px;
   padding: 8px 12px;
@@ -24948,36 +25072,20 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   }
 
   renderGrammarWelcome() {
-    // Build catOrder + catLabels dynamically from GRAMMAR_LESSONS (order of first appearance)
-    const catOrder = [];
-    const catSeen = new Set();
-    for (const l of GRAMMAR_LESSONS) {
-      if (!catSeen.has(l.category)) { catSeen.add(l.category); catOrder.push(l.category); }
-    }
-    const catLabels = {};
-    for (const c of catOrder) {
-      catLabels[c] = c.charAt(0).toUpperCase() + c.slice(1);
-    }
-
-    // Compute progress for each unit
+    // Compute progress for each unit using GRAMMAR_UNITS canonical pedagogical order
     let totalLessons = 0, totalCompleted = 0;
     const unitStats = {};
-    for (const cat of catOrder) {
-      const lessons = GRAMMAR_LESSONS.filter(p => p.category === cat);
-      let done = 0;
-      for (const l of lessons) {
-        const s = this.getGrammarLessonStatus(l.pattern);
-        if (s === "mastered") done++;
-      }
-      unitStats[cat] = { total: lessons.length, done };
-      totalLessons += lessons.length;
-      totalCompleted += done;
+    for (const unit of GRAMMAR_UNITS) {
+      const p = this.getUnitProgress(unit.id);
+      unitStats[unit.id] = p;
+      totalLessons += p.lessonsTotal;
+      totalCompleted += p.lessonsComplete;
     }
 
-    // Find the "current" unit — first incomplete one
-    let currentUnit = catOrder[catOrder.length - 1];
-    for (const cat of catOrder) {
-      if (unitStats[cat].done < unitStats[cat].total) { currentUnit = cat; break; }
+    // Find the "current" unit — first with incomplete progress
+    let currentUnit = GRAMMAR_UNITS[GRAMMAR_UNITS.length - 1].id;
+    for (const unit of GRAMMAR_UNITS) {
+      if (unitStats[unit.id].percentComplete < 100) { currentUnit = unit.id; break; }
     }
 
     let html = '';
@@ -24998,20 +25106,20 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
     html += `<p>Each lesson has three practice phases — <strong>Repetition</strong>, <strong>Cloze</strong>, and <strong>Production</strong>. A lesson is marked <em>mastered</em> when you complete all three phases correctly. Click any unit below to see its lessons.</p>`;
     html += `</div>`;
 
-    // Path roadmap
+    // Path roadmap — all GRAMMAR_UNITS in canonical pedagogical order
     html += `<div class="path-roadmap">`;
-    for (const cat of catOrder) {
-      const s = unitStats[cat];
-      const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
-      const isCurrent = cat === currentUnit;
-      const isComplete = s.done === s.total && s.total > 0;
+    for (const unit of GRAMMAR_UNITS) {
+      const p = unitStats[unit.id];
+      const isCurrent = unit.id === currentUnit;
+      const isComplete = p.percentComplete === 100 && p.lessonsTotal > 0;
       let cls = "path-unit-row";
       if (isComplete) cls += " completed";
       else if (isCurrent) cls += " current";
-      html += `<div class="${cls}" data-unitclick="${cat}" role="button" tabindex="0">`;
-      html += `<span class="path-unit-pct">${pct}%</span>`;
-      html += `<span class="path-unit-name">${catLabels[cat]}</span>`;
-      html += `<span class="path-unit-lessons">${s.done}/${s.total} lessons</span>`;
+      html += `<div class="${cls}" data-unitclick="${unit.id}" role="button" tabindex="0">`;
+      html += `<span class="path-unit-pct">${p.percentComplete}%</span>`;
+      html += `<span class="path-unit-chapter">${unit.chapter}</span>`;
+      html += `<span class="path-unit-name">${unit.title}</span>`;
+      html += `<span class="path-unit-lessons">${p.lessonsComplete}/${p.lessonsTotal}</span>`;
       html += `</div>`;
     }
     html += `</div>`;
@@ -25063,9 +25171,126 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
     return "started";
   }
 
-  renderGrammarUnitOverview(unitCat) {
-    // Stub — WP-FE-G-21 ports the full implementation
-    this._renderGrammarWelcome();
+  renderGrammarUnitOverview(unitId) {
+    const container = document.getElementById("grammar-content");
+    if (!container) return;
+
+    const unitIndex = parseInt(unitId.split('_')[1]);
+    const unit = GRAMMAR_UNITS[unitIndex];
+    if (!unit) { this._renderGrammarWelcome(); return; }
+
+    const progress = this.getUnitProgress(unitId);
+    const uProgress = this.grammarUnitProgress[unitId] || {};
+
+    let html = '';
+
+    // Back button
+    html += `<button class="unit-ov-back" id="unit-ov-back">&#8592; Alle Einheiten</button>`;
+
+    // Unit header
+    html += `<div class="unit-ov-chap">Einheit ${unit.chapter}</div>`;
+    html += `<div class="unit-ov-title">${unit.title}</div>`;
+    if (unit.subtitle) html += `<div class="unit-ov-subtitle">${unit.subtitle}</div>`;
+
+    // Progress bar
+    html += `<div style="max-width:280px;margin:12px 0 4px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">`;
+    html += `<div style="height:100%;width:${progress.percentComplete}%;background:var(--accent);border-radius:2px;transition:width 0.3s;"></div></div>`;
+    html += `<div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);margin-bottom:4px;">${progress.percentComplete}% abgeschlossen</div>`;
+
+    // Lessons
+    if (unit.lessons && unit.lessons.length > 0) {
+      html += `<div class="unit-ov-section-label">Lektionen</div>`;
+      unit.lessons.forEach((lesson, idx) => {
+        const lessonId = `${unitIndex}_${idx}`;
+        const isDone = uProgress.lessons?.[lessonId] === true;
+        let snippet = '';
+        if (lesson.content) {
+          const ruleItem = lesson.content.find(c => c.type === 'rule');
+          const src = ruleItem || lesson.content.find(c => c.type === 'text');
+          if (src) {
+            snippet = src.value.replace(/\*\*/g, '');
+            if (snippet.length > 72) snippet = snippet.slice(0, 72) + '…';
+          }
+        }
+        html += `<div class="unit-ov-card" data-ov-lesson="${lessonId}" data-ov-unit="${unitId}" role="button" tabindex="0">`;
+        html += `<span class="unit-ov-num${isDone ? ' done' : ''}">${idx + 1}</span>`;
+        html += `<div class="unit-ov-body">`;
+        html += `<div class="unit-ov-card-title">${lesson.title}</div>`;
+        if (snippet) html += `<div class="unit-ov-card-rule">${snippet}</div>`;
+        html += `</div>`;
+        html += `<span class="unit-ov-badge ${isDone ? 'done' : 'new'}">${isDone ? 'Fertig' : '—'}</span>`;
+        html += `</div>`;
+      });
+    }
+
+    // Exercises
+    if (unit.exercises && unit.exercises.length > 0) {
+      html += `<div class="unit-ov-section-label">Übungen</div>`;
+      unit.exercises.forEach((exercise, idx) => {
+        const exerciseId = `${unitIndex}_${idx}`;
+        const exData = uProgress.exercises?.[exerciseId];
+        const isDone = exData?.completed === true;
+        const score = exData ? `${exData.correct}/${exData.total}` : null;
+        const exTitle = exercise.title || `Übung ${idx + 1}`;
+        const prompt = exercise.prompt || '';
+        const snippet = prompt.length > 72 ? prompt.slice(0, 72) + '…' : prompt;
+        html += `<div class="unit-ov-card" data-ov-exercise="${exerciseId}" data-ov-unit="${unitId}" role="button" tabindex="0">`;
+        html += `<span class="unit-ov-num${isDone ? ' done' : ''}">&#8594;</span>`;
+        html += `<div class="unit-ov-body">`;
+        html += `<div class="unit-ov-card-title">${exTitle}</div>`;
+        if (snippet) html += `<div class="unit-ov-card-rule">${snippet}</div>`;
+        html += `</div>`;
+        html += `<span class="unit-ov-badge ${isDone ? 'done' : 'new'}">${isDone ? (score || 'Fertig') : '—'}</span>`;
+        html += `</div>`;
+      });
+    }
+
+    // Review
+    if (unit.review) {
+      html += `<div class="unit-ov-section-label">Rückblick</div>`;
+      const isLocked = !progress.allLessonsComplete;
+      const reviewData = uProgress.review;
+      const revDone = reviewData?.completed === true;
+      const revScore = reviewData ? `${reviewData.score}/${unit.review.items?.length || 0}` : null;
+      if (isLocked) {
+        html += `<div class="unit-ov-card locked">`;
+        html += `<span class="unit-ov-num">&#128274;</span>`;
+        html += `<div class="unit-ov-body">`;
+        html += `<div class="unit-ov-card-title">Einheitsrückblick</div>`;
+        html += `<div class="unit-ov-prereq">Alle Lektionen abschließen, um den Rückblick freizuschalten.</div>`;
+        html += `</div></div>`;
+      } else {
+        html += `<div class="unit-ov-card" data-ov-review="1" data-ov-unit="${unitId}" role="button" tabindex="0">`;
+        html += `<span class="unit-ov-num${revDone ? ' done' : ''}">&#9733;</span>`;
+        html += `<div class="unit-ov-body"><div class="unit-ov-card-title">Einheitsrückblick</div></div>`;
+        html += `<span class="unit-ov-badge ${revDone ? 'done' : 'new'}">${revDone ? (revScore || 'Fertig') : '—'}</span>`;
+        html += `</div>`;
+      }
+    }
+
+    container.innerHTML = html;
+
+    container.querySelector("#unit-ov-back").addEventListener("click", () => this._renderGrammarWelcome());
+
+    container.querySelectorAll("[data-ov-lesson]").forEach(card => {
+      const lid = card.dataset.ovLesson;
+      const uid = card.dataset.ovUnit;
+      card.addEventListener("click", () => this.renderGrammarLesson(uid, lid));
+      card.addEventListener("keypress", e => { if (e.key === "Enter" || e.key === " ") this.renderGrammarLesson(uid, lid); });
+    });
+
+    container.querySelectorAll("[data-ov-exercise]").forEach(card => {
+      const eid = card.dataset.ovExercise;
+      const uid = card.dataset.ovUnit;
+      card.addEventListener("click", () => this.renderGrammarExercise(uid, eid));
+      card.addEventListener("keypress", e => { if (e.key === "Enter" || e.key === " ") this.renderGrammarExercise(uid, eid); });
+    });
+
+    container.querySelectorAll("[data-ov-review]").forEach(card => {
+      const uid = card.dataset.ovUnit;
+      card.addEventListener("click", () => this.renderGrammarReview(uid));
+      card.addEventListener("keypress", e => { if (e.key === "Enter" || e.key === " ") this.renderGrammarReview(uid); });
+    });
   }
 
   _renderGrammarWelcome() {
