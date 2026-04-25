@@ -1325,6 +1325,18 @@ body.sidebar-open {
 }
 .path-unit-name { flex: 1; color: var(--text); }
 .path-unit-lessons { color: var(--text-muted); font-size: 11px; }
+.lesson-status {
+  display: inline-block;
+  font-size: 9px;
+  font-family: var(--font-ui);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.lesson-status.new { background: var(--border); color: var(--text-muted); }
+.lesson-status.started { background: rgba(139,69,19,0.12); color: var(--accent); }
+.lesson-status.mastered { background: rgba(40,120,60,0.12); color: #287c3c; }
 .grammar-active-selection {
   margin-bottom: 16px;
   padding: 8px 12px;
@@ -25064,8 +25076,67 @@ Is the student's answer an acceptable translation? It doesn't need to be word-fo
   }
 
   renderGrammarUnitOverview(unitCat) {
-    // Stub — WP-FE-G-21 ports the full implementation
-    this._renderGrammarWelcome();
+    const container = document.getElementById("grammar-content");
+    if (!container) return;
+
+    // Build catOrder + catLabels dynamically (same pattern as renderGrammarWelcome)
+    const catOrder = [];
+    const catSeen = new Set();
+    for (const l of GRAMMAR_LESSONS) {
+      if (!catSeen.has(l.category)) { catSeen.add(l.category); catOrder.push(l.category); }
+    }
+    const catLabels = {};
+    for (const c of catOrder) { catLabels[c] = c.charAt(0).toUpperCase() + c.slice(1); }
+
+    const lessons = GRAMMAR_LESSONS.filter(p => p.category === unitCat);
+    let html = `<div class="unit-overview">`;
+    html += `<h2>${catLabels[unitCat] || unitCat}</h2>`;
+    html += `<div class="unit-description"></div>`;
+
+    lessons.forEach((l, idx) => {
+      const status = this.getGrammarLessonStatus(l.pattern);
+      let numClass = "lesson-num";
+      if (status === "mastered") numClass += " done";
+      else if (status === "started") numClass += " active";
+      const statusLabel = status === "mastered" ? "✓ Abgeschlossen" : status === "started" ? "In Bearbeitung" : "Noch nicht begonnen";
+      html += `<div class="unit-lesson-card" data-lessonpattern="${l.pattern}" role="button" tabindex="0">`;
+      html += `<div class="${numClass}">${status === "mastered" ? "✓" : (idx + 1)}</div>`;
+      html += `<div class="lesson-info"><strong>${l.description}</strong><span>${l.rule}</span></div>`;
+      html += `<span class="lesson-status ${status}">${statusLabel}</span>`;
+      html += `</div>`;
+    });
+
+    // Prerequisite hint for non-first units
+    const catIdx = catOrder.indexOf(unitCat);
+    if (catIdx > 0) {
+      const prevUnit = catOrder[catIdx - 1];
+      const prevLessons = GRAMMAR_LESSONS.filter(p => p.category === prevUnit);
+      const prevDone = prevLessons.filter(l => this.getGrammarLessonStatus(l.pattern) === "mastered").length;
+      if (prevDone < prevLessons.length) {
+        html += `<div class="progression-info" style="margin-top:16px;max-width:none;">`;
+        html += `<p style="margin:0;"><strong>Voraussetzung:</strong> ${catLabels[prevUnit]} — ${prevDone}/${prevLessons.length} Lektionen abgeschlossen. Frühere Einheiten zuerst abzuschließen wird für eine solide Grundlage empfohlen.</p>`;
+        html += `</div>`;
+      }
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+
+    // Bind lesson card clicks → enter lesson view
+    container.querySelectorAll("[data-lessonpattern]").forEach(card => {
+      card.addEventListener("click", () => {
+        const profile = GRAMMAR_LESSONS.find(p => p.pattern === card.dataset.lessonpattern);
+        if (profile) {
+          this.grammarSelectedProfile = profile;
+          this.grammarViewMode = "lesson";
+          this.grammarCurrentIdx = 0;
+          this.grammarRetrying = false;
+          this.generateGrammarExercises();
+          this.renderGrammarContent();
+        }
+      });
+      card.addEventListener("keypress", (e) => { if (e.key === "Enter" || e.key === " ") card.click(); });
+    });
   }
 
   _renderGrammarWelcome() {
