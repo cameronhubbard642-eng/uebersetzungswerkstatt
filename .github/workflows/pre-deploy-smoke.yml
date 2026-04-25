@@ -75,8 +75,8 @@ jobs:
           FAIL=0
           grep -q '_escapeHtml'    index.html \
             || { echo "::error::_escapeHtml not found — XSS guard may have been deleted"; FAIL=1; }
-          grep -q '_glossSeen'     index.html \
-            || { echo "::error::_glossSeen not found — gloss-persistence may have been deleted"; FAIL=1; }
+          grep -q 'glossSeen'     index.html \
+            || { echo "::error::glossSeen not found — gloss-persistence may have been deleted"; FAIL=1; }
           grep -q 'const ICON_SET' index.html \
             || { echo "::error::const ICON_SET not found — icon-set selector may have been deleted"; FAIL=1; }
           [ "$FAIL" -eq 0 ] || exit 1
